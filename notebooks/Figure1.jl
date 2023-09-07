@@ -13,7 +13,7 @@ end
 
 # ╔═╡ ab294fae-101f-4587-a2f4-7d72254dd421
 begin
-	@quickactivate "ColombiaIsotope"
+	@quickactivate "ConvectionIsotopes"
 	using DelimitedFiles
 	using ERA5Reanalysis
 	using NASAPrecipitation
@@ -26,7 +26,7 @@ begin
 
 	include(srcdir("common.jl"))
 
-	md"Loading modules for the ColombiaIsotope project..."
+	md"Loading modules for the ConvectionIsotopes project..."
 end
 
 # ╔═╡ fa2f8740-f813-11ec-00e1-112e2dfacda7

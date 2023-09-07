@@ -1,12 +1,12 @@
 using DrWatson
-@quickactivate "ColombiaIsotope"
+@quickactivate "ConvectionIsotopes"
 
 using Dates
 using Logging
 using NCDatasets
 using Trapz
 
-@info "$(now()) - ColombiaIsotope - Initializing scripts to perform monthly mean on 3D WRF data ..."
+@info "$(now()) - ConvectionIsotopes - Initializing scripts to perform monthly mean on 3D WRF data ..."
 
 v3D_p = zeros(Float32,543,543,50)
 v3D_z = zeros(Float32,543,543,51)
@@ -19,7 +19,7 @@ w_pre = zeros(Float32,543,543)
 
 for imo = 8 : 12
 
-    @info "$(now()) - ColombiaIsotope - Initializing temporary arrays for 3D data ..."
+    @info "$(now()) - ConvectionIsotopes - Initializing temporary arrays for 3D data ..."
 
     f3D = datadir("wrf","3D","$(uppercase(monthabbr(imo)))-W")
     d3D = NCDataset(f3D)
@@ -55,7 +55,7 @@ for imo = 8 : 12
         
     end
 
-    @info "$(now()) - ColombiaIsotope - Saving WRF W-weighted pressure"
+    @info "$(now()) - ConvectionIsotopes - Saving WRF W-weighted pressure"
 
     f2D = datadir("wrf","2D","$(uppercase(monthabbr(imo)))-p_wwgt")
     if isfile(f2D); rm(f2D,force=true) end

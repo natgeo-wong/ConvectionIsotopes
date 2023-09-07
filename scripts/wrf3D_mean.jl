@@ -1,12 +1,12 @@
 using DrWatson
-@quickactivate "ColombiaIsotope"
+@quickactivate "ConvectionIsotopes"
 
 using Dates
 using Glob
 using Logging
 using NCDatasets
 
-@info "$(now()) - ColombiaIsotope - Initializing scripts to perform monthly mean on 3D WRF data ..."
+@info "$(now()) - ConvectionIsotopes - Initializing scripts to perform monthly mean on 3D WRF data ..."
 
 gds  = NCDataset(datadir("wrf","AUGp02","wrfout_d02_2019-08-11_00:00:00"))
 lon = gds["XLONG"][:,:,1]
@@ -15,7 +15,7 @@ close(gds)
 
 for imo = 8 : 12
 
-    @info "$(now()) - ColombiaIsotope - Initializing temporary arrays for 3D data ..."
+    @info "$(now()) - ConvectionIsotopes - Initializing temporary arrays for 3D data ..."
 
     v3D_1 = zeros(Float32,543,543,50,8)
     v3D_2 = zeros(Float32,543,543,51,8)
@@ -31,7 +31,7 @@ for imo = 8 : 12
         )
         for inc = 2 : (length(dsvec) - 1)
             fnc = dsvec[inc]
-            @info "$(now()) - ColombiaIsotope - Extracting 3D data from $(fnc) ..."
+            @info "$(now()) - ConvectionIsotopes - Extracting 3D data from $(fnc) ..."
             d3D = NCDataset(fnc)
             
             NCDatasets.load!(d3D["P"].var,v3D_1,:,:,:,:)
@@ -71,7 +71,7 @@ for imo = 8 : 12
     if isfile(f3D); rm(f3D,force=true) end
     d3D = NCDataset(f3D,"c")
 
-    @info "$(now()) - ColombiaIsotope - Saving monthly mean 3D data into $(f3D) ..."
+    @info "$(now()) - ConvectionIsotopes - Saving monthly mean 3D data into $(f3D) ..."
 
     defDim(d3D,"longitude",543)
     defDim(d3D,"latitude",543)

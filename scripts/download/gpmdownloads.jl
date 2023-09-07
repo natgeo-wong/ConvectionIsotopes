@@ -1,5 +1,5 @@
 using DrWatson
-@quickactivate "ColombiaIsotope"
+@quickactivate "ConvectionIsotopes"
 using NASAPrecipitation
 
 addGeoRegions(srcdir("OTRECGeoRegions.txt"))

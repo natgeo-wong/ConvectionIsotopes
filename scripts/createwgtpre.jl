@@ -1,5 +1,5 @@
 using DrWatson
-@quickactivate "ColombiaIsotope"
+@quickactivate "ConvectionIsotopes"
 using ERA5Reanalysis
 
 include(srcdir("wwgtpre_create.jl"))

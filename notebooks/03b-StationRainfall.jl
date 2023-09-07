@@ -13,7 +13,7 @@ end
 
 # ╔═╡ 9071763e-f6ad-4468-ae48-369307a85263
 begin
-	@quickactivate "ColombiaIsotope"
+	@quickactivate "ConvectionIsotopes"
 	using Dates
 	using DataFrames
 	using DelimitedFiles
@@ -29,7 +29,7 @@ begin
 
 	include(srcdir("common.jl"))
 	
-	md"Loading modules for the ColumbiaIsotope project..."
+	md"Loading modules for the ConvectionIsotopes project..."
 end
 
 # ╔═╡ a8431d46-46fe-11ec-2b8d-e39caffdabec

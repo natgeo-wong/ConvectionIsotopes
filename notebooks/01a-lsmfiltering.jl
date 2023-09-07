@@ -13,7 +13,7 @@ end
 
 # ╔═╡ 4e08778c-cd46-4a79-9b6a-96ca6447e975
 begin
-	@quickactivate "ColombiaIsotope"
+	@quickactivate "ConvectionIsotopes"
 	using DelimitedFiles
 	using ERA5Reanalysis
 	using GeoRegions
@@ -24,7 +24,7 @@ begin
 	using PyCall, LaTeXStrings
 	pplt = pyimport("proplot")
 
-	md"Loading modules for the ColombiaIsotope project..."
+	md"Loading modules for the ConvectionIsotopes project..."
 end
 
 # ╔═╡ faa41f45-5a58-4bcb-a48c-dcd17e8bad3a

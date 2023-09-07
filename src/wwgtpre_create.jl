@@ -12,7 +12,7 @@ function create_wp(
     smoothtime :: Int = 30,
 )
     
-    @info "$(now()) - ColombiaIsotope - Preliminary preparation for calculation of vertical velocity weighted column-mean pressure  ..."
+    @info "$(now()) - ConvectionIsotopes - Preliminary preparation for calculation of vertical velocity weighted column-mean pressure  ..."
 
     dtbeg = e5ds.start
     dtend = e5ds.stop
@@ -26,7 +26,7 @@ function create_wp(
     plvl = sort(era5Pressures())
     plvl = plvl[plvl.>=10]; np = length(plvl)
 
-    @info "$(now()) - ColombiaIsotope - Preallocating arrays ..."
+    @info "$(now()) - ConvectionIsotopes - Preallocating arrays ..."
 
     wp = Array{Float64,3}(undef,nlon,nlat,31)
     sp = Array{Float64,2}(undef,nlon,nlat);    sptmp = Array{Int16,2}(undef,nlon,nlat)
@@ -42,7 +42,7 @@ function create_wp(
     wa_mv = Vector{Int16}(undef,np)
     wa_fv = Vector{Int16}(undef,np)
 
-    @info "$(now()) - ColombiaIsotope - Extracting the ERA5Variable Information for Surface Pressure, Vertical Winds and Vertical Wind Weighted Column Pressure ..."
+    @info "$(now()) - ConvectionIsotopes - Extracting the ERA5Variable Information for Surface Pressure, Vertical Winds and Vertical Wind Weighted Column Pressure ..."
 
     disable_logging(Logging.Warn)
     evar_wp = SingleVariable("p_wwgt");
@@ -60,7 +60,7 @@ function create_wp(
 
         ndy = daysinmonth(dtii)
 
-        @info "$(now()) - ColombiaIsotope - Extracting the Surface Pressure and Vertical Wind dataset over the $(ereg.geo.name) Region for $(year(dtii)) ..."
+        @info "$(now()) - ConvectionIsotopes - Extracting the Surface Pressure and Vertical Wind dataset over the $(ereg.geo.name) Region for $(year(dtii)) ..."
 
         disable_logging(Logging.Warn)
         sp_ds = read(e5ds,evar_sp,ereg,dtii,smooth=smooth,smoothtime=smoothtime)
@@ -84,7 +84,7 @@ function create_wp(
         end
         disable_logging(Logging.Debug)
 
-        @info "$(now()) - ColombiaIsotope - Calculating the $(evar_wp.name) data over the $(ereg.geo.name) Region for $(year(dtii)) ..."
+        @info "$(now()) - ConvectionIsotopes - Calculating the $(evar_wp.name) data over the $(ereg.geo.name) Region for $(year(dtii)) ..."
 
         for it = 1 : ndy
 
@@ -141,7 +141,7 @@ function create_wp(
 
         end
 
-        @info "$(now()) - ColombiaIsotope - Extraction, Calculation and Integration completed over Month $(dtii) ..."
+        @info "$(now()) - ConvectionIsotopes - Extraction, Calculation and Integration completed over Month $(dtii) ..."
 
         ERA5Reanalysis.save(
             view(wp,:,:,1:ndy),dtii,e5ds,evar_wp,ereg,lsd,
@@ -157,7 +157,7 @@ function create_wp(
     ereg :: ERA5Region
 )
     
-    @info "$(now()) - ColombiaIsotope - Preliminary preparation for calculation of vertical velocity weighted column-mean pressure  ..."
+    @info "$(now()) - ConvectionIsotopes - Preliminary preparation for calculation of vertical velocity weighted column-mean pressure  ..."
 
     dtbeg = e5ds.start
     dtend = e5ds.stop
@@ -171,7 +171,7 @@ function create_wp(
     plvl = sort(era5Pressures())
     plvl = plvl[plvl.>=10]; np = length(plvl)
 
-    @info "$(now()) - ColombiaIsotope - Preallocating arrays ..."
+    @info "$(now()) - ConvectionIsotopes - Preallocating arrays ..."
 
     wp = Array{Float64,3}(undef,nlon,nlat,12)
     sp = Array{Float64,2}(undef,nlon,nlat);    sptmp = Array{Int16,2}(undef,nlon,nlat)
@@ -187,7 +187,7 @@ function create_wp(
     wa_mv = Vector{Int16}(undef,np)
     wa_fv = Vector{Int16}(undef,np)
 
-    @info "$(now()) - ColombiaIsotope - Extracting the ERA5Variable Information for Surface Pressure, Vertical Winds and Vertical Wind Weighted Column Pressure ..."
+    @info "$(now()) - ConvectionIsotopes - Extracting the ERA5Variable Information for Surface Pressure, Vertical Winds and Vertical Wind Weighted Column Pressure ..."
 
     disable_logging(Logging.Warn)
     evar_wp = SingleVariable("p_wwgt");
@@ -203,7 +203,7 @@ function create_wp(
 
     for dtii in dtvec
 
-        @info "$(now()) - ColombiaIsotope - Extracting the Surface Pressure and Vertical Wind dataset over the $(ereg.geo.name) Region for $(year(dtii)) ..."
+        @info "$(now()) - ConvectionIsotopes - Extracting the Surface Pressure and Vertical Wind dataset over the $(ereg.geo.name) Region for $(year(dtii)) ..."
 
         disable_logging(Logging.Warn)
         sp_ds = read(e5ds,evar_sp,ereg,dtii)
@@ -227,7 +227,7 @@ function create_wp(
         end
         disable_logging(Logging.Debug)
 
-        @info "$(now()) - ColombiaIsotope - Calculating the $(evar_wp.name) data over the $(ereg.geo.name) Region for $(year(dtii)) ..."
+        @info "$(now()) - ConvectionIsotopes - Calculating the $(evar_wp.name) data over the $(ereg.geo.name) Region for $(year(dtii)) ..."
 
         for it = 1 : 12
 
@@ -282,7 +282,7 @@ function create_wp(
 
             end
 
-            @info "$(now()) - ColombiaIsotope - Extraction, Calculation and Integration completed over Month $it of $(year(dtii)) ..."
+            @info "$(now()) - ConvectionIsotopes - Extraction, Calculation and Integration completed over Month $it of $(year(dtii)) ..."
 
         end
 

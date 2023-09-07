@@ -27,7 +27,7 @@ function wprofile(
     waii = Vector{Float64}(undef,np+2)
     ind  = ones(Bool,np+2)
 
-    @info "$(now()) - ColombiaIsotope - Preallocating arrays ..."
+    @info "$(now()) - ConvectionIsotopes - Preallocating arrays ..."
     
     wp = Array{Float32,2}(undef,nlon,nlat);    wptmp = Array{Int16,2}(undef,nlon,nlat)
     sp = Array{Float32,2}(undef,nlon,nlat);    sptmp = Array{Int16,2}(undef,nlon,nlat)
@@ -39,7 +39,7 @@ function wprofile(
     wa_mv = Vector{Int16}(undef,np)
     wa_fv = Vector{Int16}(undef,np)
 
-    @info "$(now()) - ColombiaIsotope - Extracting the ERA5Variable Information for Surface Pressure, Vertical Winds and Vertical Wind Weighted Column Pressure ..."
+    @info "$(now()) - ConvectionIsotopes - Extracting the ERA5Variable Information for Surface Pressure, Vertical Winds and Vertical Wind Weighted Column Pressure ..."
 
     disable_logging(Logging.Warn)
     evar_wp = SingleVariable("p_wwgt");
@@ -50,7 +50,7 @@ function wprofile(
     end
     disable_logging(Logging.Debug)
 
-    @info "$(now()) - ColombiaIsotope - Binning the $(evar_wp.vname) data over the $(ereg.geo.name) Region ..."
+    @info "$(now()) - ConvectionIsotopes - Binning the $(evar_wp.vname) data over the $(ereg.geo.name) Region ..."
     σlvls = vcat(0:0.01:1); nσ = length(σlvls)
     waσ   = zeros(nσ)
     pfreq = zeros(Int,length(σbin)-1)
@@ -62,7 +62,7 @@ function wprofile(
 
     for dtii in dtvec
 
-        @info "$(now()) - ColombiaIsotope - Extracting the Surface Pressure, Weighted Column Pressure, and Vertical Wind dataset over the $(ereg.geo.name) Region for $(year(dtii)) ..."
+        @info "$(now()) - ConvectionIsotopes - Extracting the Surface Pressure, Weighted Column Pressure, and Vertical Wind dataset over the $(ereg.geo.name) Region for $(year(dtii)) ..."
 
         disable_logging(Logging.Warn)
         sp_ds = read(e5ds,evar_sp,ereg,dtii)
@@ -176,12 +176,12 @@ function savebin(
     fnc = datadir("wprofile","wwgtpre-profile-$(ereg.gstr).nc")
     fol = dirname(fnc); if !isdir(fol); mkpath(fol) end
     if isfile(fnc)
-        @info "$(now()) - ColombiaIsotope - Stale NetCDF file $(fnc) detected.  Overwriting ..."
+        @info "$(now()) - ConvectionIsotopes - Stale NetCDF file $(fnc) detected.  Overwriting ..."
         rm(fnc);
     end
     ds = NCDataset(fnc,"c",attrib = Dict(
         "Conventions" => "CF-1.6",
-        "history"     => "Created on $(Dates.now()) with ColombiaIsotope scripts",
+        "history"     => "Created on $(Dates.now()) with ConvectionIsotopes scripts",
     ))
 
     ds.dim["σ_wgt"] = length(σbin)

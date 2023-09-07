@@ -13,7 +13,7 @@ end
 
 # ╔═╡ f6017eb1-5b2f-4113-ab6b-91e973659aa2
 begin
-	@quickactivate "ColombiaIsotope"
+	@quickactivate "ConvectionIsotopes"
 	using DelimitedFiles
 	using ERA5Reanalysis
 	using GeoRegions
@@ -28,7 +28,7 @@ begin
 
 	include(srcdir("vertprofile_region.jl"))
 	
-	md"Loading modules for the ColumbiaIsotope project..."
+	md"Loading modules for the ConvectionIsotopes project..."
 end
 
 # ╔═╡ 8585baa8-f995-11ec-2f6b-052638e59e43

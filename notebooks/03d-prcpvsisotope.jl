@@ -13,7 +13,7 @@ end
 
 # ╔═╡ 4208d36e-eec6-44b5-9316-98045ee88e51
 begin
-	@quickactivate "ColombiaIsotope"
+	@quickactivate "ConvectionIsotopes"
 	using DataFrames
 	using Dates
 	using DelimitedFiles
@@ -31,7 +31,7 @@ begin
 
 	ENV["HDF5_USE_FILE_LOCKING"] = false
 	
-	md"Loading modules for the ColombiaIsotope project..."
+	md"Loading modules for the ConvectionIsotopes project..."
 end
 
 # ╔═╡ db91546a-6db9-11ec-3d37-0f5cdb63ec1a

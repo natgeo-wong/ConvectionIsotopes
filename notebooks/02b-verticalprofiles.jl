@@ -23,7 +23,7 @@ end
 
 # ╔═╡ b62ba51a-b7a8-433c-84dd-bd7d221ffa3c
 begin
-	@quickactivate "ColombiaIsotope"
+	@quickactivate "ConvectionIsotopes"
 	using ERA5Reanalysis
 	using DelimitedFiles
 	using NCDatasets
@@ -36,7 +36,7 @@ begin
 
 	include(srcdir("common.jl"))
 	
-	md"Loading modules for the ColumbiaIsotope project..."
+	md"Loading modules for the ConvectionIsotopes project..."
 end
 
 # ╔═╡ fc7b6caa-6ced-11ec-0701-6f55729e22dc
