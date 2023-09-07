@@ -1,0 +1,12 @@
+# RectRegion
+# Template for User-Defined RectRegion GeoRegions
+# (1)ID, (2)pID, (3)N, (4)W, (5)S, (6)E, (7)Description, (8)Notes
+
+OTREC, GLB, 15.0, -90.0, 0.0, -75.0, OTREC-Survey-Region
+OTREC_WRF, TRP, 30, -105, -15, -60, OTREC-WRF-Domain
+OTREC_LRG, GLB, 45, -120, -30, -45, OTREC-Large-Domin
+
+TRP, GLB, 30, 0, -30, 360, Tropics
+CIS_WPC, TRP, 15, 120, -15, 180, West-Pacific-Region
+CIS_CPC, TRP, 15, 180, -15, 240, Central-Pacific-Region
+CIS_EPC, TRP, 15, 240, -15, 300, East-Pacific-Region
