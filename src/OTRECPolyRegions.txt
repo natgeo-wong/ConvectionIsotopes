@@ -1,0 +1,11 @@
+# PolyRegion
+# Template for User-Defined PolyRegion GeoRegions
+# (RegID, ParID, Name), X, Y
+
+  RegID OTREC_PAC, OTREC, OTREC-Pacific-Region
+  RegX  282, 270, 270, 274, 276, 278, 279, 280, 280.5, 281.5, 284, 284, 282
+  RegY  0, 0, 15, 14, 10, 8.5, 8.5, 9, 9.3, 9, 7, 3, 0
+
+  RegID OTREC_ATL, OTREC, OTREC-Atlantic-Region
+  RegX  285, 285, 274, 274, 276, 278, 279, 280, 280.5, 281.5, 284, 285
+  RegY  10, 15, 15, 14, 10, 8.5, 8.5, 9, 9.3, 9, 7, 10

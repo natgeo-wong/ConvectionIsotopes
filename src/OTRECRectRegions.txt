@@ -5,6 +5,8 @@
 OTREC, GLB, 15.0, 270.0, 0.0, 285.0, OTREC-Survey-Region
 OTREC_WRF, TRP, 30, 255, -15, 300, OTREC-WRF-Domain
 OTREC_LRG, GLB, 45, 240, -30, 315, OTREC-Large-Domin
+OTREC_SAN, OTREC, 13.1, 277.8, 12.1, 278.8, OTREC-San-Andres
+OTREC_PCS, OTREC, 7, 277, 2, 285, OTREC-Pacific-Coast
 
 TRP, GLB, 30, 0, -30, 360, Tropics
 CIS_WPC, TRP, 15, 120, -15, 180, West-Pacific-Region
