@@ -1,29 +1,29 @@
 Station,Longitude,Latitude,Daily,Monthly,Approx,Columbia,CostaRica
-San Andres_01,-81.70108,12.58786,true,false,false,true,false
-Quibdó_01,-76.64377778,5.69055556,true,false,false,true,false
-Bahía Solano_01,-77.40444444,6.22333333,true,false,false,true,false
-Buenaventura_01,-76.99238889,3.82011111,true,false,false,true,false
-Bogota,-74.166667,4.7,false,true,false,true,false
-Bolivar,-75.112,5.328269444,false,true,false,true,false
-Bucaramanga,-73.11833333,7.141388889,false,true,false,true,false
-Carmen de Tonchalá,-72.566667,7.846694,false,true,false,true,false
-Cartagena,-75.51605833,10.44724444,false,true,false,true,false
-Duitama,-73.081783,5.78755,false,true,false,true,false
-El Tesoro,-75.5555,6.204,false,true,true,true,false
-Ibague,-75.20882778,4.435630556,false,true,false,true,false
-La Macarena,-73.793444,2.176167,false,true,false,true,false
-Pasto,-77.28328611,1.225652778,false,true,false,true,false
-Pereira,-75.674321,4.804634,false,true,false,true,false
-San Andres,-81.70005778,12.58991722,false,true,false,true,false
-Santiago de Cali,-76.63669028,3.317708056,false,true,false,true,false
-Tulenapa,-76.6636,7.7741,false,true,true,true,false
-Villavicencio1,-73.625,4.1375,false,true,false,true,false
-Villavicencio2,-73.68904444,4.131016667,false,true,false,true,false
-AMDQ,9.93388888888889,83.87388888888889,true,false,false,false,true
-CGFI,9.936388888888889,84.045,true,false,false,false,true
-EEFBM,10.006944444444445,84.26583333333333,true,false.0,false,false,true
-OSA,8.41,83.33999999999999,true,false,false,false,true
-Limon,9.962777777777777,83.02619444444444,true,false,false,false,true
-Cahuita,9.738888888888889,82.84444444444443,true,false,false,false,true
-Liberia,10.616944444444444,85.45166666666667,true,false,false,false,true
-Bataan,10.097527777777778,83.37516666666666,true,false,false,false,true
+San Andres_01,278.29892,12.58786,true,false,false,true,false
+Quibdó_01,283.3562222,5.69055556,true,false,false,true,false
+Bahía Solano_01,282.5955556,6.22333333,true,false,false,true,false
+Buenaventura_01,283.0076111,3.82011111,true,false,false,true,false
+Bogota,285.833333,4.7,false,true,false,true,false
+Bolivar,284.888,5.328269444,false,true,false,true,false
+Bucaramanga,286.8816667,7.141388889,false,true,false,true,false
+Carmen de Tonchalá,287.433333,7.846694,false,true,false,true,false
+Cartagena,284.4839417,10.44724444,false,true,false,true,false
+Duitama,286.918217,5.78755,false,true,false,true,false
+El Tesoro,284.4445,6.204,false,true,true,true,false
+Ibague,284.7911722,4.435630556,false,true,false,true,false
+La Macarena,286.206556,2.176167,false,true,false,true,false
+Pasto,282.7167139,1.225652778,false,true,false,true,false
+Pereira,284.325679,4.804634,false,true,false,true,false
+San Andres,278.2999422,12.58991722,false,true,false,true,false
+Santiago de Cali,283.3633097,3.317708056,false,true,false,true,false
+Tulenapa,283.3364,7.7741,false,true,true,true,false
+Villavicencio1,286.375,4.1375,false,true,false,true,false
+Villavicencio2,286.3109556,4.131016667,false,true,false,true,false
+AMDQ,276.1261111,9.933888889,true,false,false,false,true
+CGFI,275.955,9.936388889,true,false,false,false,true
+EEFBM,275.7341667,10.00694444,true,false,false,false,true
+OSA,276.66,8.41,true,false,false,false,true
+Limon,276.9738056,9.962777778,true,false,false,false,true
+Cahuita,277.1555556,9.738888889,true,false,false,false,true
+Liberia,274.5483333,10.61694444,true,false,false,false,true
+Bataan,276.6248333,10.09752778,true,false,false,false,true
