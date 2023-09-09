@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.26
+# v0.19.27
 
 using Markdown
 using InteractiveUtils
@@ -27,7 +27,7 @@ end
 
 # ╔═╡ fc7b6caa-6ced-11ec-0701-6f55729e22dc
 md"
-# 00. ColumbiaIsotope - Linking Isotopic data with Precipitation Measurements
+# 00. ConvectionIsotopes - Linking Isotopic data with Precipitation Measurements
 
 In this project, we compare the isotopic station data for deuterium and 18-oxygen measurements with rainfall rates over various locations in Columbia.  However, things are moe easily said then done, and below is the outline:
 
@@ -71,6 +71,7 @@ begin
 	infoall = stninfoall()
 	infody  = stninfody()
 	infomo  = stninfomo()
+	infocr  = stninfocostarica()
 	md"Loading station location information ..."
 end
 
@@ -79,7 +80,9 @@ begin
 	pplt.close(); f1,a1 = pplt.subplots(ncols=3,axwidth=2)
 	
 	a1[1].scatter(infoall[:,2],infoall[:,3])
+	a1[1].scatter(infocr[:,2],infocr[:,3])
 	a1[2].scatter(infody[:,2],infody[:,3])
+	a1[2].scatter(infocr[:,2],infocr[:,3])
 	a1[3].scatter(infomo[:,2],infomo[:,3])
 
 	a1[1].format(ultitle="(a) All")
@@ -88,7 +91,7 @@ begin
 
 	for ax in a1
 		ax.plot(x,y,lw=0.5,c="k")
-		ax.format(xlim=(-85,-70),ylim=(0,15),suptitle="Available Columbia Stations")
+		ax.format(xlim=(270,290),ylim=(-2.5,17.5),suptitle="Available Stations")
 	end
 	
 	f1.savefig(plotsdir("00-stations.png"),transparent=false,dpi=300)
