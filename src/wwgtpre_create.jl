@@ -119,8 +119,8 @@ function create_wp(
                     wpn = @view wpii[plvl.<=spii]
 
                     if pre[end-1] != pre[end]
-                        inttop = integrate(pre,wpn)
-                        intbot = integrate(pre,wan)
+                        inttop = trapz(pre,wpn)
+                        intbot = trapz(pre,wan)
                     else
                         pre2 = @view pre[1:(end-1)]
                         wan2 = @view wan[1:(end-1)]
@@ -262,8 +262,8 @@ function create_wp(
                     wpn = @view wpii[plvl.<=spii]
 
                     if pre[end-1] != pre[end]
-                        inttop = integrate(pre,wpn)
-                        intbot = integrate(pre,wan)
+                        inttop = trapz(pre,wpn)
+                        intbot = trapz(pre,wan)
                     else
                         pre2 = @view pre[1:(end-1)]
                         wan2 = @view wan[1:(end-1)]
