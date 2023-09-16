@@ -1,8 +1,8 @@
 Station,Longitude,Latitude,Daily,Monthly,Approx,Columbia,CostaRica
-San Andres_01,278.29892,12.58786,true,false,false,true,false
-Quibdó_01,283.3562222,5.69055556,true,false,false,true,false
-Bahía Solano_01,282.5955556,6.22333333,true,false,false,true,false
-Buenaventura_01,283.0076111,3.82011111,true,false,false,true,false
+San Andres,278.29892,12.58786,true,false,false,true,false
+Quibdó,283.3562222,5.69055556,true,false,false,true,false
+Bahía Solano,282.5955556,6.22333333,true,false,false,true,false
+Buenaventura,283.0076111,3.82011111,true,false,false,true,false
 Bogota,285.833333,4.7,false,true,false,true,false
 Bolivar,284.888,5.328269444,false,true,false,true,false
 Bucaramanga,286.8816667,7.141388889,false,true,false,true,false
