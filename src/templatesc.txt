@@ -2,3 +2,4 @@
 # Template for User-Defined Custom Single-Level Variables
 # (1)ID, (2)era5 (3)Full (4)Units
 p_wwgt,column_mean_lagrangian_tendency_of_air_pressure,Vertical Wind Weighted Column Pressure,Pa
+σ_wwgt,column_mean_lagrangian_tendency_of_sigma,Vertical Wind Weighted Sigma,0-1
