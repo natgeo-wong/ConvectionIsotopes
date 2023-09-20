@@ -82,3 +82,6 @@ function extractregclimate(
 	return data_yr_new,data_mo_new
 
 end
+
+SMOW18O(x :: Real = 1.) = x * 2.0052e-3
+SMOWHDO(x :: Real = 1.) = x * 1.5576e-4
