@@ -32,7 +32,7 @@ end
 
 # ╔═╡ fc7b6caa-6ced-11ec-0701-6f55729e22dc
 md"
-# 04c. W-Weighted Column Mean Pressure vs Precipitation
+# 03c. W-Weighted Column Mean Pressure vs Precipitation
 "
 
 # ╔═╡ 5ad5ac8f-f7fa-4a63-8600-ad93ae8096f6
@@ -91,7 +91,7 @@ begin
 	time  = ds["time"][:]; it = time .> Date(2019,1,31)
 	time  = time[it]
 	prcps = ds["prcps"][it,:]
-	δ18Oμ = ds["δ2Hμ"][it,:]
+	δ18Oμ = ds["δ18Oμ"][it,:]
 	nstn = size(prcps,2)
 	close(ds)
 end
@@ -130,7 +130,7 @@ begin
 	anum .= 0; bnum .= 0; cnum .= 0; dnum .= 0; enum .= 0; fnum .= 0
 	aprc .= 0; bprc .= 0; cprc .= 0; dprc .= 0; eprc .= 0; fprc .= 0
 
-	lvls = -90 : 5 : 0
+	lvls = -10 : -1
 	for idy = 16 : (length(time)-15)
 
 		dt  = time[idy]; dayii = day(dt)
@@ -302,7 +302,7 @@ begin
 			ylim=(950,100),xlim=(0,100),ylocator=200:200:800,xlocator=0:50:100
 		)
 	end
-	f2.colorbar(c2_1,label=L"$\delta^{2}$H / $\perthousand$",locator=-75:15:0,minorlocator=-90:5:0,row=[1])
+	f2.colorbar(c2_1,label=L"$\delta^{18}$O / $\perthousand$",locator=-10:2:0,minorlocator=-15:0,row=[1])
 	f2.colorbar(c2_2,label="Number of Observations",row=[2])
 
 	f2.savefig(plotsdir("03c-30dyprcpvpwwgt-dailystn.png"),transparent=false,dpi=400)
@@ -495,7 +495,7 @@ begin
 			ylim=(950,100),xlim=(0,100),ylocator=200:200:800,xlocator=0:50:100
 		)
 	end
-	f3.colorbar(c3_1,label=L"$\delta^{2}$H / $\perthousand$",locator=-75:15:0,minorlocator=-90:5:0,row=[1])
+	f3.colorbar(c3_1,label=L"$\delta^{18}$O / $\perthousand$",locator=-70:2:0,minorlocator=-90:0,row=[1])
 	f3.colorbar(c3_2,label="Number of Observations",row=[2])
 
 	f3.savefig(plotsdir("03c-7dyprcpvpwwgt-dailystn.png"),transparent=false,dpi=400)
@@ -517,7 +517,7 @@ end
 # ╟─73ab7928-b428-4792-af0e-1f44b42beee9
 # ╟─8927283a-c4e2-4c3a-b32f-850391eef9c7
 # ╟─f4597370-4bc8-4763-8030-3a4dc89533b6
-# ╟─2c4f6363-7b5a-40a0-aa47-251c53ae7367
+# ╠═2c4f6363-7b5a-40a0-aa47-251c53ae7367
 # ╟─f0b67cf7-7159-44d2-bc9b-77306bddacf8
 # ╟─b2dc480b-b6fc-471a-9724-1034415f4cfc
 # ╠═9411b053-e4b8-420d-9e78-a91aab4fdcc1
