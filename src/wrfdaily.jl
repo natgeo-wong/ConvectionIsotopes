@@ -1,15 +1,28 @@
+using DrWatson
+using Dates
+using Logging
+using NCDatasets
 using Statistics
 
 function wrf3Ddaily(
-    wvar :: AbstracString;
-	start :: DateTime,
-	stop  :: DateTime
+    wvar :: AbstractString;
+	start :: Date,
+	stop  :: Date,
+	dosum :: Bool = false
 )
 
     ds  = NCDataset(datadir("wrf","raw","3D","$(start).nc"))
 	nlon,nlat,nlvl = size(ds[wvar])[[1,2,3]]
-	lon = ds["XLONG"][:,:,1]
-	lat = ds["XLAT"][:,:,1]
+	if wvar == "U"
+		lon = ds["XLONG_U"][:,:,1]
+		lat = ds["XLAT_U"][:,:,1]
+	elseif wvar == "V"
+		lon = ds["XLONG_V"][:,:,1]
+		lat = ds["XLAT_V"][:,:,1]
+	else
+		lon = ds["XLONG"][:,:,1]
+		lat = ds["XLAT"][:,:,1]
+	end
 	attrib = Dict(ds[wvar].attrib)
 	close(ds)
 
@@ -18,14 +31,19 @@ function wrf3Ddaily(
 	oarr = zeros(Float32,nlon,nlat,nlvl,8)
 	narr = zeros(Float32,nlon,nlat,nlvl,ndt)
 
+	fac = 1; if dosum; fac = 8 end
+
 	for ii in 1 : ndt
 
-		ids = NCDataset(datadir(fol,"$(dtvec[ii]).nc"))
-		NCDatasets.load!(oarr,ids[wvar].var,:,:,:,:)
+		@info "$(now()) - ConvectionIsotopes - Extracting $wvar data for $(dtvec[ii])"
+		flush(stderr)
+
+		ids = NCDataset(datadir("wrf","raw","3D","$(dtvec[ii]).nc"))
+		NCDatasets.load!(ids[wvar].var,oarr,:,:,:,:)
 		close(ids)
 
 		for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
-			narr[ilon,ilat,ilvl,ii] = Float32(mean(view(oarr[ilon,ilat,ilvl,:])))
+			narr[ilon,ilat,ilvl,ii] = Float32(mean(view(oarr,ilon,ilat,ilvl,:)) * fac)
 		end
 
 	end
@@ -68,9 +86,10 @@ function wrf3Ddaily(
 end
 
 function wrf2Ddaily(
-    wvar :: AbstracString;
-	start :: DateTime,
-	stop  :: DateTime
+    wvar :: AbstractString;
+	start :: Date,
+	stop  :: Date,
+	dosum :: Bool = false
 )
 
     ds  = NCDataset(datadir("wrf","raw","2D","$(start).nc"))
@@ -85,14 +104,19 @@ function wrf2Ddaily(
 	oarr = zeros(Float32,nlon,nlat,8)
 	narr = zeros(Float32,nlon,nlat,ndt)
 
+	fac = 1; if dosum; fac = 8 end
+
 	for ii in 1 : ndt
 
-		ids = NCDataset(datadir(fol,"$(dtvec[ii]).nc"))
-		NCDatasets.load!(oarr,ids[wvar].var,:,:,:)
+		@info "$(now()) - ConvectionIsotopes - Extracting $wvar data for $(dtvec[ii])"
+		flush(stderr)
+
+		ids = NCDataset(datadir("wrf","raw","2D","$(dtvec[ii]).nc"))
+		NCDatasets.load!(ids[wvar].var,oarr,:,:,:)
 		close(ids)
 
 		for ilat = 1 : nlat, ilon = 1 : nlon
-			narr[ilon,ilat,ii] = Float32(mean(view(oarr[ilon,ilat,:])))
+			narr[ilon,ilat,ii] = Float32(mean(view(oarr,ilon,ilat,:)) * fac)
 		end
 
 	end
