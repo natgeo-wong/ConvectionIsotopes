@@ -14,7 +14,8 @@ function wrfbudget(
     lon  = ds["longitude"][:]
     lat  = ds["latitude"][:]
     nlvl = ds.dim["levels"]
-    ndt  = ds.dim["date"]
+    ndt  = ds.dim["date"]; start = ds["time"][1]
+    attrib = Dict(ds[wvar].attrib)
     close(ds)
 
     ggrd = RegionGrid(geo,lon,lat)
@@ -28,7 +29,7 @@ function wrfbudget(
     varr = zeros(Float32,nlon+1,nlat+2,nlvl)
     qarr = zeros(Float32,nlon+1,nlat+1,nlvl)
     parr = zeros(Float32,nlon+1,nlat+1,nlvl)
-    psfc = zeros(Float32,nlon+1,nlat+1,nlvl)
+    psfc = zeros(Float32,nlon+1,nlat+1)
     qflx = zeros(ndt)
 
 
@@ -44,14 +45,14 @@ function wrfbudget(
 
     for ii in 1 : ndt
 
-        @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[ii])"
+        @info "$(now()) - ConvectionIsotopes - Extracting data for Day $ii of $ndt"
         flush(stderr)
 
         NCDatasets.load!(uds["U"].var,uarr,lon1:(lon2+1),lat1:lat2,:,ii)
         NCDatasets.load!(vds["V"].var,varr,lon1:lon2,lat1:(lat2+1),:,ii)
         NCDatasets.load!(qds[wvar].var,qarr,lon1:lon2,lat1:lat2,:,ii)
         NCDatasets.load!(pds["P"].var,parr,lon1:lon2,lat1:lat2,:,ii)
-        NCDatasets.load!(sds["PSFC"].var,psfc,lon1:lon2,lat1:lat2,:,ii)
+        NCDatasets.load!(sds["PSFC"].var,psfc,lon1:lon2,lat1:lat2,ii)
 
         for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
             parr[ilon,ilat,ilvl] += pbse[ilon,ilat,ilvl]
@@ -59,46 +60,46 @@ function wrfbudget(
 
         for ilat = 2 : nlat
             uavg = dropdims(mean(uarr[1:2,ilat,:],dims=1),dims=1)
-            qlat = qarr[1,ilat] .* uavg
-            plat = parr[1,ilat]
-            qflx[ii] += trapz(vcat(psfc,plat,0),vcat(0,qlat,0))
+            qlat = qarr[1,ilat,:] .* uavg
+            plat = parr[1,ilat,:]
+            qflx[ii] += trapz(vcat(psfc[1,ilat],plat,0),vcat(0,qlat,0))
             uavg = dropdims(mean(uarr[nlon.+(1:2),ilat,:],dims=1),dims=1)
-            qlat = qarr[end,ilat] .* uavg
-            plat = parr[end,ilat]
-            qflx[ii] -= trapz(vcat(psfc,plat,0),vcat(0,qlat,0))
+            qlat = qarr[end,ilat,:] .* uavg
+            plat = parr[end,ilat,:]
+            qflx[ii] -= trapz(vcat(psfc[end,ilat],plat,0),vcat(0,qlat,0))
         end
 
         for ilat = [1, nlat+1]
             uavg = dropdims(mean(uarr[1:2,ilat,:],dims=1),dims=1)
-            qlat = qarr[1,ilat] .* uavg
-            plat = parr[1,ilat]
-            qflx[ii] += trapz(vcat(psfc,plat,0),vcat(0,qlat,0)) * 0.5
+            qlat = qarr[1,ilat,:] .* uavg
+            plat = parr[1,ilat,:]
+            qflx[ii] += trapz(vcat(psfc[1,ilat],plat,0),vcat(0,qlat,0)) * 0.5
             uavg = dropdims(mean(uarr[nlon.+(1:2),ilat,:],dims=1),dims=1)
-            qlat = qarr[end,ilat] .* uavg
-            plat = parr[end,ilat]
-            qflx[ii] -= trapz(vcat(psfc,plat,0),vcat(0,qlat,0)) * 0.5
+            qlat = qarr[end,ilat,:] .* uavg
+            plat = parr[end,ilat,:]
+            qflx[ii] -= trapz(vcat(psfc[end,ilat],plat,0),vcat(0,qlat,0)) * 0.5
         end
 
         for ilon = 2 : nlon
-            vavg = dropdims(mean(uarr[ilon,1:2,:],dims=1),dims=1)
-            qlat = qarr[ilon,1] .* vavg
-            plat = parr[ilon,1]
-            qflx[ii] += trapz(vcat(psfc,plat,0),vcat(0,qlat,0))
-            vavg = dropdims(mean(uarr[ilon,nlat.+(1:2),:],dims=1),dims=1)
-            qlat = qarr[ilon,end] .* vavg
-            plat = parr[ilon,end]
-            qflx[ii] -= trapz(vcat(psfc,plat,0),vcat(0,qlat,0))
+            vavg = dropdims(mean(varr[ilon,1:2,:],dims=1),dims=1)
+            qlat = qarr[ilon,1,:] .* vavg
+            plat = parr[ilon,1,:]
+            qflx[ii] += trapz(vcat(psfc[ilon,1],plat,0),vcat(0,qlat,0))
+            vavg = dropdims(mean(varr[ilon,nlat.+(1:2),:],dims=1),dims=1)
+            qlat = qarr[ilon,end,:] .* vavg
+            plat = parr[ilon,end,:]
+            qflx[ii] -= trapz(vcat(psfc[ilon,end],plat,0),vcat(0,qlat,0))
         end
 
         for ilon = [1, nlon+1]
-            vavg = dropdims(mean(uarr[ilon,1:2,:],dims=1),dims=1)
-            qlat = qarr[ilon,1] .* vavg
-            plat = parr[ilon,1]
-            qflx[ii] += trapz(vcat(psfc,plat,0),vcat(0,qlat,0)) * 0.5
-            vavg = dropdims(mean(uarr[ilon,nlat.+(1:2),:],dims=1),dims=1)
-            qlat = qarr[ilon,end] .* vavg
-            plat = parr[ilon,end]
-            qflx[ii] -= trapz(vcat(psfc,plat,0),vcat(0,qlat,0)) * 0.5
+            vavg = dropdims(mean(varr[ilon,1:2,:],dims=1),dims=1)
+            qlat = qarr[ilon,1,:] .* vavg
+            plat = parr[ilon,1,:]
+            qflx[ii] += trapz(vcat(psfc[ilon,1],plat,0),vcat(0,qlat,0)) * 0.5
+            vavg = dropdims(mean(varr[ilon,nlat.+(1:2),:],dims=1),dims=1)
+            qlat = qarr[ilon,end,:] .* vavg
+            plat = parr[ilon,end,:]
+            qflx[ii] -= trapz(vcat(psfc[ilon,end],plat,0),vcat(0,qlat,0)) * 0.5
         end
 
     end
@@ -117,7 +118,7 @@ function wrfbudget(
     ds.dim["date"]      = ndt
 
     nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
-        "units"     => "days since $(ndt[1]) 00:00:00.0",
+        "units"     => "days since $(start) 00:00:00.0",
         "long_name" => "time",
         "calendar"  => "gregorian"
     ))
@@ -125,7 +126,7 @@ function wrfbudget(
     ncvar = defVar(ds,"FLUX_$(wvar)",Float32,("date",),attrib=attrib)
 
     nctime.var[:] = collect(0 : (ndt-1))
-    ncvar[:] = qflx
+    ncvar[:] = qflx / 9.81 / 1000 * 86400 * 4 * 110 / 110^2
 
     close(ds)
 
