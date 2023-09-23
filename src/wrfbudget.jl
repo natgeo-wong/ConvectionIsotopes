@@ -7,7 +7,7 @@ include(srcdir("backend.jl"))
 
 function wrfbudget(
     wvar :: AbstractString,
-    geo  :: GeoRegion,
+    geo  :: GeoRegion
 )
     
     ds   = NCDataset(datadir("wrf","3D","$(wvar)-daily.nc"))
@@ -40,7 +40,7 @@ function wrfbudget(
     vds = NCDataset(datadir("wrf","3D","V-daily.nc"))
     qds = NCDataset(datadir("wrf","3D","$(wvar)-daily.nc"))
     pds = NCDataset(datadir("wrf","3D","P-daily.nc"))
-    sds = NCDataset(datadir("wrf","3D","PSFC-daily.nc"))
+    sds = NCDataset(datadir("wrf","2D","PSFC-daily.nc"))
 
     for ii in 1 : ndt
 
@@ -117,7 +117,7 @@ function wrfbudget(
     ds.dim["date"]      = ndt
 
     nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
-        "units"     => "days since $(start) 00:00:00.0",
+        "units"     => "days since $(ndt[1]) 00:00:00.0",
         "long_name" => "time",
         "calendar"  => "gregorian"
     ))
