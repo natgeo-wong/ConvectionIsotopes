@@ -5,7 +5,7 @@ using Trapz
 
 include(srcdir("backend.jl"))
 
-function wrfbudget(
+function wrfqbudget(
     wvar :: AbstractString,
     geo  :: GeoRegion
 )
@@ -16,6 +16,7 @@ function wrfbudget(
     nlvl = ds.dim["levels"]
     ndt  = ds.dim["date"]; start = ds["time"][1]
     attrib = Dict(ds[wvar].attrib)
+    attrib["units"] = "kg m**-2 s**-1 (if HDO or O18, relative to SMOW)"
     close(ds)
 
     ggrd = RegionGrid(geo,lon,lat)
@@ -126,7 +127,7 @@ function wrfbudget(
     ncvar = defVar(ds,"FLUX_$(wvar)",Float32,("date",),attrib=attrib)
 
     nctime.var[:] = collect(0 : (ndt-1))
-    ncvar[:] = qflx / 9.81 / 1000 * 86400 * 4 * 110 / 110^2
+    ncvar[:] = qflx / 9.81 / 1000 * 4 / 110e3
 
     close(ds)
 
