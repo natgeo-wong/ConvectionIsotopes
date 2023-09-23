@@ -112,7 +112,7 @@ function wrfqbudget(
     close(sds)
 
     mkpath(datadir("wrf","processed"))
-    fnc = datadir("wrf","processed","FLUX_$(wvar)-daily.nc")
+    fnc = datadir("wrf","processed","$(geo.ID)-FLUX_$(wvar)-daily.nc")
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")
