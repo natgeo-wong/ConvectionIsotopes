@@ -19,6 +19,7 @@ begin
 	using NASAPrecipitation
 	using NCDatasets
 	using PlutoUI
+	using Printf
 
 	using ImageShow, PNGFiles
 	using PyCall, LaTeXStrings
@@ -222,6 +223,28 @@ begin
 	load(plotsdir("01a-testcoast.png"))
 end
 
+# ╔═╡ 58e4153d-a8a3-454e-8941-389e9e5413a6
+md"
+### D. Define Domain around Stations of Interest
+"
+
+# ╔═╡ ecbf4852-7d65-44ca-94aa-d811e2dafb3b
+for istn = 1 : 12
+
+	istn_lon = infody[istn,2]
+	istn_lat = infody[istn,3]
+
+	if isGeoRegion("OTREC_STN$(@sprintf("%02d",istn))",throw=false)
+		removeGeoRegion("OTREC_STN$(@sprintf("%02d",istn))")
+	end
+	RectRegion(
+		"OTREC_STN$(@sprintf("%02d",istn))","OTREC",
+		"Daily Station $(istn)",
+		[infody[istn,3]+0.5,infody[istn,3]-0.5,infody[istn,2]+0.5,infody[istn,2]-0.5]
+	)
+	
+end
+
 # ╔═╡ Cell order:
 # ╟─fa2f8740-f813-11ec-00e1-112e2dfacda7
 # ╟─1d7446ba-f464-44df-89e2-ae2a5726e849
@@ -247,3 +270,5 @@ end
 # ╟─36b7ec91-6409-4828-9548-1eafc0559348
 # ╟─423a607a-4357-44df-9b7e-948aa8062baf
 # ╟─e6f6cf23-9b6b-49d2-bf75-bf2826618a4e
+# ╟─58e4153d-a8a3-454e-8941-389e9e5413a6
+# ╟─ecbf4852-7d65-44ca-94aa-d811e2dafb3b
