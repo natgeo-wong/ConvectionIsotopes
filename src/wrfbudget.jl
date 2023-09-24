@@ -1,5 +1,6 @@
 using GeoRegions
 using NCDatasets
+using Printf
 using Statistics
 using Trapz
 
@@ -7,7 +8,9 @@ include(srcdir("backend.jl"))
 
 function wrfqbudget(
     wvar :: AbstractString,
-    geo  :: GeoRegion
+    geo  :: GeoRegion;
+    smooth = false,
+    smoothtime = 1
 )
     
     ds   = NCDataset(datadir("wrf","3D","$(wvar)-daily.nc"))
@@ -38,11 +41,20 @@ function wrfqbudget(
     pbse = pds["PB"][lon1:lon2,lat1:lat2,:,1]
     close(pds)
 
-    uds = NCDataset(datadir("wrf","3D","U-daily.nc"))
-    vds = NCDataset(datadir("wrf","3D","V-daily.nc"))
-    qds = NCDataset(datadir("wrf","3D","$(wvar)-daily.nc"))
-    pds = NCDataset(datadir("wrf","3D","P-daily.nc"))
-    sds = NCDataset(datadir("wrf","2D","PSFC-daily.nc"))
+    if !smooth
+        uds = NCDataset(datadir("wrf","3D","U-daily.nc"))
+        vds = NCDataset(datadir("wrf","3D","V-daily.nc"))
+        qds = NCDataset(datadir("wrf","3D","$(wvar)-daily.nc"))
+        pds = NCDataset(datadir("wrf","3D","P-daily.nc"))
+        sds = NCDataset(datadir("wrf","2D","PSFC-daily.nc"))
+    else
+        smthstr = "smooth_$(@sprintf("%02d",smoothtime))days"
+        uds = NCDataset(datadir("wrf","3D","U-daily-$smthstr.nc"))
+        vds = NCDataset(datadir("wrf","3D","V-daily-$smthstr.nc"))
+        qds = NCDataset(datadir("wrf","3D","$(wvar)-daily-$smthstr.nc"))
+        pds = NCDataset(datadir("wrf","3D","P-daily-$smthstr.nc"))
+        sds = NCDataset(datadir("wrf","2D","PSFC-daily-$smthstr.nc"))
+    end
 
     for ii in 1 : ndt
 
@@ -112,7 +124,13 @@ function wrfqbudget(
     close(sds)
 
     mkpath(datadir("wrf","processed"))
-    fnc = datadir("wrf","processed","$(geo.ID)-FLUX_$(wvar)-daily.nc")
+    if !smooth
+        fnc = datadir("wrf","processed","$(geo.ID)-FLUX_$(wvar)-daily.nc")
+    else
+        smthstr = "smooth_$(@sprintf("%02d",smoothtime))days"
+        fnc = datadir("wrf","processed","$(geo.ID)-FLUX_$(wvar)-daily-$smthstr.nc")
+    end
+
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")
