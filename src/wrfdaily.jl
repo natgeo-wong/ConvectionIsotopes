@@ -8,7 +8,6 @@ function wrf3Ddaily(
     wvar :: AbstractString;
 	start :: Date,
 	stop  :: Date,
-	dosum :: Bool = false
 )
 
     ds  = NCDataset(datadir("wrf","raw","3D","$(start).nc"))
@@ -31,8 +30,6 @@ function wrf3Ddaily(
 	oarr = zeros(Float32,nlon,nlat,nlvl,8)
 	narr = zeros(Float32,nlon,nlat,nlvl,ndt)
 
-	fac = 1; if dosum; fac = 8 end
-
 	for ii in 1 : ndt
 
 		@info "$(now()) - ConvectionIsotopes - Extracting $wvar data for $(dtvec[ii])"
@@ -43,7 +40,7 @@ function wrf3Ddaily(
 		close(ids)
 
 		for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
-			narr[ilon,ilat,ilvl,ii] = Float32(mean(view(oarr,ilon,ilat,ilvl,:)) * fac)
+			narr[ilon,ilat,ilvl,ii] = Float32(mean(view(oarr,ilon,ilat,ilvl,:)))
 		end
 
 	end
@@ -89,7 +86,7 @@ function wrf2Ddaily(
     wvar :: AbstractString;
 	start :: Date,
 	stop  :: Date,
-	dosum :: Bool = false
+	isaccum :: Bool = false
 )
 
     ds  = NCDataset(datadir("wrf","raw","2D","$(start).nc"))
@@ -103,8 +100,9 @@ function wrf2Ddaily(
 
 	oarr = zeros(Float32,nlon,nlat,8)
 	narr = zeros(Float32,nlon,nlat,ndt)
-
-	fac = 1; if dosum; fac = 8 end
+	if isaccum
+		aarr = zeros(Float32,nlon,nlat)
+	end
 
 	for ii in 1 : ndt
 
@@ -114,9 +112,27 @@ function wrf2Ddaily(
 		ids = NCDataset(datadir("wrf","raw","2D","$(dtvec[ii]).nc"))
 		NCDatasets.load!(ids[wvar].var,oarr,:,:,:)
 		close(ids)
+		if isaccum
+			fncii = datadir("wrf","raw","2D","$(dtvec[ii]+Day(1))-e.nc")
+			if isfile(fncii)
+				@info "$(now()) - ConvectionIsotopes - Tail end"
+				ids = NCDataset(fncii)
+			else
+				ids = NCDataset(datadir("wrf","raw","2D","$(dtvec[ii]+Day(1)).nc"))
+			end
+			NCDatasets.load!(ids[wvar].var,aarr,:,:,1)
+			close(ids)
+		end
 
-		for ilat = 1 : nlat, ilon = 1 : nlon
-			narr[ilon,ilat,ii] = Float32(mean(view(oarr,ilon,ilat,:)) * fac)
+
+		if isaccum
+			for ilat = 1 : nlat, ilon = 1 : nlon
+				narr[ilon,ilat,ii] = aarr[ilon,ilat] - oarr[ilon,ilat,1]
+			end
+		else
+			for ilat = 1 : nlat, ilon = 1 : nlon
+				narr[ilon,ilat,ii] = Float32(mean(view(oarr,ilon,ilat,:)))
+			end
 		end
 
 	end
