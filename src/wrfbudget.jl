@@ -127,6 +127,86 @@ function wrfqdiv(
 
 end
 
+function wrfqdiv2(
+    geo   :: GeoRegion;
+    iso   :: AbstractString = "",
+    start :: Date,
+    stop  :: Date
+)
+    
+    ds   = NCDataset(datadir("wrf","grid.nc"))
+    lon  = ds["longitude"][:,:,1]
+    lat  = ds["latitude"][:,:,1]
+    close(ds)
+
+    dtvec = start : Day(1) : stop; ndt = length(dtvec)
+
+    ggrd = RegionGrid(geo,lon,lat)
+    lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findlast(ggrd.mask .== 1)[1]
+    lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findlast(ggrd.mask .== 1)[2]
+
+    nlon = lon2 - lon1 + 1
+    nlat = lat2 - lat1 + 1
+
+    if iso != ""; iso = "$(iso)_" end
+
+    tmp1 = zeros(Float32,nlat,8)
+    tmp2 = zeros(Float32,nlat,8)
+    tmp3 = zeros(Float32,nlon,8)
+    tmp4 = zeros(Float32,nlon,8)
+    qflx = zeros(8,ndt)
+
+    arc1 = haversine((lon[lon1,lat1],lat[lon1,lat1]),(lon[lon1,lat2],lat[lon1,lat2]))
+    arc2 = haversine((lon[lon2,lat1],lat[lon2,lat1]),(lon[lon2,lat2],lat[lon2,lat2]))
+    arc3 = haversine((lon[lon1,lat1],lat[lon1,lat1]),(lon[lon2,lat1],lat[lon2,lat1]))
+    arc4 = haversine((lon[lon1,lat2],lat[lon1,lat2]),(lon[lon2,lat2],lat[lon2,lat2]))
+
+    for idt in 1 : ndt
+
+        @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
+        flush(stderr)
+
+        ids = NCDataset(datadir("wrf","raw","2D","$(dtvec[idt]).nc"))
+
+        NCDatasets.load!(ids["$(iso)IWTX"].var,tmp1,lon1,lat1:lat2,:)
+        NCDatasets.load!(ids["$(iso)IWTX"].var,tmp2,lon2,lat1:lat2,:)
+        NCDatasets.load!(ids["$(iso)IWTY"].var,tmp3,lon1:lon2,lat1,:)
+        NCDatasets.load!(ids["$(iso)IWTY"].var,tmp4,lon1:lon2,lat2,:)
+        
+        qflx[:,idt] = dropdims(mean(tmp2,dims=1),dims=1) * arc2 .+ 
+                      dropdims(mean(tmp4,dims=1),dims=1) * arc4 .-
+                      dropdims(mean(tmp1,dims=1),dims=1) * arc1 .-
+                      dropdims(mean(tmp3,dims=1),dims=1) * arc3
+
+        close(ids)
+
+    end
+
+    mkpath(datadir("wrf","processed"))
+    fnc = datadir("wrf","processed","$(geo.ID)-$(iso)∇-daily.nc")
+    if isfile(fnc); rm(fnc,force=true) end
+
+    ds = NCDataset(fnc,"c")
+    ds.dim["date"] = ndt * 8
+
+    nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
+        "units"     => "hours since $(start) 00:00:00.0",
+        "long_name" => "time",
+        "calendar"  => "gregorian"
+    ))
+
+    ncvar = defVar(ds,"$(iso)∇",Float32,("date",),attrib=attrib=Dict(
+        "units" => "kg m**-2",
+        "long_name" => "Accumulated 3-hour Divergence (relative to SMOW)"
+    ))
+
+    nctime.var[:] = (collect(0 : (ndt*8 -1))) * 3
+    ncvar = qflx[:] * 4 / ((arc1+arc2)*(arc3+arc4)) * 3600 * 3
+
+    close(ds)
+
+end
+
 function wrfqbudget(
     geo   :: GeoRegion;
     iso   :: AbstractString = "",
