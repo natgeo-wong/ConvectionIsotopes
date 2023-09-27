@@ -162,12 +162,12 @@ function wrfqbudget(
         flush(stderr)
 
         ds1 = NCDataset(datadir("wrf","raw","2D","$(dtvec[idt]).nc"))
-        fncii = datadir("wrf","raw","2D","$(dtvec[ii]+Day(1))-e.nc")
+        fncii = datadir("wrf","raw","2D","$(dtvec[idt]+Day(1))-e.nc")
         if isfile(fncii)
             @info "$(now()) - ConvectionIsotopes - Tail end"
             ds2 = NCDataset(fncii)
         else
-            ds2 = NCDataset(datadir("wrf","raw","2D","$(dtvec[ii]+Day(1)).nc"))
+            ds2 = NCDataset(datadir("wrf","raw","2D","$(dtvec[idt]+Day(1)).nc"))
         end
 
         NCDatasets.load!(ds1["$(iso)RAINNC"].var,tmp1,lon1:lon2,lat1:lat2,:)
@@ -219,9 +219,9 @@ function wrfqbudget(
     ))
 
     nctime.var[:] = (collect(0 : (ndt*8 -1))) * 3
-    ncprcp.var[:] = prcp
-    ncevap.var[:] = evap
-    nctcwv.var[:] = tcwv
+    ncprcp.var[:] = prcp[:]
+    ncevap.var[:] = evap[:]
+    nctcwv.var[:] = tcwv[:]
 
     close(ds)
 
