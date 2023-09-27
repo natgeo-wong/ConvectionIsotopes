@@ -1,151 +1,127 @@
+using Distances
 using GeoRegions
 using NCDatasets
-using Printf
 using Statistics
 using Trapz
 
 include(srcdir("backend.jl"))
 
-function wrfqbudget(
-    wvar :: AbstractString,
-    geo  :: GeoRegion;
-    smooth = false,
-    smoothtime = 1
+function wrfqdiv(
+    wvar  :: AbstractString,
+    geo   :: GeoRegion;
+    start :: Date,
+    stop  :: Date
 )
     
-    ds   = NCDataset(datadir("wrf","3D","$(wvar)-daily.nc"))
-    lon  = ds["longitude"][:]
-    lat  = ds["latitude"][:]
-    nlvl = ds.dim["levels"]
-    ndt  = ds.dim["date"]; start = ds["time"][1]
+    ds   = NCDataset(datadir("wrf","raw","3D","$(start).nc"))
+    lon  = ds["XLONG"][:,:,1]; lat  = ds["XLAT"][:,:,1]
+    nlvl = size(ds[wvar])[3]
     attrib = Dict(ds[wvar].attrib)
-    attrib["units"] = "kg m**-2 s**-1 (if HDO or O18, relative to SMOW)"
+    attrib["units"] = "kg m**-2 (if HDO or O18, relative to SMOW)"
     close(ds)
 
+    dtvec = start : Day(1) : stop; ndt = length(dtvec)
+
     ggrd = RegionGrid(geo,lon,lat)
-    lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findlast(ggrd.mask .== 1)[1]
-    lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findlast(ggrd.mask .== 1)[2]
+    lon1 = findfirst(ggrd.mask .== 1)[1] - 1; lon2 = findlast(ggrd.mask .== 1)[1] + 1
+    lat1 = findfirst(ggrd.mask .== 1)[2] - 1; lat2 = findlast(ggrd.mask .== 1)[2] + 1
 
     nlon = lon2 - lon1
     nlat = lat2 - lat1
 
-    uarr = zeros(Float32,nlon+2,nlat+1,nlvl)
-    varr = zeros(Float32,nlon+1,nlat+2,nlvl)
+    uarr = zeros(Float32,nlon  ,nlat+1,nlvl)
+    varr = zeros(Float32,nlon+1,nlat  ,nlvl)
     qarr = zeros(Float32,nlon+1,nlat+1,nlvl)
     parr = zeros(Float32,nlon+1,nlat+1,nlvl)
     psfc = zeros(Float32,nlon+1,nlat+1)
-    qflx = zeros(ndt)
-
+    qflx = zeros(8,ndt)
 
     pds = NCDataset(datadir("wrf","3D","PB-daily.nc"))
     pbse = pds["PB"][lon1:lon2,lat1:lat2,:,1]
     close(pds)
 
-    if !smooth
-        uds = NCDataset(datadir("wrf","3D","U-daily.nc"))
-        vds = NCDataset(datadir("wrf","3D","V-daily.nc"))
-        qds = NCDataset(datadir("wrf","3D","$(wvar)-daily.nc"))
-        pds = NCDataset(datadir("wrf","3D","P-daily.nc"))
-        sds = NCDataset(datadir("wrf","2D","PSFC-daily.nc"))
-    else
-        smthstr = "smooth_$(@sprintf("%02d",smoothtime))days"
-        uds = NCDataset(datadir("wrf","3D","U-daily-$smthstr.nc"))
-        vds = NCDataset(datadir("wrf","3D","V-daily-$smthstr.nc"))
-        qds = NCDataset(datadir("wrf","3D","$(wvar)-daily-$smthstr.nc"))
-        pds = NCDataset(datadir("wrf","3D","P-daily-$smthstr.nc"))
-        sds = NCDataset(datadir("wrf","2D","PSFC-daily-$smthstr.nc"))
-    end
+    for idt in 1 : ndt
 
-    for ii in 1 : ndt
-
-        @info "$(now()) - ConvectionIsotopes - Extracting data for Day $ii of $ndt"
+        @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
         flush(stderr)
 
-        NCDatasets.load!(uds["U"].var,uarr,lon1:(lon2+1),lat1:lat2,:,ii)
-        NCDatasets.load!(vds["V"].var,varr,lon1:lon2,lat1:(lat2+1),:,ii)
-        NCDatasets.load!(qds[wvar].var,qarr,lon1:lon2,lat1:lat2,:,ii)
-        NCDatasets.load!(pds["P"].var,parr,lon1:lon2,lat1:lat2,:,ii)
-        NCDatasets.load!(sds["PSFC"].var,psfc,lon1:lon2,lat1:lat2,ii)
+        ds2 = NCDataset(datadir("wrf","raw","2D","$(dtvec[idt]).nc"))
+        ds3 = NCDataset(datadir("wrf","raw","3D","$(dtvec[idt]).nc"))
 
-        for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
-            parr[ilon,ilat,ilvl] += pbse[ilon,ilat,ilvl]
+        for ii = 1 : 8
+
+            NCDatasets.load!(ds3["U"].var,uarr,(lon1+1):lon2,lat1:lat2,:,ii)
+            NCDatasets.load!(ds3["V"].var,varr,lon1:lon2,(lat1+1):lat2,:,ii)
+            NCDatasets.load!(ds3[wvar].var,qarr,lon1:lon2,lat1:lat2,:,ii)
+            NCDatasets.load!(ds3["P"].var,parr,lon1:lon2,lat1:lat2,:,ii)
+            NCDatasets.load!(ds2["PSFC"].var,psfc,lon1:lon2,lat1:lat2,ii)
+
+            for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
+                parr[ilon,ilat,ilvl] += pbse[ilon,ilat,ilvl]
+            end
+
+            for ilat = 2 : nlat
+                qavg = dropdims(mean(qarr[1:2,ilat,:],dims=1),dims=1)
+                qlat = uarr[1,ilat,:] .* qavg
+                plat = parr[1,ilat,:]
+                qflx[ii,idt] -= trapz(vcat(psfc[1,ilat],plat,0),vcat(qlat[1],qlat,0))
+                qavg = dropdims(mean(qarr[nlon.+(0:1),ilat,:],dims=1),dims=1)
+                qlat = uarr[end,ilat,:] .* qavg
+                plat = parr[end,ilat,:]
+                qflx[ii,idt] += trapz(vcat(psfc[end,ilat],plat,0),vcat(qlat[1],qlat,0))
+            end
+
+            for ilon = 2 : nlon
+                qavg = dropdims(mean(qarr[ilon,1:2,:],dims=1),dims=1)
+                qlat = varr[ilon,1,:] .* qavg
+                plat = parr[ilon,1,:]
+                qflx[ii,idt] -= trapz(vcat(psfc[ilon,1],plat,0),vcat(qlat[1],qlat,0))
+                qavg = dropdims(mean(qarr[ilon,nlat.+(0:1),:],dims=1),dims=1)
+                qlat = varr[ilon,end,:] .* qavg
+                plat = parr[ilon,end,:]
+                qflx[ii,idt] += trapz(vcat(psfc[ilon,end],plat,0),vcat(qlat[1],qlat,0))
+            end
+
         end
 
-        for ilat = 2 : nlat
-            uavg = dropdims(mean(uarr[1:2,ilat,:],dims=1),dims=1)
-            qlat = qarr[1,ilat,:] .* uavg
-            plat = parr[1,ilat,:]
-            qflx[ii] += trapz(vcat(psfc[1,ilat],plat,0),vcat(0,qlat,0))
-            uavg = dropdims(mean(uarr[nlon.+(1:2),ilat,:],dims=1),dims=1)
-            qlat = qarr[end,ilat,:] .* uavg
-            plat = parr[end,ilat,:]
-            qflx[ii] -= trapz(vcat(psfc[end,ilat],plat,0),vcat(0,qlat,0))
-        end
-
-        for ilat = [1, nlat+1]
-            uavg = dropdims(mean(uarr[1:2,ilat,:],dims=1),dims=1)
-            qlat = qarr[1,ilat,:] .* uavg
-            plat = parr[1,ilat,:]
-            qflx[ii] += trapz(vcat(psfc[1,ilat],plat,0),vcat(0,qlat,0)) * 0.5
-            uavg = dropdims(mean(uarr[nlon.+(1:2),ilat,:],dims=1),dims=1)
-            qlat = qarr[end,ilat,:] .* uavg
-            plat = parr[end,ilat,:]
-            qflx[ii] -= trapz(vcat(psfc[end,ilat],plat,0),vcat(0,qlat,0)) * 0.5
-        end
-
-        for ilon = 2 : nlon
-            vavg = dropdims(mean(varr[ilon,1:2,:],dims=1),dims=1)
-            qlat = qarr[ilon,1,:] .* vavg
-            plat = parr[ilon,1,:]
-            qflx[ii] += trapz(vcat(psfc[ilon,1],plat,0),vcat(0,qlat,0))
-            vavg = dropdims(mean(varr[ilon,nlat.+(1:2),:],dims=1),dims=1)
-            qlat = qarr[ilon,end,:] .* vavg
-            plat = parr[ilon,end,:]
-            qflx[ii] -= trapz(vcat(psfc[ilon,end],plat,0),vcat(0,qlat,0))
-        end
-
-        for ilon = [1, nlon+1]
-            vavg = dropdims(mean(varr[ilon,1:2,:],dims=1),dims=1)
-            qlat = qarr[ilon,1,:] .* vavg
-            plat = parr[ilon,1,:]
-            qflx[ii] += trapz(vcat(psfc[ilon,1],plat,0),vcat(0,qlat,0)) * 0.5
-            vavg = dropdims(mean(varr[ilon,nlat.+(1:2),:],dims=1),dims=1)
-            qlat = qarr[ilon,end,:] .* vavg
-            plat = parr[ilon,end,:]
-            qflx[ii] -= trapz(vcat(psfc[ilon,end],plat,0),vcat(0,qlat,0)) * 0.5
-        end
+        close(ds2)
+        close(ds3)
 
     end
-
-    close(uds)
-    close(vds)
-    close(qds)
-    close(pds)
-    close(sds)
 
     mkpath(datadir("wrf","processed"))
-    if !smooth
-        fnc = datadir("wrf","processed","$(geo.ID)-FLUX_$(wvar)-daily.nc")
-    else
-        smthstr = "smooth_$(@sprintf("%02d",smoothtime))days"
-        fnc = datadir("wrf","processed","$(geo.ID)-FLUX_$(wvar)-daily-$smthstr.nc")
-    end
-
+    fnc = datadir("wrf","processed","$(geo.ID)-∇_$(wvar)-daily.nc")
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")
-    ds.dim["date"]      = ndt
+    ds.dim["date"] = ndt * 8
 
     nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
-        "units"     => "days since $(start) 00:00:00.0",
+        "units"     => "hours since $(start) 00:00:00.0",
         "long_name" => "time",
         "calendar"  => "gregorian"
     ))
 
-    ncvar = defVar(ds,"FLUX_$(wvar)",Float32,("date",),attrib=attrib)
+    ncvar = defVar(ds,"∇_$(wvar)",Float32,("date",),attrib=attrib)
 
-    nctime.var[:] = collect(0 : (ndt-1))
-    ncvar[:] = qflx / 9.81 / 1000 * 4 / 110e3
+    lonA = (lon[lon1,lat1]+lon[lon1,lat1+1]+lon[lon1+1,lat1]+lon[lon1+1,lat1+1]) / 4
+    lonB = (lon[lon1,lat2]+lon[lon1,lat2-1]+lon[lon1+1,lat2]+lon[lon1+1,lat2-1]) / 4
+    lonC = (lon[lon2,lat2]+lon[lon2,lat2-1]+lon[lon2-1,lat2]+lon[lon2-1,lat2-1]) / 4
+    lonD = (lon[lon2,lat1]+lon[lon2,lat1+1]+lon[lon2-1,lat1]+lon[lon2-1,lat1+1]) / 4
+
+    latA = (lat[lon1,lat1]+lat[lon1,lat1+1]+lat[lon1+1,lat1]+lat[lon1+1,lat1+1]) / 4
+    latB = (lat[lon1,lat2]+lat[lon1,lat2-1]+lat[lon1+1,lat2]+lat[lon1+1,lat2-1]) / 4
+    latC = (lat[lon2,lat2]+lat[lon2,lat2-1]+lat[lon2-1,lat2]+lat[lon2-1,lat2-1]) / 4
+    latD = (lat[lon2,lat1]+lat[lon2,lat1+1]+lat[lon2-1,lat1]+lat[lon2-1,lat1+1]) / 4
+
+    nctime.var[:] = (collect(0 : (ndt*8 -1))) * 3
+    ncvar[:] = qflx[:] / 9.81 / 1000 * 3600 * 3 * (
+        haversine((lonA,latA),(lonB,latB)) + haversine((lonB,latB),(lonC,latC)) +
+        haversine((lonC,latC),(lonD,latD)) + haversine((lonD,latD),(lonA,latA))
+    ) / (
+        (haversine((lonA,latA),(lonB,latB)) + haversine((lonC,latC),(lonD,latD))) *
+        (haversine((lonB,latB),(lonC,latC)) + haversine((lonD,latD),(lonA,latA)))
+    ) * 4
 
     close(ds)
 

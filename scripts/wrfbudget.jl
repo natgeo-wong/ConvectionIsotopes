@@ -5,4 +5,4 @@ using Dates
 
 include(srcdir("wrfbudget.jl"))
 
-wrfqbudget("QVAPOR",GeoRegion("OTREC_SAN"))
+wrfqdiv("QVAPOR",GeoRegion("OTREC_SAN"),start=Date(2019,8),stop=Date(2019,12,30))
