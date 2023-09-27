@@ -126,3 +126,103 @@ function wrfqdiv(
     close(ds)
 
 end
+
+function wrfqbudget(
+    geo   :: GeoRegion;
+    iso   :: AbstractString = "",
+    start :: Date,
+    stop  :: Date
+)
+    
+    ds   = NCDataset(datadir("wrf","grid.nc"))
+    lon  = ds["longitude"][:,:,1]
+    lat  = ds["latitude"][:,:,1]
+    close(ds)
+
+    dtvec = start : Day(1) : stop; ndt = length(dtvec)
+
+    ggrd = RegionGrid(geo,lon,lat)
+    lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findlast(ggrd.mask .== 1)[1]
+    lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findlast(ggrd.mask .== 1)[2]
+
+    nlon = lon2 - lon1 + 1
+    nlat = lat2 - lat1 + 1
+
+    if iso != ""; iso = "$(iso)_" end
+
+    tmp1 = zeros(Float32,nlon,nlat,8)
+    tmp2 = zeros(Float32,nlon,nlat)
+    prcp = zeros(8,ndt)
+    evap = zeros(8,ndt)
+    tcwv = zeros(8,ndt)
+
+    for idt in 1 : ndt
+
+        @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
+        flush(stderr)
+
+        ds1 = NCDataset(datadir("wrf","raw","2D","$(dtvec[idt]).nc"))
+        fncii = datadir("wrf","raw","2D","$(dtvec[ii]+Day(1))-e.nc")
+        if isfile(fncii)
+            @info "$(now()) - ConvectionIsotopes - Tail end"
+            ds2 = NCDataset(fncii)
+        else
+            ds2 = NCDataset(datadir("wrf","raw","2D","$(dtvec[ii]+Day(1)).nc"))
+        end
+
+        NCDatasets.load!(ds1["$(iso)RAINNC"].var,tmp1,lon1:lon2,lat1:lat2,:)
+        NCDatasets.load!(ds2["$(iso)RAINNC"].var,tmp2,lon1:lon2,lat1:lat2,1)
+        tmp3 = dropdims(mean(tmp1,dims=(1,2)),dims=(1,2))
+        tmp4 = mean(tmp2)
+        prcp[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
+
+        NCDatasets.load!(ds1["$(iso)QFX"].var,tmp1,lon1:lon2,lat1:lat2,:)
+        evap[:,idt] = dropdims(mean(tmp1,dims=(1,2)),dims=(1,2))
+
+        NCDatasets.load!(ds1["$(iso)VAPORWP"].var,tmp1,lon1:lon2,lat1:lat2,:)
+        NCDatasets.load!(ds2["$(iso)VAPORWP"].var,tmp2,lon1:lon2,lat1:lat2,1)
+        tmp3 = dropdims(mean(tmp1,dims=(1,2)),dims=(1,2))
+        tmp4 = mean(tmp2)
+        tcwv[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
+
+        close(ds1)
+        close(ds2)
+
+    end
+
+    mkpath(datadir("wrf","processed"))
+    fnc = datadir("wrf","processed","$(geo.ID)-$(iso)QBUDGET-daily.nc")
+    if isfile(fnc); rm(fnc,force=true) end
+
+    ds = NCDataset(fnc,"c")
+    ds.dim["date"] = ndt * 8
+
+    nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
+        "units"     => "hours since $(start) 00:00:00.0",
+        "long_name" => "time",
+        "calendar"  => "gregorian"
+    ))
+
+    ncprcp = defVar(ds,"$(iso)P",Float32,("date",),attrib=Dict(
+        "units" => "kg m**-2",
+        "long_name" => "Accumulated 3-hour Precipitation"
+    ))
+
+    ncevap = defVar(ds,"$(iso)E",Float32,("date",),attrib=Dict(
+        "units" => "kg m**-2 s**-1",
+        "long_name" => "Evaporation Rate"
+    ))
+
+    nctcwv = defVar(ds,"$(iso)ΔWVP",Float32,("date",),attrib=Dict(
+        "units" => "kg m**-2",
+        "long_name" => "Change in Water Vapor Path"
+    ))
+
+    nctime.var[:] = (collect(0 : (ndt*8 -1))) * 3
+    ncprcp.var[:] = prcp
+    ncevap.var[:] = evap
+    nctcwv.var[:] = tcwv
+
+    close(ds)
+
+end
