@@ -1,15 +1,13 @@
-using Distances
-using GeoRegions
-using NCDatasets
-using Statistics
-using Trapz
+using DrWatson
+@quickactivate "ConvectionIsotopes"
 
-include(srcdir("backend.jl"))
+using NCDatasets
 
 function wrfgrid()
     
     ds   = NCDataset(datadir("wrf","raw","2D","2019-08-01.nc"))
-    lon   = ds["XLONG"][:,:,1];   lat   = ds["XLAT"][:,:,1]
+    lon   = ds["XLONG"][:,:,1]; nlon = size(lon,1)
+    lat   = ds["XLAT"][:,:,1];  nlat = size(lat,2)
     lon_u = ds["XLONG_U"][:,:,1]; lat_u = ds["XLAT_U"][:,:,1]
     lon_v = ds["XLONG_V"][:,:,1]; lat_v = ds["XLAT_V"][:,:,1]
     close(ds)
@@ -60,3 +58,5 @@ function wrfgrid()
 	close(ds)
 
 end
+
+wrfgrid()
