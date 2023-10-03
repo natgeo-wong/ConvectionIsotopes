@@ -64,22 +64,34 @@ function wrfqdiv(
                 qavg = dropdims(mean(qarr[1:2,ilat,:],dims=1),dims=1)
                 qlat = uarr[1,ilat,:] .* qavg
                 plat = parr[1,ilat,:]
-                qflx[ii,idt] -= trapz(vcat(psfc[1,ilat],plat,0),vcat(qlat[1],qlat,0))
+                qflx[ii,idt] -= trapz(
+                    reverse(vcat(psfc[1,ilat],plat,0)),
+                    reverse(vcat(qlat[1],qlat,0))
+                )
                 qavg = dropdims(mean(qarr[nlon.+(0:1),ilat,:],dims=1),dims=1)
                 qlat = uarr[end,ilat,:] .* qavg
                 plat = parr[end,ilat,:]
-                qflx[ii,idt] += trapz(vcat(psfc[end,ilat],plat,0),vcat(qlat[1],qlat,0))
+                qflx[ii,idt] += trapz(
+                    reverse(vcat(psfc[end,ilat],plat,0)),
+                    reverse(vcat(qlat[1],qlat,0))
+                )
             end
 
             for ilon = 2 : nlon
                 qavg = dropdims(mean(qarr[ilon,1:2,:],dims=1),dims=1)
                 qlat = varr[ilon,1,:] .* qavg
                 plat = parr[ilon,1,:]
-                qflx[ii,idt] -= trapz(vcat(psfc[ilon,1],plat,0),vcat(qlat[1],qlat,0))
+                qflx[ii,idt] -= trapz(
+                    reverse(vcat(psfc[ilon,1],plat,0)),
+                    reverse(vcat(qlat[1],qlat,0))
+                )
                 qavg = dropdims(mean(qarr[ilon,nlat.+(0:1),:],dims=1),dims=1)
                 qlat = varr[ilon,end,:] .* qavg
                 plat = parr[ilon,end,:]
-                qflx[ii,idt] += trapz(vcat(psfc[ilon,end],plat,0),vcat(qlat[1],qlat,0))
+                qflx[ii,idt] += trapz(
+                    reverse(vcat(psfc[ilon,end],plat,0)),
+                    reverse(vcat(qlat[1],qlat,0))
+                )
             end
 
         end
@@ -115,7 +127,7 @@ function wrfqdiv(
     latD = (lat[lon2,lat1]+lat[lon2,lat1+1]+lat[lon2-1,lat1]+lat[lon2-1,lat1+1]) / 4
 
     nctime.var[:] = (collect(0 : (ndt*8 -1))) * 3
-    ncvar[:] = qflx[:] / 9.81 / 1000 * 3600 * 3 * (
+    ncvar[:] = qflx[:] / 9.81 * 3600 * 3 * (
         haversine((lonA,latA),(lonB,latB)) + haversine((lonB,latB),(lonC,latC)) +
         haversine((lonC,latC),(lonD,latD)) + haversine((lonD,latD),(lonA,latA))
     ) / (
@@ -201,7 +213,7 @@ function wrfqdiv2(
     ))
 
     nctime.var[:] = (collect(0 : (ndt*8 -1))) * 3
-    ncvar = qflx[:] * 4 / ((arc1+arc2)*(arc3+arc4)) * 3600 * 3
+    ncvar[:] = qflx[:] * 4 / ((arc1+arc2)*(arc3+arc4)) * 3600 * 3
 
     close(ds)
 
@@ -299,9 +311,9 @@ function wrfqbudget(
     ))
 
     nctime.var[:] = (collect(0 : (ndt*8 -1))) * 3
-    ncprcp.var[:] = prcp[:]
-    ncevap.var[:] = evap[:]
-    nctcwv.var[:] = tcwv[:]
+    ncprcp[:] = prcp[:]
+    ncevap[:] = evap[:]
+    nctcwv[:] = tcwv[:]
 
     close(ds)
 
