@@ -56,7 +56,7 @@ function wrfqdiv(
             NCDatasets.load!(ds3["P"].var,parr,lon1:lon2,lat1:lat2,:,ii)
             NCDatasets.load!(ds2["PSFC"].var,psfc,lon1:lon2,lat1:lat2,ii)
 
-            for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
+            for ilvl = 1 : nlvl, ilat = 1 : (nlat+1), ilon = 1 : (nlon+1)
                 parr[ilon,ilat,ilvl] += pbse[ilon,ilat,ilvl]
             end
 
