@@ -1,10 +1,164 @@
 using Distances
 using GeoRegions
 using NCDatasets
-using Statistics
+using StatsBase
 using Trapz
 
 include(srcdir("backend.jl"))
+
+function wrfqbudget(
+    geo   :: GeoRegion;
+    iso   :: AbstractString = "",
+    start :: Date,
+    stop  :: Date
+)
+    
+    ds   = NCDataset(datadir("wrf","grid.nc"))
+    lon  = ds["longitude"][:,:,1]
+    lat  = ds["latitude"][:,:,1]
+    close(ds)
+
+    dtvec = start : Day(1) : stop; ndt = length(dtvec)
+
+    ggrd = RegionGrid(geo,lon,lat)
+    lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findlast(ggrd.mask .== 1)[1]
+    lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findlast(ggrd.mask .== 1)[2]
+
+    nlon = lon2 - lon1 + 1
+    nlat = lat2 - lat1 + 1
+
+    wgts = ones(nlon,nlat)
+    wgts[1,:] *= 0.5; wgts[end,:] *= 0.5
+    wgts[:,1] *= 0.5; wgts[:,end] *= 0.5
+    wgtm = sum(wgts)
+    wgt1 = sum(wgts[1,:])
+    wgt2 = sum(wgts[end,:])
+    wgt3 = sum(wgts[:,1])
+    wgt4 = sum(wgts[:,end])
+    wgtv = weights(wgts)
+
+    if iso != ""; iso = "$(iso)_" end
+
+    tmp1      = zeros(Float32,nlon,nlat,8)
+    tmp2      = zeros(Float32,nlon,nlat)
+    tmpqflx_1 = zeros(Float32,nlat,8)
+    tmpqflx_2 = zeros(Float32,nlat,8)
+    tmpqflx_3 = zeros(Float32,nlon,8)
+    tmpqflx_4 = zeros(Float32,nlon,8)
+    
+    prcp = zeros(8,ndt)
+    evap = zeros(8,ndt)
+    tcwv = zeros(8,ndt)
+    qflx = zeros(8,ndt)
+
+    arc1 = haversine((lon[lon1,lat1],lat[lon1,lat1]),(lon[lon1,lat2],lat[lon1,lat2]))
+    arc2 = haversine((lon[lon2,lat1],lat[lon2,lat1]),(lon[lon2,lat2],lat[lon2,lat2]))
+    arc3 = haversine((lon[lon1,lat1],lat[lon1,lat1]),(lon[lon2,lat1],lat[lon2,lat1]))
+    arc4 = haversine((lon[lon1,lat2],lat[lon1,lat2]),(lon[lon2,lat2],lat[lon2,lat2]))
+
+    for idt in 1 : ndt
+
+        @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
+        flush(stderr)
+
+        ds1 = NCDataset(datadir("wrf","raw","2D","$(dtvec[idt]).nc"))
+        fncii = datadir("wrf","raw","2D","$(dtvec[idt]+Day(1))-e.nc")
+        if isfile(fncii)
+            @info "$(now()) - ConvectionIsotopes - Tail end"
+            ds2 = NCDataset(fncii)
+        else
+            ds2 = NCDataset(datadir("wrf","raw","2D","$(dtvec[idt]+Day(1)).nc"))
+        end
+
+        NCDatasets.load!(ds1["$(iso)RAINNC"].var,tmp1,lon1:lon2,lat1:lat2,:)
+        NCDatasets.load!(ds2["$(iso)RAINNC"].var,tmp2,lon1:lon2,lat1:lat2,1)
+        for ii = 1 : 8, ilat = 1 : nlat, ilon = 1 : nlon
+            tmp1[ilon,ilat,ii] *= wgts[ilon,ilat]
+        end
+        tmp3 = dropdims(sum(tmp1,dims=(1,2)),dims=(1,2)) / wgtm
+        tmp4 = mean(tmp2,wgtv)
+        prcp[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
+
+        NCDatasets.load!(ds1["$(iso)QFX"].var,tmp1,lon1:lon2,lat1:lat2,:)
+        for ii = 1 : 8, ilat = 1 : nlat, ilon = 1 : nlon
+            tmp1[ilon,ilat,ii] *= wgts[ilon,ilat]
+        end
+        evap[:,idt] = dropdims(sum(tmp1,dims=(1,2)),dims=(1,2)) / wgtm
+
+        NCDatasets.load!(ds1["$(iso)VAPORWP"].var,tmp1,lon1:lon2,lat1:lat2,:)
+        NCDatasets.load!(ds2["$(iso)VAPORWP"].var,tmp2,lon1:lon2,lat1:lat2,1)
+        for ii = 1 : 8, ilat = 1 : nlat, ilon = 1 : nlon
+            tmp1[ilon,ilat,ii] *= wgts[ilon,ilat]
+        end
+        tmp3 = dropdims(sum(tmp1,dims=(1,2)),dims=(1,2)) / wgtm
+        tmp4 = mean(tmp2,wgtv)
+        tcwv[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
+
+        NCDatasets.load!(ds2["$(iso)IWTX"].var,tmpqflx_1,lon1,lat1:lat2,:)
+        NCDatasets.load!(ds2["$(iso)IWTX"].var,tmpqflx_2,lon2,lat1:lat2,:)
+        NCDatasets.load!(ds2["$(iso)IWTY"].var,tmpqflx_3,lon1:lon2,lat1,:)
+        NCDatasets.load!(ds2["$(iso)IWTY"].var,tmpqflx_4,lon1:lon2,lat2,:)
+        for ii = 1 : 8, ilat = 1 : nlat
+            tmpqflx_1[ilat,ii] *= wgts[1,ilat]
+            tmpqflx_2[ilat,ii] *= wgts[end,ilat]
+        end
+        for ii = 1 : 8, ilon = 1 : nlon
+            tmpqflx_1[ilon,ii] *= wgts[ilon,1]
+            tmpqflx_2[ilon,ii] *= wgts[ilon,end]
+        end
+        
+        qflx[:,idt] = dropdims(sum(tmpqflx_2,dims=1),dims=1) / wgt2 * arc2 .+ 
+                      dropdims(sum(tmpqflx_4,dims=1),dims=1) / wgt4 * arc4 .-
+                      dropdims(sum(tmpqflx_1,dims=1),dims=1) / wgt1 * arc1 .-
+                      dropdims(sum(tmpqflx_3,dims=1),dims=1) / wgt3 * arc3
+
+        close(ds1)
+        close(ds2)
+
+    end
+
+    mkpath(datadir("wrf","processed"))
+    fnc = datadir("wrf","processed","$(geo.ID)-$(iso)QBUDGET-daily.nc")
+    if isfile(fnc); rm(fnc,force=true) end
+
+    ds = NCDataset(fnc,"c")
+    ds.dim["date"] = ndt * 8
+
+    nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
+        "units"     => "hours since $(start) 00:00:00.0",
+        "long_name" => "time",
+        "calendar"  => "gregorian"
+    ))
+
+    ncprcp = defVar(ds,"$(iso)P",Float32,("date",),attrib=Dict(
+        "units" => "kg m**-2",
+        "long_name" => "Accumulated 3-hour Precipitation"
+    ))
+
+    ncevap = defVar(ds,"$(iso)E",Float32,("date",),attrib=Dict(
+        "units" => "kg m**-2 s**-1",
+        "long_name" => "Evaporation Rate"
+    ))
+
+    nctcwv = defVar(ds,"$(iso)ΔWVP",Float32,("date",),attrib=Dict(
+        "units" => "kg m**-2",
+        "long_name" => "Change in Water Vapor Path"
+    ))
+
+    ncqflx = defVar(ds,"$(iso)∇",Float32,("date",),attrib=Dict(
+        "units"     => "kg m**-2 s**-1",
+        "long_name" => "Divergence"
+    ))
+
+    nctime.var[:] = (collect(0 : (ndt*8 -1))) * 3
+    ncprcp[:] = prcp[:]
+    ncevap[:] = evap[:]
+    nctcwv[:] = tcwv[:]
+    ncqflx[:] = qflx[:] * 4 / ((arc2+arc4)*(arc1+arc3))
+
+    close(ds)
+
+end
 
 function wrfqdiv(
     wvar  :: AbstractString,
@@ -134,86 +288,6 @@ function wrfqdiv(
         (haversine((lonA,latA),(lonB,latB)) + haversine((lonC,latC),(lonD,latD))) *
         (haversine((lonB,latB),(lonC,latC)) + haversine((lonD,latD),(lonA,latA)))
     ) * 4
-
-    close(ds)
-
-end
-
-function wrfqdiv2(
-    geo   :: GeoRegion;
-    iso   :: AbstractString = "",
-    start :: Date,
-    stop  :: Date
-)
-    
-    ds   = NCDataset(datadir("wrf","grid.nc"))
-    lon  = ds["longitude"][:,:,1]
-    lat  = ds["latitude"][:,:,1]
-    close(ds)
-
-    dtvec = start : Day(1) : stop; ndt = length(dtvec)
-
-    ggrd = RegionGrid(geo,lon,lat)
-    lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findlast(ggrd.mask .== 1)[1]
-    lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findlast(ggrd.mask .== 1)[2]
-
-    nlon = lon2 - lon1 + 1
-    nlat = lat2 - lat1 + 1
-
-    if iso != ""; iso = "$(iso)_" end
-
-    tmp1 = zeros(Float32,nlat,8)
-    tmp2 = zeros(Float32,nlat,8)
-    tmp3 = zeros(Float32,nlon,8)
-    tmp4 = zeros(Float32,nlon,8)
-    qflx = zeros(8,ndt)
-
-    arc1 = haversine((lon[lon1,lat1],lat[lon1,lat1]),(lon[lon1,lat2],lat[lon1,lat2]))
-    arc2 = haversine((lon[lon2,lat1],lat[lon2,lat1]),(lon[lon2,lat2],lat[lon2,lat2]))
-    arc3 = haversine((lon[lon1,lat1],lat[lon1,lat1]),(lon[lon2,lat1],lat[lon2,lat1]))
-    arc4 = haversine((lon[lon1,lat2],lat[lon1,lat2]),(lon[lon2,lat2],lat[lon2,lat2]))
-
-    for idt in 1 : ndt
-
-        @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
-        flush(stderr)
-
-        ids = NCDataset(datadir("wrf","raw","2D","$(dtvec[idt]).nc"))
-
-        NCDatasets.load!(ids["$(iso)IWTX"].var,tmp1,lon1,lat1:lat2,:)
-        NCDatasets.load!(ids["$(iso)IWTX"].var,tmp2,lon2,lat1:lat2,:)
-        NCDatasets.load!(ids["$(iso)IWTY"].var,tmp3,lon1:lon2,lat1,:)
-        NCDatasets.load!(ids["$(iso)IWTY"].var,tmp4,lon1:lon2,lat2,:)
-        
-        qflx[:,idt] = dropdims(mean(tmp2,dims=1),dims=1) * arc2 .+ 
-                      dropdims(mean(tmp4,dims=1),dims=1) * arc4 .-
-                      dropdims(mean(tmp1,dims=1),dims=1) * arc1 .-
-                      dropdims(mean(tmp3,dims=1),dims=1) * arc3
-
-        close(ids)
-
-    end
-
-    mkpath(datadir("wrf","processed"))
-    fnc = datadir("wrf","processed","$(geo.ID)-$(iso)∇-daily.nc")
-    if isfile(fnc); rm(fnc,force=true) end
-
-    ds = NCDataset(fnc,"c")
-    ds.dim["date"] = ndt * 8
-
-    nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
-        "units"     => "hours since $(start) 00:00:00.0",
-        "long_name" => "time",
-        "calendar"  => "gregorian"
-    ))
-
-    ncvar = defVar(ds,"$(iso)∇",Float32,("date",),attrib=attrib=Dict(
-        "units" => "kg m**-2",
-        "long_name" => "Accumulated 3-hour Divergence (relative to SMOW)"
-    ))
-
-    nctime.var[:] = (collect(0 : (ndt*8 -1))) * 3
-    ncvar[:] = qflx[:] * 4 / ((arc1+arc2)*(arc3+arc4)) * 3600 * 3
 
     close(ds)
 
@@ -367,106 +441,6 @@ function wrfqdivvsiwt(;
     ncvar_iwtywrf[:] = reshape(qflxwv,nlon,nlat,:)
     ncvar_iwtxclc[:] = reshape(qflx_u,nlon,nlat,:)
     ncvar_iwtyclc[:] = reshape(qflx_v,nlon,nlat,:)
-
-    close(ds)
-
-end
-
-function wrfqbudget(
-    geo   :: GeoRegion;
-    iso   :: AbstractString = "",
-    start :: Date,
-    stop  :: Date
-)
-    
-    ds   = NCDataset(datadir("wrf","grid.nc"))
-    lon  = ds["longitude"][:,:,1]
-    lat  = ds["latitude"][:,:,1]
-    close(ds)
-
-    dtvec = start : Day(1) : stop; ndt = length(dtvec)
-
-    ggrd = RegionGrid(geo,lon,lat)
-    lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findlast(ggrd.mask .== 1)[1]
-    lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findlast(ggrd.mask .== 1)[2]
-
-    nlon = lon2 - lon1 + 1
-    nlat = lat2 - lat1 + 1
-
-    if iso != ""; iso = "$(iso)_" end
-
-    tmp1 = zeros(Float32,nlon,nlat,8)
-    tmp2 = zeros(Float32,nlon,nlat)
-    prcp = zeros(8,ndt)
-    evap = zeros(8,ndt)
-    tcwv = zeros(8,ndt)
-
-    for idt in 1 : ndt
-
-        @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
-        flush(stderr)
-
-        ds1 = NCDataset(datadir("wrf","raw","2D","$(dtvec[idt]).nc"))
-        fncii = datadir("wrf","raw","2D","$(dtvec[idt]+Day(1))-e.nc")
-        if isfile(fncii)
-            @info "$(now()) - ConvectionIsotopes - Tail end"
-            ds2 = NCDataset(fncii)
-        else
-            ds2 = NCDataset(datadir("wrf","raw","2D","$(dtvec[idt]+Day(1)).nc"))
-        end
-
-        NCDatasets.load!(ds1["$(iso)RAINNC"].var,tmp1,lon1:lon2,lat1:lat2,:)
-        NCDatasets.load!(ds2["$(iso)RAINNC"].var,tmp2,lon1:lon2,lat1:lat2,1)
-        tmp3 = dropdims(mean(tmp1,dims=(1,2)),dims=(1,2))
-        tmp4 = mean(tmp2)
-        prcp[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
-
-        NCDatasets.load!(ds1["$(iso)QFX"].var,tmp1,lon1:lon2,lat1:lat2,:)
-        evap[:,idt] = dropdims(mean(tmp1,dims=(1,2)),dims=(1,2))
-
-        NCDatasets.load!(ds1["$(iso)VAPORWP"].var,tmp1,lon1:lon2,lat1:lat2,:)
-        NCDatasets.load!(ds2["$(iso)VAPORWP"].var,tmp2,lon1:lon2,lat1:lat2,1)
-        tmp3 = dropdims(mean(tmp1,dims=(1,2)),dims=(1,2))
-        tmp4 = mean(tmp2)
-        tcwv[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
-
-        close(ds1)
-        close(ds2)
-
-    end
-
-    mkpath(datadir("wrf","processed"))
-    fnc = datadir("wrf","processed","$(geo.ID)-$(iso)QBUDGET-daily.nc")
-    if isfile(fnc); rm(fnc,force=true) end
-
-    ds = NCDataset(fnc,"c")
-    ds.dim["date"] = ndt * 8
-
-    nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
-        "units"     => "hours since $(start) 00:00:00.0",
-        "long_name" => "time",
-        "calendar"  => "gregorian"
-    ))
-
-    ncprcp = defVar(ds,"$(iso)P",Float32,("date",),attrib=Dict(
-        "units" => "kg m**-2",
-        "long_name" => "Accumulated 3-hour Precipitation"
-    ))
-
-    ncevap = defVar(ds,"$(iso)E",Float32,("date",),attrib=Dict(
-        "units" => "kg m**-2 s**-1",
-        "long_name" => "Evaporation Rate"
-    ))
-
-    nctcwv = defVar(ds,"$(iso)ΔWVP",Float32,("date",),attrib=Dict(
-        "units" => "kg m**-2",
-        "long_name" => "Change in Water Vapor Path"
-    ))
-
-    nctime.var[:] = (collect(0 : (ndt*8 -1))) * 3
-    ncprcp[:] = prcp[:]
-    ncevap[:] = evap[:]
-    nctcwv[:] = tcwv[:]
 
     close(ds)
 
