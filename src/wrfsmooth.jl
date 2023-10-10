@@ -50,7 +50,7 @@ function wrf3Dsmooth(
 			for ismth = 1 .+ (0 : buffer*2)
 				smth[ismth] = oarr[ilon,ilat,ilvl,ismth] * weights[ismth]
 			end
-			narr[ilon,ilat,ilvl,ii] = Float32(mean(smth))
+			narr[ilon,ilat,ilvl,ii] = Float32(sum(smth))
 		end
 
 	end
@@ -123,7 +123,7 @@ function wrf2Dsmooth(
 			for ismth = 1 .+ (0 : buffer*2)
 				smth[ismth] = oarr[ilon,ilat,ismth] * weights[ismth]
 			end
-			narr[ilon,ilat,ii] = Float32(mean(smth))
+			narr[ilon,ilat,ii] = Float32(sum(smth))
 		end
 
 	end
