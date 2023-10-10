@@ -103,8 +103,8 @@ function wrfqbudget(
             tmpqflx_2[ilat,ii] *= wgts[end,ilat]
         end
         for ii = 1 : 8, ilon = 1 : nlon
-            tmpqflx_1[ilon,ii] *= wgts[ilon,1]
-            tmpqflx_2[ilon,ii] *= wgts[ilon,end]
+            tmpqflx_3[ilon,ii] *= wgts[ilon,1]
+            tmpqflx_4[ilon,ii] *= wgts[ilon,end]
         end
         
         qflx[:,idt] = dropdims(sum(tmpqflx_2,dims=1),dims=1) / wgt2 * arc2 .+ 
