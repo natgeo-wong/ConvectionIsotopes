@@ -104,10 +104,10 @@ function wrfqbudget(
         tmp4 = mean(tmp2,wgtv)
         tcwv[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
 
-        NCDatasets.load!(ds2["$(iso)IWTX"].var,tmpqflx_1,lon1,lat1:lat2,:)
-        NCDatasets.load!(ds2["$(iso)IWTX"].var,tmpqflx_2,lon2,lat1:lat2,:)
-        NCDatasets.load!(ds2["$(iso)IWTY"].var,tmpqflx_3,lon1:lon2,lat1,:)
-        NCDatasets.load!(ds2["$(iso)IWTY"].var,tmpqflx_4,lon1:lon2,lat2,:)
+        NCDatasets.load!(ds1["$(iso)IWTX"].var,tmpqflx_1,lon1,lat1:lat2,:)
+        NCDatasets.load!(ds1["$(iso)IWTX"].var,tmpqflx_2,lon2,lat1:lat2,:)
+        NCDatasets.load!(ds1["$(iso)IWTY"].var,tmpqflx_3,lon1:lon2,lat1,:)
+        NCDatasets.load!(ds1["$(iso)IWTY"].var,tmpqflx_4,lon1:lon2,lat2,:)
         for ii = 1 : 8, ilat = 1 : nlat
             tmpqflx_1[ilat,ii] *= wgts[1,ilat]
             tmpqflx_2[ilat,ii] *= wgts[end,ilat]
