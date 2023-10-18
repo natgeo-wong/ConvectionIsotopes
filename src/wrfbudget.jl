@@ -14,15 +14,25 @@ function wrfqbudget(
 )
     
     ds   = NCDataset(datadir("wrf","grid.nc"))
-    lon  = ds["longitude"][:,:,1]
-    lat  = ds["latitude"][:,:,1]
+    lon  = ds["longitude"][:]
+    lat  = ds["latitude"][:]
     close(ds)
 
     dtvec = start : Day(1) : stop; ndt = length(dtvec)
 
     ggrd = RegionGrid(geo,lon,lat)
-    lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findlast(ggrd.mask .== 1)[1]
-    lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findlast(ggrd.mask .== 1)[2]
+    apnt = findall(ggrd.mask .== 1)
+    npnt = length(apnt)
+    lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findfirst(ggrd.mask .== 1)[1]
+    lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findfirst(ggrd.mask .== 1)[2]
+
+    for ipnt = 2 : npnt
+        ilon = apnt[ipnt][1]; ilat = apnt[ipnt][2]
+        if ilon < lon1; lon1 = ilon; end
+        if ilon > lon2; lon2 = ilon; end
+        if ilat < lat1; lat1 = ilat; end
+        if ilat > lat2; lat2 = ilat; end
+    end
 
     nlon = lon2 - lon1 + 1
     nlat = lat2 - lat1 + 1
