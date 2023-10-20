@@ -142,8 +142,8 @@ function wrfqbudget(
             tmpqflx_8[ilon] *= wgts[ilon,end]
         end
         
-        tmp4 = sum(tmpqflx_2) / wgt2 * arc2 .+ sum(tmpqflx_4) / wgt4 * arc4 .-
-               sum(tmpqflx_1) / wgt1 * arc1 .- sum(tmpqflx_3) / wgt3 * arc3
+        tmp4 = sum(tmpqflx_6) / wgt2 * arc2 .+ sum(tmpqflx_8) / wgt4 * arc4 .-
+               sum(tmpqflx_5) / wgt1 * arc1 .- sum(tmpqflx_7) / wgt3 * arc3
 
         qflx[:,idt] = (vcat(tmp3[2:end],tmp4) .+ tmp3) / 2
 
