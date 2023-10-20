@@ -239,8 +239,10 @@ for istn = 1 : 12
 	end
 	RectRegion(
 		"OTREC_STN$(@sprintf("%02d",istn))","OTREC",
-		"Daily Station $(istn)",
-		[infody[istn,3]+0.5,infody[istn,3]-0.5,infody[istn,2]+0.5,infody[istn,2]-0.5]
+		"Daily Station $(istn)",[
+			infody[istn,3]+0.5,infody[istn,3]-0.5,
+			infody[istn,2]+0.5,infody[istn,2]-0.5
+		]
 	)
 	
 end
