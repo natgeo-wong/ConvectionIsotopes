@@ -55,6 +55,10 @@ function wrfqbudget(
     tmpqflx_2 = zeros(Float32,nlat,8)
     tmpqflx_3 = zeros(Float32,nlon,8)
     tmpqflx_4 = zeros(Float32,nlon,8)
+    tmpqflx_5 = zeros(Float32,nlat)
+    tmpqflx_6 = zeros(Float32,nlat)
+    tmpqflx_7 = zeros(Float32,nlon)
+    tmpqflx_8 = zeros(Float32,nlon)
     
     prcp = zeros(8,ndt)
     evap = zeros(8,ndt)
@@ -90,10 +94,13 @@ function wrfqbudget(
         prcp[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
 
         NCDatasets.load!(ds1["$(iso)QFX"].var,tmp1,lon1:lon2,lat1:lat2,:)
+        NCDatasets.load!(ds2["$(iso)QFX"].var,tmp2,lon1:lon2,lat1:lat2,1)
         for ii = 1 : 8, ilat = 1 : nlat, ilon = 1 : nlon
             tmp1[ilon,ilat,ii] *= wgts[ilon,ilat]
         end
-        evap[:,idt] = dropdims(sum(tmp1,dims=(1,2)),dims=(1,2)) / wgtm
+        tmp3 = dropdims(sum(tmp1,dims=(1,2)),dims=(1,2)) / wgtm
+        tmp4 = mean(tmp2,wgtv)
+        evap[:,idt] = (vcat(tmp3[2:end],tmp4) .+ tmp3) / 2
 
         NCDatasets.load!(ds1["$(iso)VAPORWP"].var,tmp1,lon1:lon2,lat1:lat2,:)
         NCDatasets.load!(ds2["$(iso)VAPORWP"].var,tmp2,lon1:lon2,lat1:lat2,1)
@@ -117,10 +124,28 @@ function wrfqbudget(
             tmpqflx_4[ilon,ii] *= wgts[ilon,end]
         end
         
-        qflx[:,idt] = dropdims(sum(tmpqflx_2,dims=1),dims=1) / wgt2 * arc2 .+ 
-                      dropdims(sum(tmpqflx_4,dims=1),dims=1) / wgt4 * arc4 .-
-                      dropdims(sum(tmpqflx_1,dims=1),dims=1) / wgt1 * arc1 .-
-                      dropdims(sum(tmpqflx_3,dims=1),dims=1) / wgt3 * arc3
+        tmp3 = dropdims(sum(tmpqflx_2,dims=1),dims=1) / wgt2 * arc2 .+ 
+               dropdims(sum(tmpqflx_4,dims=1),dims=1) / wgt4 * arc4 .-
+               dropdims(sum(tmpqflx_1,dims=1),dims=1) / wgt1 * arc1 .-
+               dropdims(sum(tmpqflx_3,dims=1),dims=1) / wgt3 * arc3
+
+        NCDatasets.load!(ds2["$(iso)IWTX"].var,tmpqflx_5,lon1,lat1:lat2,1)
+        NCDatasets.load!(ds2["$(iso)IWTX"].var,tmpqflx_6,lon2,lat1:lat2,1)
+        NCDatasets.load!(ds2["$(iso)IWTY"].var,tmpqflx_7,lon1:lon2,lat1,1)
+        NCDatasets.load!(ds2["$(iso)IWTY"].var,tmpqflx_8,lon1:lon2,lat2,1)
+        for ilat = 1 : nlat
+            tmpqflx_5[ilat] *= wgts[1,ilat]
+            tmpqflx_6[ilat] *= wgts[end,ilat]
+        end
+        for ilon = 1 : nlon
+            tmpqflx_7[ilon] *= wgts[ilon,1]
+            tmpqflx_8[ilon] *= wgts[ilon,end]
+        end
+        
+        tmp4 = sum(tmpqflx_2) / wgt2 * arc2 .+ sum(tmpqflx_4) / wgt4 * arc4 .-
+               sum(tmpqflx_1) / wgt1 * arc1 .- sum(tmpqflx_3) / wgt3 * arc3
+
+        qflx[:,idt] = (vcat(tmp3[2:end],tmp4) .+ tmp3) / 2
 
         close(ds1)
         close(ds2)
@@ -160,7 +185,7 @@ function wrfqbudget(
         "long_name" => "Divergence"
     ))
 
-    nctime.var[:] = (collect(0 : (ndt*8 -1))) * 3
+    nctime.var[:] = (collect(0 : (ndt*8 -1)) .+ 0.5) * 3
     ncprcp[:] = prcp[:]
     ncevap[:] = evap[:]
     nctcwv[:] = tcwv[:]
