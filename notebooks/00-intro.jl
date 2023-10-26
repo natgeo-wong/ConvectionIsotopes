@@ -109,6 +109,27 @@ The station information is taken from the xlsx file (`data/IsotopeDataSummry.xls
 It is to be noted that the San Andres station has two different sets of (I assume to be independently) collected data.  This is because this is the only station that has both monthly and daily datasets, but these datasets are collected over different time periods (daily data was collected later).  Also, the errors in the data collection in the daily data are also found in the San Andres data, which is why we believe that the daily and monthly datasets were collected independently even though the stations are basically in the same location.
 "
 
+# ╔═╡ c99218a9-26fb-4b42-a2a4-8afc32ae084e
+md"### C. Costa Rice Close Up"
+
+# ╔═╡ 2dbe0945-9762-4ad5-a7e0-3e08b16de795
+begin
+	pplt.close(); f2,a2 = pplt.subplots(ncols=1)
+	
+	a2[1].scatter(infocr[[1,2,3],2],infocr[[1,2,3],3])
+	a2[1].scatter(infocr[4,2],infocr[4,3])
+	a2[1].scatter(infocr[[5,6,8],2],infocr[[5,6,8],3])
+	a2[1].scatter(infocr[7,2],infocr[7,3])
+
+	for ax in a2
+		ax.plot(x,y,lw=0.5,c="k")
+		ax.format(xlim=(274,278),ylim=(7.5,11.5),suptitle="Costa Rica Stations")
+	end
+	
+	f2.savefig(plotsdir("00-stations.png"),transparent=false,dpi=300)
+	load(plotsdir("00-stations.png"))
+end
+
 # ╔═╡ Cell order:
 # ╟─fc7b6caa-6ced-11ec-0701-6f55729e22dc
 # ╟─9802aaa7-3f9a-47b7-b6ab-90c4f39b7335
@@ -118,3 +139,5 @@ It is to be noted that the San Andres station has two different sets of (I assum
 # ╟─73ab7928-b428-4792-af0e-1f44b42beee9
 # ╟─8bbbc366-114e-49a5-8762-8515a7f1de42
 # ╟─03c0f4ae-e0d7-4ace-8cb5-cb015b8ebe2b
+# ╟─c99218a9-26fb-4b42-a2a4-8afc32ae084e
+# ╟─2dbe0945-9762-4ad5-a7e0-3e08b16de795

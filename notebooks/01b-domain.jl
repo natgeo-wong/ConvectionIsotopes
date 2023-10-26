@@ -143,20 +143,28 @@ begin
 	)
 	
 	axs[1].plot(xinset,yinset,lw=0.5,c="k")
-	axs[1].scatter(infomo[:,2],infomo[:,3],zorder=4,c="blue")
+	axs[1].scatter(infomo[:,2],infomo[:,3],zorder=4,c="blue1")
 	axs[1].scatter(infody[:,2],infody[:,3],zorder=4,c="pink")
 	axs[1].scatter(infocr[:,2],infocr[:,3],zorder=4,c="red")
+	axs[1].plot([0,3,3,0,0].+275,[0,0,2.5,2.5,0].+8,lw=1,c="k",linestyle="--")
+	axs[1].plot([275,288],[10.5,15],lw=1,c="k",linestyle=":",zorder=3)
+	axs[1].plot([278,295],[8,9.1],lw=1,c="k",linestyle=":",zorder=3)
 	axs[1].plot([270,285,285,270,270],[0,0,15,15,0],lw=5,c="w")
 	axs[1].plot(slon_PAC,slat_PAC,lw=2,)
 	axs[1].plot(slon_ATL,slat_ATL,lw=2,)
 	axs[1].plot(slon_PCS,slat_PCS,lw=2,)
-	axs[1].plot(slon_SAN,slat_SAN,lw=2,)
 	axs[1].text(271.5,1.5,"PAC",bbox=Dict("facecolor"=>"gray2","edgecolor"=>"none"))
 	axs[1].text(282,13,"ATL",bbox=Dict("facecolor"=>"gray2","edgecolor"=>"none"))
-	axs[1].text(278.3,10.8,"SAN",bbox=Dict("facecolor"=>"gray2","edgecolor"=>"none"))
 	axs[1].text(276,1.5,"PCS",bbox=Dict("facecolor"=>"gray2","edgecolor"=>"none"))
-	axs[1].text(285.5,14.5,"(a)",c="w",size=10)
-	axs[1].text(294,7.6,"(b)",c="k",size=10)
+	axs[1].text(285.5,14.4,"(a)",c="w",size=10)
+	axs[1].text(286.8,14.4,"(b)",c="k",size=10)
+	axs[1].text(286.8,6.5,"(c)",c="k",size=10)
+	axs[1].text(272.5,10,"Liberia",c="k",size=8)
+	axs[1].text(275.2,8.8,"OSA",c="k",size=8)
+	axs[1].text(277,13.2,"San Andres",c="k",size=8)
+	axs[1].text(282,4.8,"Quibdó",c="k",size=8)
+	axs[1].text(278.5,6,"Bahía Solano",c="k",size=8)
+	axs[1].text(278.8,3.5,"Buenaventura",c="k",size=8)
 	axs[1].format(
 		xlim=(269,296),xlocator=255:5:300,xminorlocator=240:2.5:315,
 		ylim=(-1,16),ylocator=-15:5:30,yminorlocator=-20:2.5:35,
@@ -184,8 +192,29 @@ begin
 		ylocator=-15:15:30,yminorlocator=-30:5:45,yticklabels=[]
 	)
 
+	ix = fig.add_axes([0.617,0.634,0.2,0.30])
+	ix.pcolormesh(
+		lsd.lon,lsd.lat,lsd.lsm',
+		levels=lvls,cmap="delta",extend="both",cmap_kw=cmap_dict
+	)
+	ix.plot(xinset,yinset,lw=0.5,c="k")
+	ix.scatter(infocr[:,2],infocr[:,3],zorder=4,c="red",s=10)
+	ix.text(277,9.4,"Cahuita",c="k",size=8)
+	ix.text(277,10.1,"Limon",c="k",size=8)
+	ix.text(276.2,10.25,"Bataan",c="k",size=8)
+	ix.text(276.1,9.6,"AMDQ",c="k",size=8)
+	ix.text(275.3,9.6,"CGFI",c="k",size=8)
+	ix.text(275.1,10.15,"EEFMB",c="k",size=8)
+	ix.text(276.05,8.2,"OSA",c="k",size=8)
+	ix.format(
+		xlim=(275,278),ylim=(8.05,10.55),xtickloc="none",ytickloc="none",
+		xlocator=255:15:300,xminorlocator=240:5:315,xticklabels=[],
+		ylocator=-15:15:30,yminorlocator=-30:5:45,yticklabels=[]
+	)
+
 	fig.colorbar(c,ticklabels=["1e-5","1e-4.5","1e-4","1e-3.5","1e-3","1e-2.5","1e-2","1e-1.5","1e-1","0.25","0.5","0.9","0.95","0.99"],label="Land-Sea Mask")
 	fig.savefig(plotsdir("01b-domain.png"),transparent=false,dpi=300)
+	fig.savefig(plotsdir("Figure1.png"),transparent=false,dpi=300)
 	load(plotsdir("01b-domain.png"))
 end
 
