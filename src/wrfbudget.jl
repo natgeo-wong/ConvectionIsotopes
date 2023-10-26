@@ -509,8 +509,8 @@ function wrfqdivdecompose(
         if ilat > lat2; lat2 = ilat; end
     end
 
-    nlon = lon2 - lon1
-    nlat = lat2 - lat1
+    nlon = lon2 - lon1 + 1
+    nlat = lat2 - lat1 + 1
     nlvl = 50
 
     wgts = ones(nlon,nlat)
@@ -522,21 +522,22 @@ function wrfqdivdecompose(
 
     if iso != ""; iso = "$(iso)_" end
 
-    utmp1 = zeros(Float32,nlon+2,nlat+1,nlvl); utmp2 = zeros(Float32,nlon+2,nlat+1,nlvl)
-    vtmp1 = zeros(Float32,nlon+1,nlat+2,nlvl); vtmp2 = zeros(Float32,nlon+1,nlat+2,nlvl)
+    utmp1 = zeros(Float32,nlon+1,nlat  ,nlvl); utmp2 = zeros(Float32,nlon+1,nlat  ,nlvl)
+    vtmp1 = zeros(Float32,nlon  ,nlat+1,nlvl); vtmp2 = zeros(Float32,nlon  ,nlat+1,nlvl)
 
-    u1 = zeros(Float32,nlon+1,nlat+1,nlvl); u2 = zeros(Float32,nlon+1,nlat+1,nlvl)
-    v1 = zeros(Float32,nlon+1,nlat+1,nlvl); v2 = zeros(Float32,nlon+1,nlat+1,nlvl)
-    q1 = zeros(Float32,nlon+1,nlat+1,nlvl); q2 = zeros(Float32,nlon+1,nlat+1,nlvl)
-    p1 = zeros(Float32,nlon+1,nlat+1,nlvl); p2 = zeros(Float32,nlon+1,nlat+1,nlvl)
+    u1 = zeros(Float32,nlon,nlat,nlvl); u2 = zeros(Float32,nlon,nlat,nlvl)
+    v1 = zeros(Float32,nlon,nlat,nlvl); v2 = zeros(Float32,nlon,nlat,nlvl)
+    q1 = zeros(Float32,nlon,nlat,nlvl); q2 = zeros(Float32,nlon,nlat,nlvl)
+    p1 = zeros(Float32,nlon,nlat,nlvl); p2 = zeros(Float32,nlon,nlat,nlvl)
 
-    us1 = zeros(Float32,nlon+1,nlat+1); us2 = zeros(Float32,nlon+1,nlat+1)
-    vs1 = zeros(Float32,nlon+1,nlat+1); vs2 = zeros(Float32,nlon+1,nlat+1)
-    ps1 = zeros(Float32,nlon+1,nlat+1); ps2 = zeros(Float32,nlon+1,nlat+1)
+    us1 = zeros(Float32,nlon,nlat); us2 = zeros(Float32,nlon,nlat)
+    vs1 = zeros(Float32,nlon,nlat); vs2 = zeros(Float32,nlon,nlat)
+    ps1 = zeros(Float32,nlon,nlat); ps2 = zeros(Float32,nlon,nlat)
 
     μq = zeros(nlvl+2); Δqu = zeros(nlvl+2); Δqv = zeros(nlvl+2)
     μu = zeros(nlvl+2); Δu  = zeros(nlvl+2)
     μv = zeros(nlvl+2); Δv  = zeros(nlvl+2)
+    μp = zeros(nlvl+2); Δv  = zeros(nlvl+2)
     
     qadv = zeros(8,ndt)
     qdiv = zeros(8,ndt)
@@ -642,8 +643,8 @@ function wrfqdivdecompose(
         
         end
 
-        close(ds1)
-        close(ds2)
+        close(ds1_2D); close(ds1_3D)
+        close(ds2_2D); close(ds2_3D)
 
     end
 
