@@ -547,6 +547,10 @@ function wrfqdivdecompose(
     arc3 = haversine((lon[lon1,lat1],lat[lon1,lat1]),(lon[lon2,lat1],lat[lon2,lat1]))
     arc4 = haversine((lon[lon1,lat2],lat[lon1,lat2]),(lon[lon2,lat2],lat[lon2,lat2]))
 
+    pds = NCDataset(datadir("wrf","3D","PB-daily.nc"))
+    pb = pds["PB"][lon1:lon2,lat1:lat2,:,1]
+    close(pds)
+
     for idt in 1 : ndt
 
         @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
@@ -607,24 +611,25 @@ function wrfqdivdecompose(
                 μq[ilvl+1] = (mean(q1[:,:,ilvl],wgtv) + mean(q2[:,:,ilvl],wgtv)) / 2
                 μu[ilvl+1] = (mean(u1[:,:,ilvl],wgtv) + mean(u2[:,:,ilvl],wgtv)) / 2
                 μv[ilvl+1] = (mean(v1[:,:,ilvl],wgtv) + mean(v2[:,:,ilvl],wgtv)) / 2
-                μp[ilvl+1] = (mean(p1[:,:,ilvl],wgtv) + mean(p2[:,:,ilvl],wgtv)) / 2
+                μp[ilvl+1] = (mean(p1[:,:,ilvl],wgtv) + mean(p2[:,:,ilvl],wgtv)) / 2 .+ 
+                              mean(pb[:,:,ilvl],wgtv)
                 
                 Δqu[ilvl+1] = ((mean(q1[end,:,ilvl],lon2w) + 
                                 mean(q2[end,:,ilvl],lon2w)) * arc2 -
                                (mean(q2[1,:,ilvl],lon1w) + 
-                                mean(q2[1,:,ilvl],lon1w))   * arc1) / 2
+                                mean(q2[1,:,ilvl],lon1w))   * arc1) / (arc3 + arc4)
                 Δqv[ilvl+1] = ((mean(q1[:,end,ilvl],lat2w) + 
                                 mean(q2[:,end,ilvl],lat2w)) * arc4 -
                                (mean(q2[:,1,ilvl],lat1w) + 
-                                mean(q2[:,1,ilvl],lat1w))   * arc3) / 2
+                                mean(q2[:,1,ilvl],lat1w))   * arc3) / (arc1 + arc2)
                 Δu[ilvl+1] = ((mean(u1[end,:,ilvl],lon2w) + 
                                mean(u2[end,:,ilvl],lon2w)) * arc2 -
                               (mean(u2[1,:,ilvl],lon1w) + 
-                               mean(u2[1,:,ilvl],lon1w))   * arc1) / 2
+                               mean(u2[1,:,ilvl],lon1w))   * arc1) / (arc3 + arc4)
                 Δv[ilvl+1] = ((mean(v1[:,end,ilvl],lat2w) + 
                                mean(v2[:,end,ilvl],lat2w)) * arc4 -
                               (mean(v2[:,1,ilvl],lat1w) + 
-                               mean(v2[:,1,ilvl],lat1w))   * arc3) / 2
+                               mean(v2[:,1,ilvl],lat1w))   * arc3) / (arc1 + arc2)
                 
             end
 
@@ -672,8 +677,8 @@ function wrfqdivdecompose(
     ))
 
     nctime.var[:] = (collect(0 : (ndt*8 -1)) .+ 0.5) * 3
-    ncqdiv[:] = qdiv[:] * 4 / ((arc2+arc4)*(arc1+arc3))
-    ncqadv[:] = qadv[:] * 4 / ((arc2+arc4)*(arc1+arc3))
+    ncqdiv[:] = qdiv[:] * 4 / ((arc2+arc4)*(arc1+arc3)) / 9.81
+    ncqadv[:] = qadv[:] * 4 / ((arc2+arc4)*(arc1+arc3)) / 9.81
 
     close(ds)
 
