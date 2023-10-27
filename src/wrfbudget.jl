@@ -666,12 +666,12 @@ function wrfqdivdecompose(
         "calendar"  => "gregorian"
     ))
 
-    ncqdiv = defVar(ds,"$(iso)P",Float32,("date",),attrib=Dict(
+    ncqdiv = defVar(ds,"$(iso)DIV",Float32,("date",),attrib=Dict(
         "units" => "kg m**-2 s**-1",
         "long_name" => "Divergence component of ∇"
     ))
 
-    ncqadv = defVar(ds,"$(iso)E",Float32,("date",),attrib=Dict(
+    ncqadv = defVar(ds,"$(iso)ADV",Float32,("date",),attrib=Dict(
         "units" => "kg m**-2 s**-1",
         "long_name" => "Advection component of ∇"
     ))
