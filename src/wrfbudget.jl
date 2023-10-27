@@ -617,19 +617,19 @@ function wrfqdivdecompose(
                 Δqu[ilvl+1] = ((mean(q1[end,:,ilvl],lon2w) + 
                                 mean(q2[end,:,ilvl],lon2w)) * arc2 -
                                (mean(q2[1,:,ilvl],lon1w) + 
-                                mean(q2[1,:,ilvl],lon1w))   * arc1) / (arc3 + arc4)
+                                mean(q2[1,:,ilvl],lon1w))   * arc1)
                 Δqv[ilvl+1] = ((mean(q1[:,end,ilvl],lat2w) + 
                                 mean(q2[:,end,ilvl],lat2w)) * arc4 -
                                (mean(q2[:,1,ilvl],lat1w) + 
-                                mean(q2[:,1,ilvl],lat1w))   * arc3) / (arc1 + arc2)
+                                mean(q2[:,1,ilvl],lat1w))   * arc3)
                 Δu[ilvl+1] = ((mean(u1[end,:,ilvl],lon2w) + 
                                mean(u2[end,:,ilvl],lon2w)) * arc2 -
                               (mean(u2[1,:,ilvl],lon1w) + 
-                               mean(u2[1,:,ilvl],lon1w))   * arc1) / (arc3 + arc4)
+                               mean(u2[1,:,ilvl],lon1w))   * arc1)
                 Δv[ilvl+1] = ((mean(v1[:,end,ilvl],lat2w) + 
                                mean(v2[:,end,ilvl],lat2w)) * arc4 -
                               (mean(v2[:,1,ilvl],lat1w) + 
-                               mean(v2[:,1,ilvl],lat1w))   * arc3) / (arc1 + arc2)
+                               mean(v2[:,1,ilvl],lat1w))   * arc3)
                 
             end
 
