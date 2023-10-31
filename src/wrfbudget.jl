@@ -324,27 +324,51 @@ function wrfqdiv(
                 u[ilon,ilat,1] = (us1[ilon,ilat,1] + us2[ilon,ilat,1]) / 2
                 v[ilon,ilat,1] = (vs1[ilon,ilat,1] + vs2[ilon,ilat,1]) / 2
                 p[ilon,ilat,1] = (ps1[ilon,ilat,1] + ps2[ilon,ilat,1]) / 2
-                q[ilon,ilat,1] = (q1[ilon,ilat,1] + q2[ilon,ilat,1]) / 2
+                q[ilon,ilat,1] = q[ilon,ilat,2]
             end
 
             for ilat = 2 : (nlat-1)
-                qflx[ii,idt] -= trapz(-p[1,ilat,:],q[1,ilat,:]) / (nlat-1) * arc1
-                qflx[ii,idt] += trapz(-p[end,ilat,:],q[end,ilat,:]) / (nlat-1) * arc2
+                ∇[it,idt] -= trapz(
+                    reverse(p[1,ilat,:]),
+                    reverse(q[1,ilat,:] .* u[1,ilat,:])
+                ) / (nlat-1) * arc1
+                ∇[it,idt] += trapz(
+                    reverse(p[end,ilat,:]),
+                    reverse(q[end,ilat,:] .* u[end,ilat,:])
+                ) / (nlat-1) * arc2
             end
 
             for ilon = 2 : (nlon-1)
-                qflx[ii,idt] -= trapz(-p[ilon,1,:],q[ilon,1,:]) / (nlat-1) * arc3
-                qflx[ii,idt] += trapz(-p[ilon,end,:],q[ilon,end,:]) / (nlat-1) * arc4
+                ∇[it,idt] -= trapz(
+                    reverse(p[ilon,1,:]),
+                    reverse(q[ilon,1,:] .* v[ilon,1,:])
+                ) / (nlon-1) * arc3
+                ∇[it,idt] += trapz(
+                    reverse(p[ilon,end,:]),
+                    reverse(q[ilon,end,:] .* v[ilon,end,:])
+                ) / (nlon-1) * arc4
             end
 
             for ilat in [1, nlat]
-                qflx[ii,idt] -= trapz(-p[1,ilat,:],q[1,ilat,:]) / (nlat-1) * arc1 / 2
-                qflx[ii,idt] += trapz(-p[end,ilat,:],q[end,ilat,:]) / (nlat-1) * arc2 / 2
+                ∇[it,idt] -= trapz(
+                    reverse(p[1,ilat,:]),
+                    reverse(q[1,ilat,:] .* u[1,ilat,:])
+                ) / (nlat-1) * arc1 / 2
+                ∇[it,idt] += trapz(
+                    reverse(p[end,ilat,:]),
+                    reverse(q[end,ilat,:] .* u[end,ilat,:])
+                ) / (nlat-1) * arc2 / 2
             end
 
             for ilon in [1, nlon]
-                qflx[ii,idt] -= trapz(-p[ilon,1,:],q[ilon,1,:]) / (nlat-1) * arc3 / 2
-                qflx[ii,idt] += trapz(-p[ilon,end,:],q[ilon,end,:]) / (nlat-1) * arc4 / 2
+                ∇[it,idt] -= trapz(
+                    reverse(p[ilon,1,:]),
+                    reverse(q[ilon,1,:] .* v[ilon,1,:])
+                ) / (nlon-1) * arc3 / 2
+                ∇[it,idt] += trapz(
+                    reverse(p[ilon,end,:]),
+                    reverse(q[ilon,end,:] .* v[ilon,end,:])
+                ) / (nlon-1) * arc4 / 2
             end
         
         end
@@ -373,7 +397,7 @@ function wrfqdiv(
     ))
 
     nctime.var[:] = (collect(0 : (ndt*8 -1)) .+ 0.5) * 3
-    ncqdiv[:] = qdiv[:] * 4 / ((arc2+arc4)*(arc1+arc3)) / 9.81
+    ncqdiv[:] = ∇[:] * 4 / ((arc2+arc4)*(arc1+arc3)) / 9.81
 
     close(ds)
 

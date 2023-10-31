@@ -19,3 +19,19 @@ function int2real!(
     return
 
 end
+
+function inplaceadd!(
+    oarray :: AbstractArray{<:Real},
+    iarray :: AbstractArray{<:Real},
+    scale  :: Real = 1
+)
+
+    if length(orray) == length(iarray)
+        for ii in eachindex(iarray)
+            oarray[ii] += iarray[ii] * scale
+        end
+    end
+
+    return
+
+end
