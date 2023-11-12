@@ -153,7 +153,7 @@ function wrfqbudget(
     end
 
     mkpath(datadir("wrf","processed"))
-    fnc = datadir("wrf","processed","$(geo.ID)-$(iso)QBUDGET-daily.nc")
+    fnc = datadir("wrf","processed","$(geo.ID)-$(iso)QBUDGET.nc")
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")
@@ -403,159 +403,6 @@ function wrfqdiv(
 
 end
 
-function wrfqdivvsiwt(;
-    iso   :: AbstractString,
-    geo   :: GeoRegion,
-    start :: Date,
-    stop  :: Date
-)
-    
-    ds   = NCDataset(datadir("wrf","grid.nc"))
-    lon  = ds["longitude"][:,:,1]
-    lat  = ds["latitude"][:,:,1]
-    close(ds)
-
-    dtvec = start : Day(1) : stop; ndt = length(dtvec)
-
-    ggrd = RegionGrid(geo,lon,lat)
-    lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findlast(ggrd.mask .== 1)[1]
-    lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findlast(ggrd.mask .== 1)[2]
-
-    nlon = lon2 - lon1 + 1
-    nlat = lat2 - lat1 + 1
-    nlvl = 50
-
-    if iso != ""; iso = "$(iso)_" end
-
-    uarr = zeros(Float32,nlon+1,nlat,nlvl)
-    varr = zeros(Float32,nlon,nlat+1,nlvl)
-    qarr = zeros(Float32,nlon,nlat,nlvl)
-    parr = zeros(Float32,nlon,nlat,nlvl)
-    psfc = zeros(Float32,nlon,nlat)
-    qflx_u = zeros(nlon,nlat,8,ndt)
-    qflx_v = zeros(nlon,nlat,8,ndt)
-    qflxwu = zeros(Float32,nlon,nlat,8,ndt)
-    qflxwv = zeros(Float32,nlon,nlat,8,ndt)
-
-    pds = NCDataset(datadir("wrf","3D","PB-daily.nc"))
-    pbse = pds["PB"][lon1:lon2,lat1:lat2,:,1]
-    close(pds)
-
-    for idt in 1 : ndt
-
-        @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
-        flush(stderr)
-
-        iiqflxu = @view qflxwu[:,:,:,idt]
-        iiqflxv = @view qflxwv[:,:,:,idt]
-
-        ds2 = NCDataset(datadir("wrf","raw","2D","$(dtvec[idt]).nc"))
-        ds3 = NCDataset(datadir("wrf","raw","3D","$(dtvec[idt]).nc"))
-
-        NCDatasets.load!(ds2["$(iso)IWTX"].var,iiqflxu,lon1:lon2,lat1:lat2,:)
-        NCDatasets.load!(ds2["$(iso)IWTY"].var,iiqflxv,lon1:lon2,lat1:lat2,:)
-
-        for ii = 1 : 8
-
-            NCDatasets.load!(ds3["U"].var,uarr,lon1:(lon2+1),lat1:lat2,:,ii)
-            NCDatasets.load!(ds3["V"].var,varr,lon1:lon2,lat1:(lat2+1),:,ii)
-            NCDatasets.load!(ds3["$(iso)QVAPOR"].var,qarr,lon1:lon2,lat1:lat2,:,ii)
-            NCDatasets.load!(ds3["P"].var,parr,lon1:lon2,lat1:lat2,:,ii)
-            NCDatasets.load!(ds2["PSFC"].var,psfc,lon1:lon2,lat1:lat2,ii)
-
-            for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
-                parr[ilon,ilat,ilvl] += pbse[ilon,ilat,ilvl]
-            end
-
-            for ilat = 1 : nlat, ilon = 1 : nlon
-                uavg = dropdims(mean(uarr[ilon.+(0:1),ilat,:],dims=1),dims=1)
-                qlat = qarr[ilon,ilat,:] .* uavg
-                plat = parr[ilon,ilat,:]
-                qflx_u[ilon,ilat,ii,idt] = trapz(
-                    reverse(vcat(psfc[ilon,ilat],plat,0)),
-                    reverse(vcat(qlat[1],qlat,0))
-                )
-                vavg = dropdims(mean(varr[ilon,ilat.+(0:1),:],dims=1),dims=1)
-                qlat = qarr[ilon,ilat,:] .* vavg
-                plat = parr[ilon,ilat,:]
-                qflx_v[ilon,ilat,ii,idt] = trapz(
-                    reverse(vcat(psfc[ilon,ilat],plat,0)),
-                    reverse(vcat(qlat[1],qlat,0))
-                )
-            end
-
-        end
-
-        close(ds2)
-        close(ds3)
-
-    end
-
-    mkpath(datadir("wrf","processed"))
-    fnc = datadir("wrf","processed","$(geo.ID)-$(iso)IWT_wrfvscalc-daily.nc")
-    if isfile(fnc); rm(fnc,force=true) end
-
-    ds = NCDataset(fnc,"c")
-    ds.dim["longitude"] = nlon
-    ds.dim["latitude"]  = nlat
-    ds.dim["date"]      = ndt * 8
-
-    nclon = defVar(ds,"longitude",Float32,("longitude","latitude"),attrib=Dict(
-        "units"     => "degrees_east",
-        "long_name" => "longitude",
-    ))
-
-    nclat = defVar(ds,"latitude",Float32,("longitude","latitude"),attrib=Dict(
-        "units"     => "degrees_north",
-        "long_name" => "latitude",
-    ))
-
-    nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
-        "units"     => "hours since $(start) 00:00:00.0",
-        "long_name" => "time",
-        "calendar"  => "gregorian"
-    ))
-
-    ncvar_iwtxwrf = defVar(
-        ds,"$(iso)IWTX_wrf",Float32,("longitude","latitude","date",),
-        attrib=Dict(
-            "units"     => "kg m**-1 s**-1",
-            "long_name" => "WRF IVT in the X-Direction (relative to SMOW)"
-    ))
-
-    ncvar_iwtywrf = defVar(
-        ds,"$(iso)IWTY_wrf",Float32,("longitude","latitude","date",),
-        attrib=Dict(
-            "units"     => "kg m**-1 s**-1",
-            "long_name" => "WRF IVT in the Y-Direction (relative to SMOW)"
-    ))
-
-    ncvar_iwtxclc = defVar(
-        ds,"$(iso)IWTX_clc",Float32,("longitude","latitude","date",),
-        attrib=Dict(
-            "units"     => "kg m**-1 s**-1",
-            "long_name" => "Calculated IVT in the X-Direction (relative to SMOW)"
-    ))
-
-    ncvar_iwtyclc = defVar(
-        ds,"$(iso)IWTY_clc",Float32,("longitude","latitude","date",),
-        attrib=Dict(
-            "units"     => "kg m**-1 s**-1",
-            "long_name" => "Calculated IVT in the Y-Direction (relative to SMOW)"
-    ))
-
-    nclon[:] = lon[lon1:lon2,lat1:lat2]
-    nclat[:] = lat[lon1:lon2,lat1:lat2]
-    nctime.var[:] = (collect(0 : (ndt*8 -1))) * 3
-    ncvar_iwtxwrf[:] = reshape(qflxwu,nlon,nlat,:)
-    ncvar_iwtywrf[:] = reshape(qflxwv,nlon,nlat,:)
-    ncvar_iwtxclc[:] = reshape(qflx_u,nlon,nlat,:)
-    ncvar_iwtyclc[:] = reshape(qflx_v,nlon,nlat,:)
-
-    close(ds)
-
-end
-
 function wrfqdivdecompose(
     geo   :: GeoRegion;
     iso   :: AbstractString = "",
@@ -729,7 +576,7 @@ function wrfqdivdecompose(
     end
 
     mkpath(datadir("wrf","processed"))
-    fnc = datadir("wrf","processed","$(geo.ID)-$(iso)∇decompose-daily.nc")
+    fnc = datadir("wrf","processed","$(geo.ID)-$(iso)∇decompose.nc")
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")
@@ -754,6 +601,159 @@ function wrfqdivdecompose(
     nctime.var[:] = (collect(0 : (ndt*8 -1)) .+ 0.5) * 3
     ncqdiv[:] = qdiv[:] * 4 / ((arc2+arc4)*(arc1+arc3)) / 9.81
     ncqadv[:] = qadv[:] * 4 / ((arc2+arc4)*(arc1+arc3)) / 9.81
+
+    close(ds)
+
+end
+
+function wrfqdivvsiwt(;
+    iso   :: AbstractString,
+    geo   :: GeoRegion,
+    start :: Date,
+    stop  :: Date
+)
+    
+    ds   = NCDataset(datadir("wrf","grid.nc"))
+    lon  = ds["longitude"][:,:,1]
+    lat  = ds["latitude"][:,:,1]
+    close(ds)
+
+    dtvec = start : Day(1) : stop; ndt = length(dtvec)
+
+    ggrd = RegionGrid(geo,lon,lat)
+    lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findlast(ggrd.mask .== 1)[1]
+    lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findlast(ggrd.mask .== 1)[2]
+
+    nlon = lon2 - lon1 + 1
+    nlat = lat2 - lat1 + 1
+    nlvl = 50
+
+    if iso != ""; iso = "$(iso)_" end
+
+    uarr = zeros(Float32,nlon+1,nlat,nlvl)
+    varr = zeros(Float32,nlon,nlat+1,nlvl)
+    qarr = zeros(Float32,nlon,nlat,nlvl)
+    parr = zeros(Float32,nlon,nlat,nlvl)
+    psfc = zeros(Float32,nlon,nlat)
+    qflx_u = zeros(nlon,nlat,8,ndt)
+    qflx_v = zeros(nlon,nlat,8,ndt)
+    qflxwu = zeros(Float32,nlon,nlat,8,ndt)
+    qflxwv = zeros(Float32,nlon,nlat,8,ndt)
+
+    pds = NCDataset(datadir("wrf","3D","PB-daily.nc"))
+    pbse = pds["PB"][lon1:lon2,lat1:lat2,:,1]
+    close(pds)
+
+    for idt in 1 : ndt
+
+        @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
+        flush(stderr)
+
+        iiqflxu = @view qflxwu[:,:,:,idt]
+        iiqflxv = @view qflxwv[:,:,:,idt]
+
+        ds2 = NCDataset(datadir("wrf","raw","2D","$(dtvec[idt]).nc"))
+        ds3 = NCDataset(datadir("wrf","raw","3D","$(dtvec[idt]).nc"))
+
+        NCDatasets.load!(ds2["$(iso)IWTX"].var,iiqflxu,lon1:lon2,lat1:lat2,:)
+        NCDatasets.load!(ds2["$(iso)IWTY"].var,iiqflxv,lon1:lon2,lat1:lat2,:)
+
+        for ii = 1 : 8
+
+            NCDatasets.load!(ds3["U"].var,uarr,lon1:(lon2+1),lat1:lat2,:,ii)
+            NCDatasets.load!(ds3["V"].var,varr,lon1:lon2,lat1:(lat2+1),:,ii)
+            NCDatasets.load!(ds3["$(iso)QVAPOR"].var,qarr,lon1:lon2,lat1:lat2,:,ii)
+            NCDatasets.load!(ds3["P"].var,parr,lon1:lon2,lat1:lat2,:,ii)
+            NCDatasets.load!(ds2["PSFC"].var,psfc,lon1:lon2,lat1:lat2,ii)
+
+            for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
+                parr[ilon,ilat,ilvl] += pbse[ilon,ilat,ilvl]
+            end
+
+            for ilat = 1 : nlat, ilon = 1 : nlon
+                uavg = dropdims(mean(uarr[ilon.+(0:1),ilat,:],dims=1),dims=1)
+                qlat = qarr[ilon,ilat,:] .* uavg
+                plat = parr[ilon,ilat,:]
+                qflx_u[ilon,ilat,ii,idt] = trapz(
+                    reverse(vcat(psfc[ilon,ilat],plat,0)),
+                    reverse(vcat(qlat[1],qlat,0))
+                )
+                vavg = dropdims(mean(varr[ilon,ilat.+(0:1),:],dims=1),dims=1)
+                qlat = qarr[ilon,ilat,:] .* vavg
+                plat = parr[ilon,ilat,:]
+                qflx_v[ilon,ilat,ii,idt] = trapz(
+                    reverse(vcat(psfc[ilon,ilat],plat,0)),
+                    reverse(vcat(qlat[1],qlat,0))
+                )
+            end
+
+        end
+
+        close(ds2)
+        close(ds3)
+
+    end
+
+    mkpath(datadir("wrf","processed"))
+    fnc = datadir("wrf","processed","$(geo.ID)-$(iso)IWT_wrfvscalc.nc")
+    if isfile(fnc); rm(fnc,force=true) end
+
+    ds = NCDataset(fnc,"c")
+    ds.dim["longitude"] = nlon
+    ds.dim["latitude"]  = nlat
+    ds.dim["date"]      = ndt * 8
+
+    nclon = defVar(ds,"longitude",Float32,("longitude","latitude"),attrib=Dict(
+        "units"     => "degrees_east",
+        "long_name" => "longitude",
+    ))
+
+    nclat = defVar(ds,"latitude",Float32,("longitude","latitude"),attrib=Dict(
+        "units"     => "degrees_north",
+        "long_name" => "latitude",
+    ))
+
+    nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
+        "units"     => "hours since $(start) 00:00:00.0",
+        "long_name" => "time",
+        "calendar"  => "gregorian"
+    ))
+
+    ncvar_iwtxwrf = defVar(
+        ds,"$(iso)IWTX_wrf",Float32,("longitude","latitude","date",),
+        attrib=Dict(
+            "units"     => "kg m**-1 s**-1",
+            "long_name" => "WRF IVT in the X-Direction (relative to SMOW)"
+    ))
+
+    ncvar_iwtywrf = defVar(
+        ds,"$(iso)IWTY_wrf",Float32,("longitude","latitude","date",),
+        attrib=Dict(
+            "units"     => "kg m**-1 s**-1",
+            "long_name" => "WRF IVT in the Y-Direction (relative to SMOW)"
+    ))
+
+    ncvar_iwtxclc = defVar(
+        ds,"$(iso)IWTX_clc",Float32,("longitude","latitude","date",),
+        attrib=Dict(
+            "units"     => "kg m**-1 s**-1",
+            "long_name" => "Calculated IVT in the X-Direction (relative to SMOW)"
+    ))
+
+    ncvar_iwtyclc = defVar(
+        ds,"$(iso)IWTY_clc",Float32,("longitude","latitude","date",),
+        attrib=Dict(
+            "units"     => "kg m**-1 s**-1",
+            "long_name" => "Calculated IVT in the Y-Direction (relative to SMOW)"
+    ))
+
+    nclon[:] = lon[lon1:lon2,lat1:lat2]
+    nclat[:] = lat[lon1:lon2,lat1:lat2]
+    nctime.var[:] = (collect(0 : (ndt*8 -1))) * 3
+    ncvar_iwtxwrf[:] = reshape(qflxwu,nlon,nlat,:)
+    ncvar_iwtywrf[:] = reshape(qflxwv,nlon,nlat,:)
+    ncvar_iwtxclc[:] = reshape(qflx_u,nlon,nlat,:)
+    ncvar_iwtyclc[:] = reshape(qflx_v,nlon,nlat,:)
 
     close(ds)
 
