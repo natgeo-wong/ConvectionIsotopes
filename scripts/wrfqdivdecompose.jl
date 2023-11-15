@@ -2,7 +2,7 @@ using DrWatson
 @quickactivate "ConvectionIsotopes"
 
 using Dates
-using Distributed
+using GeoRegions
 using Printf
 
 include(srcdir("wrfbudget.jl"))
