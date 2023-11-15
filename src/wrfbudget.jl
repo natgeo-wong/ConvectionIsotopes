@@ -258,7 +258,7 @@ function wrfqdiv(
     pb = pds["PB"][lon1:lon2,lat1:lat2,:,1]
     close(pds)
 
-    @Threads.@threads for idt in 1 : ndt
+    for idt in 1 : ndt
 
         @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
         flush(stderr)
@@ -474,7 +474,7 @@ function wrfqdivdecompose(
     pb = pds["PB"][lon1:lon2,lat1:lat2,:,1]
     close(pds)
 
-    for idt in 1 : ndt
+    Threads.@threads for idt in 1 : ndt
 
         @info "$(now()) - ConvectionIsotopes - Extracting data during $(dtvec[idt]) for $(geo.name)"
         flush(stderr)
