@@ -50,6 +50,11 @@ function wrfdqdp(
     pvec = zeros(50,ndt)
     dqdp = zeros(50,ndt)
 
+    dsp = NCDataset(datadir("wrf","3D","PB-daily.nc"))
+    pbs = dsp["PB"][lon1:lon2,lat1:lat2,:,1]
+    close(dsp)
+    pbs = dropdims(sum(pbs .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
+
 	dsq = NCDataset(datadir("wrf","3D","$(iso)QVAPOR-daily$(days).nc"))
 	dsp = NCDataset(datadir("wrf","3D","P-daily$(days).nc"))
 
@@ -58,17 +63,17 @@ function wrfdqdp(
         @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
         flush(stderr)
 
-        NCDatasets.load!(dsq["$(iso)QVAPOR"].var,tmpq,lon1:lon2,lat1:lat2,:,ndt)
-        NCDatasets.load!(dsp["P"].var,tmpp,lon1:lon2,lat1:lat2,:,ndt)
+        NCDatasets.load!(dsq["$(iso)QVAPOR"].var,tmpq,lon1:lon2,lat1:lat2,:,idt)
+        NCDatasets.load!(dsp["P"].var,tmpp,lon1:lon2,lat1:lat2,:,idt)
 
-		q           = dropdims(sum(tmpq .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
-		pvec[:,idt] = dropdims(sum(tmpp .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
+		q            = dropdims(sum(tmpq .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
+		pvec[:,idt] .= dropdims(sum(tmpp .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm .+ pbs
 
 		for ilvl = 2 : 49
 			dqdp[ilvl,idt] = (q[ilvl+1]-q[ilvl-1]) ./ (pvec[ilvl+1,idt]-pvec[ilvl-1,idt])
 		end
-		dqdp[1,idt] = (q[2]-q[1]) ./ (pvec[2,idt]-pvec[1,idt])
-		dqdp[end,idt] = (q[end]-q[end-1]) ./ (pvec[end,idt]-pvec[end-1,idt])
+		dqdp[1,idt] = (q[2]-q[1]) / (pvec[2,idt]-pvec[1,idt])
+		dqdp[end,idt] = (q[end]-q[end-1]) / (pvec[end,idt]-pvec[end-1,idt])
 
     end
 
@@ -76,11 +81,12 @@ function wrfdqdp(
 	close(dsp)
 
     mkpath(datadir("wrf","processed"))
-    fnc = datadir("wrf","processed","$(geo.ID)-$(iso)dqdp.nc")
+    fnc = datadir("wrf","processed","$(geo.ID)-$(iso)dqdp$(days).nc")
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")
-    ds.dim["date"] = ndt
+    ds.dim["level"] = 50
+    ds.dim["date"]  = ndt
 
     nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
         "units"     => "hours since $(start) 00:00:00.0",
@@ -88,19 +94,19 @@ function wrfdqdp(
         "calendar"  => "gregorian"
     ))
 
-    ncpres = defVar(ds,"P",Float32,("level","date",),attrib=Dict(
+    ncpres = defVar(ds,"P",Float64,("level","date",),attrib=Dict(
         "units" => "Pa",
         "long_name" => "Pressure"
     ))
 
-    ncdqdp = defVar(ds,"$(iso)dqdp",Float32,("level","date",),attrib=Dict(
+    ncdqdp = defVar(ds,"$(iso)dqdp",Float64,("level","date",),attrib=Dict(
         "units" => "kg kg**-1 Pa**-1",
         "long_name" => "Gradient of $(iso)VAPOR against pressure"
     ))
 
     nctime.var[:] = collect(0 : (ndt-1))
-    ncpres[:] = pvec
-    ncdqdp[:] = dqdp
+    ncpres[:,:] = pvec
+    ncdqdp[:,:] = dqdp
 
     close(ds)
 
