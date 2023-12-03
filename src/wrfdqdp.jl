@@ -13,8 +13,8 @@ function wrfdqdp(
 )
     
     ds   = NCDataset(datadir("wrf","grid.nc"))
-    lon  = ds["longitude"][:]
-    lat  = ds["latitude"][:]
+    lon  = ds["longitude"][:,:]
+    lat  = ds["latitude"][:,:]
     close(ds)
 
     dtvec = start : Day(1) : stop; ndt = length(dtvec)

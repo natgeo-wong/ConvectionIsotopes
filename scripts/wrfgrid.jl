@@ -52,8 +52,8 @@ function wrfgrid()
         "long_name" => "V-grid latitude",
 	))
 
-	nclon[:] = lon; nclonu[:] = lon_u; nclonv[:] = lon_v
-	nclat[:] = lat; nclatu[:] = lat_u; nclatv[:] = lat_v
+	nclon[:,:] = lon; nclonu[:,:] = lon_u; nclonv[:,:] = lon_v
+	nclat[:,:] = lat; nclatu[:,:] = lat_u; nclatv[:,:] = lat_v
 
 	close(ds)
 

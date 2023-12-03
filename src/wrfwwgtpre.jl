@@ -16,8 +16,8 @@ function wrfwwgtpre(
     Rd = 287.053
     
     ds   = NCDataset(datadir("wrf","3D","W-daily.nc"))
-    lon  = ds["longitude"][:]
-    lat  = ds["latitude"][:]
+    lon  = ds["longitude"][:,:]
+    lat  = ds["latitude"][:,:]
     nlvl = ds.dim["levels"]
     ndt  = ds.dim["date"]; start = ds["time"][1]
     close(ds)

@@ -73,10 +73,10 @@ function wrf3Ddaily(
 
 	ncvar = defVar(ds,wvar,Float32,("longitude","latitude","levels","date"),attrib=attrib)
 
-	nclon[:] = lon
-	nclat[:] = lat
+	nclon[:,:] = lon
+	nclat[:,:] = lat
 	nctime.var[:] = collect(0 : (ndt-1))
-	ncvar[:] = narr
+	ncvar[:,:] = narr
 
 	close(ds)
 
@@ -164,10 +164,10 @@ function wrf2Ddaily(
 
 	ncvar = defVar(ds,wvar,Float32,("longitude","latitude","date"),attrib=attrib)
 
-	nclon[:] = lon
-	nclat[:] = lat
+	nclon[:,:] = lon
+	nclat[:,:] = lat
 	nctime.var[:] = collect(0 : (ndt-1))
-	ncvar[:] = narr
+	ncvar[:,:] = narr
 
 	close(ds)
 

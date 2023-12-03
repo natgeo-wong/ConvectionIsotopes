@@ -24,8 +24,8 @@ function wrf3Dsmooth(
 )
 
     ds   = NCDataset(datadir("wrf","3D","$(wvar)-daily.nc"))
-	lon  = ds["longitude"][:]; nlon = ds.dim["longitude"]
-    lat  = ds["latitude"][:];  nlat = ds.dim["latitude"]
+	lon  = ds["longitude"][:,:]; nlon = ds.dim["longitude"]
+    lat  = ds["latitude"][:,:];  nlat = ds.dim["latitude"]
 	nlvl = ds.dim["levels"]
     ndt  = ds.dim["date"]; start = ds["time"][1]
 	attrib = Dict(ds[wvar].attrib)
