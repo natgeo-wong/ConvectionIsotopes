@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.27
+# v0.19.32
 
 using Markdown
 using InteractiveUtils
@@ -48,46 +48,25 @@ md"
 ### A. Defining Datasets, Variables and Regions
 "
 
-# ╔═╡ d3f4a6a9-0915-470b-83af-e05e00dff5d2
-npd = IMERGMonthly(start=Date(2013),stop=Date(2020),path=datadir())
-
 # ╔═╡ a5487828-a442-4a64-b784-65a7319fc90c
-e5ds = ERA5Monthly(start=Date(2013,1,1),stop=Date(2021,12,31),path=datadir())
+e5ds = ERA5Monthly(start=Date(1979,1,1),stop=Date(2021,12,31),path=datadir())
 
 # ╔═╡ 9473b30b-787a-495b-bdfe-b386c9995761
 evar = SingleVariable("p_wwgt")
-
-# ╔═╡ 444e1d6a-6edb-4511-a9aa-e251c5b8013b
-pvar = SingleVariable("tp")
 
 # ╔═╡ c9d1e411-a65b-41f7-949b-cf2e32b2dfb4
 evar_pre = SingleVariable("sp")
 
 # ╔═╡ c7d0ae59-8d78-4946-8348-9fa570197b0b
-geo = GeoRegion("OTREC")
-
-# ╔═╡ 3d36cdbe-6ef1-4350-bfc8-9e27b1654bff
-ereg = ERA5Region(geo)
-
-# ╔═╡ 692cf678-4e91-4b18-b8e9-9d462cceef04
-nlsd = getLandSea(npd,geo,smooth=true,σlon=5,σlat=5)
+egeo = ERA5Region("TRP")
 
 # ╔═╡ cb7c6118-e25b-462a-84a5-751ea0682b52
-elsd = getLandSea(e5ds,ereg,smooth=true,σlon=2,σlat=2)
+elsd = getLandSea(e5ds,egeo,smooth=true,σlon=2,σlat=2)
 
 # ╔═╡ b68195cb-cf2e-4ce4-9999-1d71eacedf6a
 md"
 ### B. Loading ERA5 and GPM Datasets
 "
-
-# ╔═╡ 274db264-f4d0-4989-b547-c50275b46745
-ls_threshold = 0.95
-
-# ╔═╡ 59c930cd-5b7f-4047-8660-615148d1bd9f
-begin
-	infody = stninfody()[:,:]; nstn = size(infody,1)
-	md"Loading station location information ..."
-end
 
 # ╔═╡ acf26a3f-6f2c-4bfa-a0b4-1d0379cc47fe
 begin
@@ -96,114 +75,43 @@ begin
 	sp  = zeros(length(elsd.lon),length(elsd.lat),12)
 	wσ  = zeros(length(elsd.lon),length(elsd.lat),12)
 	cnt = zeros(length(elsd.lon),length(elsd.lat),12)
-	for dt in Date(2013) : Year(1) : Date(2020)
-		wpds = read(e5ds,evar,ereg,dt,quiet=true)
-		spds = read(e5ds,evar_pre,ereg,dt,quiet=true)
-		tmp[:,:,:] .= nomissing(wpds[evar.ID][:],0) / 100
+	for dt in e5ds.start : Year(1) : e5ds.stop
+		wpds = read(e5ds,evar,egeo,dt,quiet=true)
+		spds = read(e5ds,evar_pre,egeo,dt,quiet=true)
+		tmp[:,:,:] .= nomissing(wpds[evar.ID][:,:,:],0) / 100
 		wp[:,:,:]  += tmp
 		cnt[:,:,:] += Int.(.!iszero.(tmp))
-		sp[:,:,:]  .= nomissing(spds[evar_pre.ID][:]) / 100
+		sp[:,:,:]  .= nomissing(spds[evar_pre.ID][:,:,:]) / 100
 		close(wpds)
 		close(spds)
 		wσ[:,:,:]  += tmp ./ sp
 	end
-	wp  = wp ./ cnt
-	wσ  = wσ ./ cnt
-	for ilat = 1 : length(elsd.lat), ilon = 1 : length(elsd.lon)
-		if elsd.lsm[ilon,ilat] > ls_threshold
-			wp[ilon,ilat,:] .= NaN
-			wσ[ilon,ilat,:] .= NaN
-		end
-	end
+	wp  = wp ./ cnt; wp_yr  = dropdims(mean(wp,dims=3),dims=3)
+	wσ  = wσ ./ cnt; wσ_yr  = dropdims(mean(wσ,dims=3),dims=3)
+	wp_yr[elsd.z.>500] .= NaN
+	wσ_yr[elsd.z.>500] .= NaN
 	md"Loading and filtering w-weighted pressure and sigma data and counts ..."
 end
 
-# ╔═╡ 5fc05bef-09ab-4b71-b3b8-52824a4132e4
+# ╔═╡ 4342521a-6a0a-4d30-a5f3-975514d9006f
 begin
-	prc = zeros(length(nlsd.lon),length(nlsd.lat),12)
-	for dt in Date(2013) : Year(1) : Date(2020)
-		ids = read(npd,geo,dt,quiet=true)
-		prc[:,:,:] += ids["precipitation"][:] / 8 * 86400
-		close(ids)
-	end
-	md"Loading precipitation data ..."
-end
-
-# ╔═╡ 14663694-56f8-4651-ab52-8560374be699
-begin
-	pplt.close(); asp = (ereg.geo.E-ereg.geo.W)/(ereg.geo.N-ereg.geo.S)
-	f1,a1 = pplt.subplots(ncols=4,nrows=2,axwidth=1.5,aspect=asp)
+	pplt.close(); fig,axs = pplt.subplots(nrows=2,aspect=9,axwidth=6)
 	
-	c = a1[1].pcolormesh(
-		elsd.lon,elsd.lat,wσ[:,:,1]',levels=0.25:0.05:0.85,
-		extend="both",cmap="delta"
-	)
-	a1[1].plot(x,y,c="k",lw=0.5)
-	a1[1].format(ultitle="(a) Jan")
+	c1 = axs[1].pcolormesh(elsd.lon,elsd.lat,wp_yr',levels=(9:0.5:15).*50,extend="both",cmap="drywet_r")
+	c2 = axs[2].pcolormesh(elsd.lon,elsd.lat,wσ_yr',levels=(9:0.5:15)./20,extend="both",cmap="drywet_r")
 
-	a1[2].pcolormesh(
-		elsd.lon,elsd.lat,wσ[:,:,4]',levels=0.25:0.05:0.85,
-		extend="both",cmap="delta"
-	)
-	a1[2].plot(x,y,c="k",lw=0.5)
-	a1[2].format(ultitle="(b) Apr")
-
-	a1[3].pcolormesh(
-		elsd.lon,elsd.lat,wσ[:,:,7]',levels=0.25:0.05:0.85,
-		extend="both",cmap="delta"
-	)
-	a1[3].plot(x,y,c="k",lw=0.5)
-	a1[3].format(ultitle="(c) Jul")
-
-	a1[4].pcolormesh(
-		elsd.lon,elsd.lat,wσ[:,:,10]',levels=0.25:0.05:0.85,
-		extend="both",cmap="delta"
-	)
-	a1[4].plot(x,y,c="k",lw=0.5)
-	a1[4].format(ultitle="(d) Oct")
-	a1[4].colorbar(c,label=L"$\sigma_w$ / hPa")
-	
-	c = a1[5].pcolormesh(
-		elsd.lon,elsd.lat,wp[:,:,1]',levels=250:50:850,
-		extend="both",cmap="delta"
-	)
-	a1[5].plot(x,y,c="k",lw=0.5)
-	a1[5].format(ultitle="(a) Jan")
-
-	a1[6].pcolormesh(
-		elsd.lon,elsd.lat,wp[:,:,4]',levels=250:50:850,
-		extend="both",cmap="delta"
-	)
-	a1[6].plot(x,y,c="k",lw=0.5)
-	a1[6].format(ultitle="(b) Apr")
-
-	a1[7].pcolormesh(
-		elsd.lon,elsd.lat,wp[:,:,7]',levels=250:50:850,
-		extend="both",cmap="delta"
-	)
-	a1[7].plot(x,y,c="k",lw=0.5)
-	a1[7].format(ultitle="(c) Jul")
-
-	a1[8].pcolormesh(
-		elsd.lon,elsd.lat,wp[:,:,10]',levels=250:50:850,
-		extend="both",cmap="delta"
-	)
-	a1[8].plot(x,y,c="k",lw=0.5)
-	a1[8].format(ultitle="(d) Oct")
-	a1[8].colorbar(c,label=L"$p_w$ / hPa")
-
-	for ax in a1
-		ax.scatter(infody[:,2],infody[:,3],s=10,c="r")
+	for ax in axs
+		ax.plot(x,y,c="k",lw=0.5)
 		ax.format(
-			xlim=(minimum(elsd.lon)-1,maximum(elsd.lon)+1),xlocator=270:5:285,
-			ylim=(minimum(elsd.lat)-1,maximum(elsd.lat)+1),
-			xlabel=L"Longitude / $\degree$",ylabel=L"Latitude / $\degree$",
-			suptitle="W-weighted Mean Pressure (2013-2020)"
+			ylim=(-15,15),ylabel=L"Latitude / $\degree$",ylocator=-15:15:15,
+			xlim=(60,330),xlabel=L"Longitude / $\degree$",xlocator=60:30:330,
 		)
 	end
 
-	f1.savefig(plotsdir("03a-wwgt_pre-$(ereg.ID).png"),transparent=false,dpi=400)
-	load(plotsdir("03a-wwgt_pre-$(ereg.ID).png"))
+	fig.colorbar(c1,rows=1,locator=400:100:700,minorlocator=(5:0.5:15).*50,label=L"$p_\omega$")
+	fig.colorbar(c2,rows=2,locator=0.4:0.1:0.7,minorlocator=(5:0.5:15)./20,label=L"$\sigma_\omega$")
+	fig.savefig(plotsdir("03a-explorewwgtpre.png"),transparent=true,dpi=400)
+	load(plotsdir("03a-explorewwgtpre.png"))
 end
 
 # ╔═╡ Cell order:
@@ -212,18 +120,11 @@ end
 # ╟─bec4e6f2-c2ea-421e-8c57-33e1ef90aa21
 # ╟─1cfa1b51-5a64-4945-9e61-82a27900f9de
 # ╟─75925166-d1e8-450e-bae6-29affd25d635
-# ╟─d3f4a6a9-0915-470b-83af-e05e00dff5d2
 # ╟─a5487828-a442-4a64-b784-65a7319fc90c
 # ╟─9473b30b-787a-495b-bdfe-b386c9995761
-# ╟─444e1d6a-6edb-4511-a9aa-e251c5b8013b
 # ╟─c9d1e411-a65b-41f7-949b-cf2e32b2dfb4
 # ╟─c7d0ae59-8d78-4946-8348-9fa570197b0b
-# ╟─3d36cdbe-6ef1-4350-bfc8-9e27b1654bff
-# ╟─692cf678-4e91-4b18-b8e9-9d462cceef04
 # ╟─cb7c6118-e25b-462a-84a5-751ea0682b52
 # ╟─b68195cb-cf2e-4ce4-9999-1d71eacedf6a
-# ╠═274db264-f4d0-4989-b547-c50275b46745
-# ╟─59c930cd-5b7f-4047-8660-615148d1bd9f
-# ╟─acf26a3f-6f2c-4bfa-a0b4-1d0379cc47fe
-# ╟─5fc05bef-09ab-4b71-b3b8-52824a4132e4
-# ╟─14663694-56f8-4651-ab52-8560374be699
+# ╠═acf26a3f-6f2c-4bfa-a0b4-1d0379cc47fe
+# ╟─4342521a-6a0a-4d30-a5f3-975514d9006f
