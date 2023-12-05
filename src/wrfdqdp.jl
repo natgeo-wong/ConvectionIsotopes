@@ -196,7 +196,7 @@ function wrfdhqdp(
 	close(dsp)
 
     mkpath(datadir("wrf","processed"))
-    fnc = datadir("wrf","processed","$(geo.ID)-$(iso)dqdp$(days).nc")
+    fnc = datadir("wrf","processed","$(geo.ID)-$(iso)dhqdp$(days).nc")
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")
