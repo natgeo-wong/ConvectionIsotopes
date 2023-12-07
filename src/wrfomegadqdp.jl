@@ -52,7 +52,7 @@ function wrfωdqdp(
 
     tmp_wmat = zeros(Float32,nlon,nlat,52); tmp_wvec = zeros(Float32,52)
     tmp_pmat = zeros(Float32,nlon,nlat,52); tmp_pvec = zeros(Float32,52)
-    tmp_ρmat = zeros(Float32,nlon,nlat,52); tmp_qvec = zeros(Float32,52)
+    tmp_ρmat = zeros(Float32,nlon,nlat,52); tmp_qvec = zeros(Float64,52)
 
     ωdqdp = zeros(Float32,ndt)
     ω     = zeros(Float32,ndt)
@@ -61,7 +61,7 @@ function wrfωdqdp(
     pbse = pds["PB"][lon1:lon2,lat1:lat2,:,1]
     close(pds)
 
-    if !smooth
+    if iszero(days)
         wds = NCDataset(datadir("wrf","3D","W-daily.nc"))
         pds = NCDataset(datadir("wrf","3D","P-daily.nc"))
         tds = NCDataset(datadir("wrf","3D","T-daily.nc"))
@@ -75,15 +75,15 @@ function wrfωdqdp(
     end
 
     if dofixeddqdp
-        qds = NCDataset(datadir("wrf","processed","$(geo.ID)-$(iso)dhqdp.nc"))
+        qds = NCDataset(datadir("wrf","processed","$(geo.ID)-$(iso)dqdp.nc"))
         tmp_qvec[2:(end-1)] .= dropdims(mean(qds["$(iso)dqdp"][:,:],dims=2),dims=2)
         close(qds)
     else
-        if !smooth
-            qds = NCDataset(datadir("wrf","processed","$(geo.ID)-$(iso)dhqdp.nc"))
+        if iszero(days)
+            qds = NCDataset(datadir("wrf","processed","$(geo.ID)-$(iso)dqdp.nc"))
         else
             smthstr = "smooth_$(@sprintf("%02d",days))days"
-            qds = NCDataset(datadir("wrf","processed","$(geo.ID)-$(iso)dhqdp-$smthstr.nc"))
+            qds = NCDataset(datadir("wrf","processed","$(geo.ID)-$(iso)dqdp-$smthstr.nc"))
         end
     end
 
@@ -97,7 +97,7 @@ function wrfωdqdp(
         NCDatasets.load!(tds["T"].var,tarr,lon1:lon2,lat1:lat2,:,ii)
         NCDatasets.load!(sds["PSFC"].var,psfc,lon1:lon2,lat1:lat2,ii)
         if !dofixeddqdp
-            qarr = @views tmp_qvec[2:(end-1)]
+            qarr = @view tmp_qvec[2:(end-1)]
             NCDatasets.load!(qds["$(iso)dqdp"].var,qarr,:,ii)
         end
 
@@ -137,18 +137,18 @@ function wrfωdqdp(
     end
 
     mkpath(datadir("wrf","processed"))
-    if !smooth
+    if iszero(days)
         if dofixeddqdp
-            fnc = datadir("wrf","processed","$(geo.ID)-ωdqdpfixed-daily.nc")
+            fnc = datadir("wrf","processed","$(geo.ID)-$(iso)ωdqdpfixed-daily.nc")
         else
-            fnc = datadir("wrf","processed","$(geo.ID)-ωdqdp-daily.nc")
+            fnc = datadir("wrf","processed","$(geo.ID)-$(iso)ωdqdp-daily.nc")
         end
     else
         smthstr = "smooth_$(@sprintf("%02d",days))days"
         if dofixeddqdp
-            fnc = datadir("wrf","processed","$(geo.ID)-ωdqdpfixed-daily-$smthstr.nc")
+            fnc = datadir("wrf","processed","$(geo.ID)-$(iso)ωdqdpfixed-daily-$smthstr.nc")
         else
-            fnc = datadir("wrf","processed","$(geo.ID)-ωdqdp-daily-$smthstr.nc")
+            fnc = datadir("wrf","processed","$(geo.ID)-$(iso)ωdqdp-daily-$smthstr.nc")
         end
     end
 
@@ -163,7 +163,7 @@ function wrfωdqdp(
         "calendar"  => "gregorian"
     ))
 
-    ncωdqdp = defVar(ds,"⟨ωdqdp⟩",Float32,("date",),attrib=Dict(
+    ncωdqdp = defVar(ds,"⟨$(iso)ωdqdp⟩",Float32,("date",),attrib=Dict(
         "long_name" => "column_mean_lagrangian_tendency_of_air_pressure",
         "full_name" => "Pressure-Velocity Weighted Gradient of $(iso)VAPOR against pressure",
         "units"     => "Pa kg kg**-1 s**-1",
