@@ -17,8 +17,6 @@ function wrfdqdp(
     lat  = ds["latitude"][:,:]
     close(ds)
 
-    dtvec = start : Day(1) : stop; ndt = length(dtvec)
-
     ggrd = RegionGrid(geo,lon,lat)
     apnt = findall(ggrd.mask .== 1)
     npnt = length(apnt)
@@ -33,8 +31,12 @@ function wrfdqdp(
         if ilat > lat2; lat2 = ilat; end
     end
 
+    dtvec = start : Day(1) : stop
+
     nlon = lon2 - lon1 + 1
     nlat = lat2 - lat1 + 1
+    nlvl = 50
+    ndt  = length(dtvec)
 
     wgts = ones(nlon,nlat)
     wgts[1,:] *= 0.5; wgts[end,:] *= 0.5
@@ -44,11 +46,11 @@ function wrfdqdp(
     if iso != ""; iso = "$(iso)_" end
 	if !iszero(days); days = "-smooth_$(@sprintf("%02d",days))days"; else; days = "" end
 
-    tmpq = zeros(Float32,nlon,nlat,50)
-    tmpp = zeros(Float32,nlon,nlat,50)
+    tmpq = zeros(Float32,nlon,nlat,nlvl)
+    tmpp = zeros(Float32,nlon,nlat,nlvl)
     
-    pvec = zeros(50,ndt)
-    dqdp = zeros(50,ndt)
+    pvec = zeros(nlvl,ndt)
+    dqdp = zeros(nlvl,ndt)
 
     dsp = NCDataset(datadir("wrf","3D","PB-daily.nc"))
     pbs = dsp["PB"][lon1:lon2,lat1:lat2,:,1]
@@ -69,7 +71,7 @@ function wrfdqdp(
 		q            = dropdims(sum(tmpq .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
 		pvec[:,idt] .= dropdims(sum(tmpp .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm .+ pbs
 
-		for ilvl = 2 : 49
+		for ilvl = 2 : (nlvl-1)
 			dqdp[ilvl,idt] = (q[ilvl+1]-q[ilvl-1]) ./ (pvec[ilvl+1,idt]-pvec[ilvl-1,idt])
 		end
 		dqdp[1,idt] = (q[2]-q[1]) / (pvec[2,idt]-pvec[1,idt])
@@ -85,7 +87,7 @@ function wrfdqdp(
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")
-    ds.dim["level"] = 50
+    ds.dim["level"] = nlvl
     ds.dim["date"]  = ndt
 
     nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
@@ -125,8 +127,6 @@ function wrfdhqdp(
     lat  = ds["latitude"][:,:]
     close(ds)
 
-    dtvec = start : Day(1) : stop; ndt = length(dtvec)
-
     ggrd = RegionGrid(geo,lon,lat)
     apnt = findall(ggrd.mask .== 1)
     npnt = length(apnt)
@@ -141,8 +141,12 @@ function wrfdhqdp(
         if ilat > lat2; lat2 = ilat; end
     end
 
+    dtvec = start : Day(1) : stop
+
     nlon = lon2 - lon1 + 1
     nlat = lat2 - lat1 + 1
+    nlvl = 50
+    ndt  = length(dtvec)
 
     wgts = ones(nlon,nlat)
     wgts[1,:] *= 0.5; wgts[end,:] *= 0.5
@@ -152,13 +156,13 @@ function wrfdhqdp(
     if iso != ""; iso = "$(iso)_" end
 	if !iszero(days); days = "-smooth_$(@sprintf("%02d",days))days"; else; days = "" end
 
-    tmpq = zeros(Float32,nlon,nlat,50)
-    tmph = zeros(Float32,nlon,nlat,50)
-    tmpp = zeros(Float32,nlon,nlat,50)
+    tmpq = zeros(Float32,nlon,nlat,nlvl)
+    tmph = zeros(Float32,nlon,nlat,nlvl)
+    tmpp = zeros(Float32,nlon,nlat,nlvl)
     
-    pvec  = zeros(50,ndt)
-    hq    = zeros(50,ndt)
-    dhqdp = zeros(50,ndt)
+    pvec  = zeros(nlvl,ndt)
+    hq    = zeros(nlvl,ndt)
+    dhqdp = zeros(nlvl,ndt)
 
     dsp = NCDataset(datadir("wrf","3D","PB-daily.nc"))
     pbs = dsp["PB"][lon1:lon2,lat1:lat2,:,1]
@@ -184,7 +188,7 @@ function wrfdhqdp(
 
         hq[:,idt] .= h ./ q
 
-		for ilvl = 2 : 49
+		for ilvl = 2 : (nlvl-1)
 			dhqdp[ilvl,idt] = (hq[ilvl+1,idt]-hq[ilvl-1,idt]) ./ (pvec[ilvl+1,idt]-pvec[ilvl-1,idt])
 		end
 		dhqdp[1,idt] = (hq[2,idt]-hq[1,idt]) / (pvec[2,idt]-pvec[1,idt])
@@ -200,7 +204,7 @@ function wrfdhqdp(
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")
-    ds.dim["level"] = 50
+    ds.dim["level"] = nlvl
     ds.dim["date"]  = ndt
 
     nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(

@@ -11,26 +11,39 @@ function wrfωdqdp(
     geo  :: GeoRegion;
     iso   :: AbstractString = "",
     dofixeddqdp :: Bool = false,
-    smooth :: Bool = false,
+    start :: Date,
+    stop  :: Date,
     days = 1
 )
 
     if iso != ""; iso = "$(iso)_" end
     Rd = 287.053
     
-    ds   = NCDataset(datadir("wrf","3D","W-daily.nc"))
+    ds   = NCDataset(datadir("wrf","grid.nc"))
     lon  = ds["longitude"][:,:]
     lat  = ds["latitude"][:,:]
-    nlvl = ds.dim["levels"]
-    ndt  = ds.dim["date"]; start = ds["time"][1]
     close(ds)
 
     ggrd = RegionGrid(geo,lon,lat)
-    lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findlast(ggrd.mask .== 1)[1]
-    lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findlast(ggrd.mask .== 1)[2]
+    apnt = findall(ggrd.mask .== 1)
+    npnt = length(apnt)
+    lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findfirst(ggrd.mask .== 1)[1]
+    lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findfirst(ggrd.mask .== 1)[2]
+
+    for ipnt = 2 : npnt
+        ilon = apnt[ipnt][1]; ilat = apnt[ipnt][2]
+        if ilon < lon1; lon1 = ilon; end
+        if ilon > lon2; lon2 = ilon; end
+        if ilat < lat1; lat1 = ilat; end
+        if ilat > lat2; lat2 = ilat; end
+    end
+
+    dtvec = start : Day(1) : stop
 
     nlon = lon2 - lon1 + 1
     nlat = lat2 - lat1 + 1
+    nlvl = 50
+    ndt  = length(dtvec)
 
     warr = zeros(Float32,nlon,nlat,nlvl+1)
     parr = zeros(Float32,nlon,nlat,nlvl)
@@ -88,7 +101,7 @@ function wrfωdqdp(
             NCDatasets.load!(qds["$(iso)dqdp"].var,qarr,:,ii)
         end
 
-        for ilvl = 1 : (nlvl-1), ilat = 1 : nlat, ilon = 1 : nlon
+        for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
             parr[ilon,ilat,ilvl] += pbse[ilon,ilat,ilvl]
             tarr[ilon,ilat,ilvl] += 290
             tarr[ilon,ilat,ilvl]  = tarr[ilon,ilat,ilvl] * (100000 / parr[ilon,ilat,ilvl]) ^ (287/1004)
@@ -98,7 +111,7 @@ function wrfωdqdp(
             
             tmp_pmat[ilon,ilat,1] = psfc[ilon,ilat]
 
-            for ilvl = 1 : (nlvl-1)
+            for ilvl = 1 : nlvl
                 tmp_wmat[ilon,ilat,ilvl+1]  = (warr[ilon,ilat,ilvl] + warr[ilon,ilat,ilvl+1]) / 2
                 tmp_ρmat[ilon,ilat,ilvl+1]  =  parr[ilon,ilat,ilvl] / Rd / tarr[ilon,ilat,ilvl]
                 tmp_wmat[ilon,ilat,ilvl+1] *= (tmp_ρmat[ilon,ilat,ilvl+1] * -9.81)

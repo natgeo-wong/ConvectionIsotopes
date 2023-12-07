@@ -18,8 +18,6 @@ function wrfqbudget(
     lat  = ds["latitude"][:,:]
     close(ds)
 
-    dtvec = start : Day(1) : stop; ndt = length(dtvec)
-
     ggrd = RegionGrid(geo,lon,lat)
     apnt = findall(ggrd.mask .== 1)
     npnt = length(apnt)
@@ -34,8 +32,11 @@ function wrfqbudget(
         if ilat > lat2; lat2 = ilat; end
     end
 
+    dtvec = start : Day(1) : stop
+
     nlon = lon2 - lon1 + 1
     nlat = lat2 - lat1 + 1
+    ndt  = length(dtvec)
 
     wgts = ones(nlon,nlat)
     wgts[1,:] *= 0.5; wgts[end,:] *= 0.5
@@ -207,8 +208,6 @@ function wrfqdiv(
     lat  = ds["latitude"][:,:]
     close(ds)
 
-    dtvec = start : Day(1) : stop; ndt = length(dtvec)
-
     ggrd = RegionGrid(geo,lon,lat)
     apnt = findall(ggrd.mask .== 1)
     npnt = length(apnt)
@@ -223,9 +222,12 @@ function wrfqdiv(
         if ilat > lat2; lat2 = ilat; end
     end
 
+    dtvec = start : Day(1) : stop
+
     nlon = lon2 - lon1 + 1
     nlat = lat2 - lat1 + 1
     nlvl = 50
+    ndt  = length(dtvec)
 
     if iso != ""; iso = "$(iso)_" end
 
@@ -422,8 +424,6 @@ function wrfqdivdecompose(
         lat  = ds["latitude"][:,:]
         close(ds)
 
-        dtvec = start : Day(1) : stop; ndt = length(dtvec)
-
         ggrd = RegionGrid(geo,lon,lat)
         apnt = findall(ggrd.mask .== 1)
         npnt = length(apnt)
@@ -438,9 +438,12 @@ function wrfqdivdecompose(
             if ilat > lat2; lat2 = ilat; end
         end
 
+        dtvec = start : Day(1) : stop
+
         nlon = lon2 - lon1 + 1
         nlat = lat2 - lat1 + 1
         nlvl = 50
+        ndt  = length(dtvec)
 
         wgts = ones(nlon,nlat)
         wgts[1,:] *= 0.5; wgts[end,:] *= 0.5
@@ -625,15 +628,26 @@ function wrfqdivvsiwt(;
     lat  = ds["latitude"][:,:,1]
     close(ds)
 
-    dtvec = start : Day(1) : stop; ndt = length(dtvec)
-
     ggrd = RegionGrid(geo,lon,lat)
-    lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findlast(ggrd.mask .== 1)[1]
-    lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findlast(ggrd.mask .== 1)[2]
+    apnt = findall(ggrd.mask .== 1)
+    npnt = length(apnt)
+    lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findfirst(ggrd.mask .== 1)[1]
+    lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findfirst(ggrd.mask .== 1)[2]
+
+    for ipnt = 2 : npnt
+        ilon = apnt[ipnt][1]; ilat = apnt[ipnt][2]
+        if ilon < lon1; lon1 = ilon; end
+        if ilon > lon2; lon2 = ilon; end
+        if ilat < lat1; lat1 = ilat; end
+        if ilat > lat2; lat2 = ilat; end
+    end
+
+    dtvec = start : Day(1) : stop
 
     nlon = lon2 - lon1 + 1
     nlat = lat2 - lat1 + 1
     nlvl = 50
+    ndt  = length(dtvec)
 
     if iso != ""; iso = "$(iso)_" end
 

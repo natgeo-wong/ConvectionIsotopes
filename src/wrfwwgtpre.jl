@@ -9,25 +9,38 @@ include(srcdir("backend.jl"))
 
 function wrfwwgtpre(
     geo  :: GeoRegion;
-    smooth = false,
-    smoothtime = 1
+    start :: Date,
+    stop  :: Date,
+	days  :: Int = 0
 )
 
     Rd = 287.053
     
-    ds   = NCDataset(datadir("wrf","3D","W-daily.nc"))
+    ds   = NCDataset(datadir("wrf","grid.nc"))
     lon  = ds["longitude"][:,:]
     lat  = ds["latitude"][:,:]
-    nlvl = ds.dim["levels"]
-    ndt  = ds.dim["date"]; start = ds["time"][1]
     close(ds)
 
     ggrd = RegionGrid(geo,lon,lat)
-    lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findlast(ggrd.mask .== 1)[1]
-    lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findlast(ggrd.mask .== 1)[2]
+    apnt = findall(ggrd.mask .== 1)
+    npnt = length(apnt)
+    lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findfirst(ggrd.mask .== 1)[1]
+    lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findfirst(ggrd.mask .== 1)[2]
+
+    for ipnt = 2 : npnt
+        ilon = apnt[ipnt][1]; ilat = apnt[ipnt][2]
+        if ilon < lon1; lon1 = ilon; end
+        if ilon > lon2; lon2 = ilon; end
+        if ilat < lat1; lat1 = ilat; end
+        if ilat > lat2; lat2 = ilat; end
+    end
+
+    dtvec = start : Day(1) : stop
 
     nlon = lon2 - lon1 + 1
     nlat = lat2 - lat1 + 1
+    nlvl = 50
+    ndt  = length(dtvec)
 
     warr = zeros(Float32,nlon,nlat,nlvl+1)
     parr = zeros(Float32,nlon,nlat,nlvl)
@@ -45,13 +58,13 @@ function wrfwwgtpre(
     pbse = pds["PB"][lon1:lon2,lat1:lat2,:,1]
     close(pds)
 
-    if !smooth
+    if iszero(days)
         wds = NCDataset(datadir("wrf","3D","W-daily.nc"))
         pds = NCDataset(datadir("wrf","3D","P-daily.nc"))
         tds = NCDataset(datadir("wrf","3D","T-daily.nc"))
         sds = NCDataset(datadir("wrf","2D","PSFC-daily.nc"))
     else
-        smthstr = "smooth_$(@sprintf("%02d",smoothtime))days"
+        smthstr = "smooth_$(@sprintf("%02d",days))days"
         wds = NCDataset(datadir("wrf","3D","W-daily-$smthstr.nc"))
         pds = NCDataset(datadir("wrf","3D","P-daily-$smthstr.nc"))
         tds = NCDataset(datadir("wrf","3D","T-daily-$smthstr.nc"))
@@ -102,10 +115,10 @@ function wrfwwgtpre(
     close(sds)
 
     mkpath(datadir("wrf","processed"))
-    if !smooth
+    if iszero(days)
         fnc = datadir("wrf","processed","$(geo.ID)-p_wwgt-daily.nc")
     else
-        smthstr = "smooth_$(@sprintf("%02d",smoothtime))days"
+        smthstr = "smooth_$(@sprintf("%02d",days))days"
         fnc = datadir("wrf","processed","$(geo.ID)-p_wwgt-daily-$smthstr.nc")
     end
 

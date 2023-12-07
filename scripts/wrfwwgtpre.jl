@@ -2,31 +2,20 @@ using DrWatson
 @quickactivate "ConvectionIsotopes"
 
 using Dates
+using Printf
 
-include(srcdir("wrfsmooth.jl"))
+include(srcdir("wrfwwgtpre.jl"))
 
-wrfwwgtpre(GeoRegion("OTREC_STN01"),smooth=true,smoothtime=7)
-wrfwwgtpre(GeoRegion("OTREC_STN02"),smooth=true,smoothtime=7)
-wrfwwgtpre(GeoRegion("OTREC_STN03"),smooth=true,smoothtime=7)
-wrfwwgtpre(GeoRegion("OTREC_STN04"),smooth=true,smoothtime=7)
-wrfwwgtpre(GeoRegion("OTREC_STN05"),smooth=true,smoothtime=7)
-wrfwwgtpre(GeoRegion("OTREC_STN06"),smooth=true,smoothtime=7)
-wrfwwgtpre(GeoRegion("OTREC_STN07"),smooth=true,smoothtime=7)
-wrfwwgtpre(GeoRegion("OTREC_STN08"),smooth=true,smoothtime=7)
-wrfwwgtpre(GeoRegion("OTREC_STN09"),smooth=true,smoothtime=7)
-wrfwwgtpre(GeoRegion("OTREC_STN10"),smooth=true,smoothtime=7)
-wrfwwgtpre(GeoRegion("OTREC_STN11"),smooth=true,smoothtime=7)
-wrfwwgtpre(GeoRegion("OTREC_STN12"),smooth=true,smoothtime=7)
+for istn = 1 : 12
 
-wrfwwgtpre(GeoRegion("OTREC_STN01"),smooth=true,smoothtime=30)
-wrfwwgtpre(GeoRegion("OTREC_STN02"),smooth=true,smoothtime=30)
-wrfwwgtpre(GeoRegion("OTREC_STN03"),smooth=true,smoothtime=30)
-wrfwwgtpre(GeoRegion("OTREC_STN04"),smooth=true,smoothtime=30)
-wrfwwgtpre(GeoRegion("OTREC_STN05"),smooth=true,smoothtime=30)
-wrfwwgtpre(GeoRegion("OTREC_STN06"),smooth=true,smoothtime=30)
-wrfwwgtpre(GeoRegion("OTREC_STN07"),smooth=true,smoothtime=30)
-wrfwwgtpre(GeoRegion("OTREC_STN08"),smooth=true,smoothtime=30)
-wrfwwgtpre(GeoRegion("OTREC_STN09"),smooth=true,smoothtime=30)
-wrfwwgtpre(GeoRegion("OTREC_STN10"),smooth=true,smoothtime=30)
-wrfwwgtpre(GeoRegion("OTREC_STN11"),smooth=true,smoothtime=30)
-wrfwwgtpre(GeoRegion("OTREC_STN12"),smooth=true,smoothtime=30)
+    geoID = "OTREC_STN$(@sprintf("%02d",istn))"
+    wrfwwgtpre(GeoRegion(geoID),start=Date(2019,8),stop=Date(2019,12,30),days=7)
+    wrfwwgtpre(GeoRegion(geoID),start=Date(2019,8),stop=Date(2019,12,30),days=30)
+
+    for ibox = 1 : 4
+        boxID = "OTREC_STN$(@sprintf("%02d",istn))_$(@sprintf("%02d",ibox))"
+        wrfwwgtpre(GeoRegion(boxID),start=Date(2019,8),stop=Date(2019,12,30),days=7)
+        wrfwwgtpre(GeoRegion(boxID),start=Date(2019,8),stop=Date(2019,12,30),days=30)
+    end
+
+end
