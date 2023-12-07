@@ -42,7 +42,7 @@ function wrfdqdp(
     wgtm = sum(wgts)
 
     if iso != ""; iso = "$(iso)_" end
-	if !iszero(days); days = "-smooth_$(@sprintf("%02d",days))days" end
+	if !iszero(days); days = "-smooth_$(@sprintf("%02d",days))days"; else; days = "" end
 
     tmpq = zeros(Float32,nlon,nlat,50)
     tmpp = zeros(Float32,nlon,nlat,50)
@@ -150,7 +150,7 @@ function wrfdhqdp(
     wgtm = sum(wgts)
 
     if iso != ""; iso = "$(iso)_" end
-	if !iszero(days); days = "-smooth_$(@sprintf("%02d",days))days" end
+	if !iszero(days); days = "-smooth_$(@sprintf("%02d",days))days"; else; days = "" end
 
     tmpq = zeros(Float32,nlon,nlat,50)
     tmph = zeros(Float32,nlon,nlat,50)
