@@ -1,3 +1,7 @@
+using DelimitedFiles
+using DrWatson
+using Glob
+
 function int2real!(
     oarray :: AbstractArray{FT},
     iarray :: AbstractArray{Int16};
@@ -34,4 +38,13 @@ function inplaceadd!(
 
     return
 
+end
+
+function loadflightpaths()
+    data = Vector{Array{Float64,2}}(undef,22)
+    fvec = glob("OTRECrf*",datadir("flightpaths"))
+    for ii in 1 : length(fvec)
+        data[ii] = readdlm(fvec[ii],',')
+    end
+    return data
 end
