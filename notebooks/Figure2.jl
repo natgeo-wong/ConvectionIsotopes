@@ -25,6 +25,7 @@ begin
 	pplt = pyimport("proplot")
 
 	include(srcdir("common.jl"))
+	include(srcdir("backend.jl"))
 
 	md"Loading modules for the ConvectionIsotopes project..."
 end
@@ -57,6 +58,12 @@ begin
 	x = coast[:,1]
 	y = coast[:,2]
 	md"Loading coastlines data ..."
+end
+
+# ╔═╡ eb7a010b-5e93-48c5-8e0a-698fbd70cda4
+begin
+	flights = loadflightpaths()
+	md"Loading flight path data ..."
 end
 
 # ╔═╡ 60d38ccd-6538-426f-985e-9d782834dce9
@@ -108,6 +115,10 @@ begin
 		lsd.lon,lsd.lat,lsd.z'/1000,
 		levels=lvls,cmap="delta",extend="both"
 	)
+
+	for ii = 1 : 22
+		axs[1].plot(flights[ii][:,1].+360,flights[ii][:,2],c="purple",linestyle=":")
+	end
 	
 	axs[1].plot(xinset,yinset,lw=0.5,c="k")
 	axs[1].plot([275,275,278,278,275],[8,10.5,10.5,8,8],lw=1,c="k",linestyle="--")
@@ -139,7 +150,7 @@ begin
 		levels=lvls,cmap="delta",extend="both"
 	)
 	ix.plot(xinset,yinset,lw=0.5,c="k")
-	ix.scatter(infocr[:,2],infocr[:,3],s=10,zorder=4,c="red")
+	ix.scatter(infocr[:,2],infocr[:,3],s=10,zorder=4,c="r")
 
 	ix.text(275.2,10.15,"EEFMB",c="k",size=7,bbox=textdict)
 	ix.text(275.4,9.65,"CGFI",c="k",size=7,bbox=textdict)
@@ -164,6 +175,10 @@ begin
 		lsd.lon,lsd.lat,lsd.z'/1000,
 		levels=lvls,cmap="delta",extend="both"
 	)
+
+	for ii = 1 : 22
+		ix.plot(flights[ii][:,1].+360,flights[ii][:,2],c="purple")
+	end
 	ix.plot(xinset,yinset,lw=0.5,c="k")
 	ix.plot([270,285,285,270,270],[0,0,15,15,0],lw=1.5,c="k")
 	ix.plot([255,300,300,255,255],[-15,-15,30,30,-15],lw=1.5,c="k",linestyle="--")
@@ -188,6 +203,7 @@ end
 # ╟─a6ab92dd-1fae-4a04-b8f3-6782ea67c60b
 # ╟─189e1048-c92d-457e-a30e-f4e523b80afc
 # ╟─32c650df-ccd2-4adf-a3b7-56611fff1b46
+# ╟─eb7a010b-5e93-48c5-8e0a-698fbd70cda4
 # ╟─60d38ccd-6538-426f-985e-9d782834dce9
 # ╟─c16d89d9-d7ba-4b79-aa7c-8570467333e0
 # ╟─194bb86d-a3bb-4585-ba66-067dd4488189
