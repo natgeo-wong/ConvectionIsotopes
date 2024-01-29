@@ -160,7 +160,7 @@ function wrfqbudget(
     ds = NCDataset(fnc,"c")
     ds.dim["date"] = ndt * 8
 
-    nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
+    nctime = defVar(ds,"time",Float32,("date",),attrib=Dict(
         "units"     => "hours since $(start) 00:00:00.0",
         "long_name" => "time",
         "calendar"  => "gregorian"
@@ -387,7 +387,7 @@ function wrfqdiv(
     ds = NCDataset(fnc,"c")
     ds.dim["date"] = ndt * 8
 
-    nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
+    nctime = defVar(ds,"time",Float32,("date",),attrib=Dict(
         "units"     => "hours since $(start) 00:00:00.0",
         "long_name" => "time",
         "calendar"  => "gregorian"
@@ -588,7 +588,7 @@ function wrfqdivdecompose(
         ds = NCDataset(fnc,"c")
         ds.dim["date"] = ndt * 8
 
-        nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
+        nctime = defVar(ds,"time",Float32,("date",),attrib=Dict(
             "units"     => "hours since $(start) 00:00:00.0",
             "long_name" => "time",
             "calendar"  => "gregorian"
@@ -734,7 +734,7 @@ function wrfqdivvsiwt(;
         "long_name" => "latitude",
     ))
 
-    nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
+    nctime = defVar(ds,"time",Float32,("date",),attrib=Dict(
         "units"     => "hours since $(start) 00:00:00.0",
         "long_name" => "time",
         "calendar"  => "gregorian"
