@@ -224,14 +224,14 @@ function wrfdhqdp(
     ))
 
     ncdhqdp = defVar(ds,"$(iso)dhqdp",Float64,("level","date",),attrib=Dict(
-        "units" => "Pa**-1",
-        "long_name" => "Gradient of Depletion of $(iso)VAPOR relative to SMOW against pressure"
+        "units" => "‰ Pa**-1",
+        "long_name" => "Gradient of $(iso)VAPOR/QVAPOR (relative to SMOW) against pressure"
     ))
 
     nctime.var[:] = collect(0 : (ndt-1))
     ncpres[:,:] = pvec
     nchq[:,:]   = (hq .- 1) * 1000
-    ncdhqdp[:,:] = dhqdp
+    ncdhqdp[:,:] = dhqdp * 1000
 
     close(ds)
 

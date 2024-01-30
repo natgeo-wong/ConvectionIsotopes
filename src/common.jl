@@ -85,3 +85,11 @@ end
 
 SMOW18O(x :: Real = 1.) = x * 2.0052e-3
 SMOWHDO(x :: Real = 1.) = x * 1.5576e-4
+
+function SMOW(x::Real, iso::AbstractString)
+	if iso == "HDO_"
+		return SMOWHDO(x)
+	elseif iso == "18O_"
+		return SMOW18O(x)
+	end
+end
