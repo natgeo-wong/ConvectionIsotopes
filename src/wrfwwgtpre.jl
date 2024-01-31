@@ -81,7 +81,7 @@ function wrfwwgtpre(
         NCDatasets.load!(tds["T"].var,tarr,lon1:lon2,lat1:lat2,:,ii)
         NCDatasets.load!(sds["PSFC"].var,psfc,lon1:lon2,lat1:lat2,ii)
 
-        for ilvl = 1 : (nlvl-1), ilat = 1 : nlat, ilon = 1 : nlon
+        for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
             parr[ilon,ilat,ilvl] += pbse[ilon,ilat,ilvl]
             tarr[ilon,ilat,ilvl] += 290
             tarr[ilon,ilat,ilvl]  = tarr[ilon,ilat,ilvl] * (100000 / parr[ilon,ilat,ilvl]) ^ (287/1004)
@@ -91,7 +91,7 @@ function wrfwwgtpre(
             
             tmp_pmat[ilon,ilat,1] = psfc[ilon,ilat]
 
-            for ilvl = 1 : (nlvl-1)
+            for ilvl = 1 : nlvl
                 tmp_wmat[ilon,ilat,ilvl+1]  = (warr[ilon,ilat,ilvl] + warr[ilon,ilat,ilvl+1]) / 2
                 tmp_ρmat[ilon,ilat,ilvl+1]  =  parr[ilon,ilat,ilvl] / Rd / tarr[ilon,ilat,ilvl]
                 tmp_wmat[ilon,ilat,ilvl+1] *= (tmp_ρmat[ilon,ilat,ilvl+1] * -9.81)
