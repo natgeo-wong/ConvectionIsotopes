@@ -152,3 +152,104 @@ function wrfwwgtpre(
     close(ds)
 
 end
+
+function wrfwwgtpre(;
+    start :: Date,
+    stop  :: Date,
+	days  :: Int = 0
+)
+
+    Rd = 287.053
+    
+    ds   = NCDataset(datadir("wrf","grid.nc"))
+    lon  = ds["longitude"][:,:]
+    lat  = ds["latitude"][:,:]
+    close(ds)
+
+    dtvec = start : Day(1) : stop
+
+    ggrd = RegionGrid(geo,lon,lat)
+    nlon = length(ggrd.lon)
+    nlat = length(ggrd.lat)
+    nlvl = 50
+
+    warr = zeros(Float32,nlon,nlat,nlvl+1)
+    parr = zeros(Float32,nlon,nlat,nlvl)
+    tarr = zeros(Float32,nlon,nlat,nlvl)
+    psfc = zeros(Float32,nlon,nlat)
+
+    tmp_wvec = zeros(Float32,52)
+    tmp_pvec = zeros(Float32,52)
+    tmp_ρvec = zeros(Float32,52)
+
+    pwgt = zeros(Float32,nlon,nlat)
+    σwgt = zeros(Float32,nlon,nlat)
+
+    pds  = NCDataset(datadir("wrf","3D","PB-daily.nc"))
+    pbse = pds["PB"][:,:,:,1]
+    close(pds)
+
+    wds = NCDataset(datadir("wrf","3D","W-daily.nc"))
+    pds = NCDataset(datadir("wrf","3D","P-daily.nc"))
+    tds = NCDataset(datadir("wrf","3D","T-daily.nc"))
+    sds = NCDataset(datadir("wrf","2D","PSFC-daily.nc"))
+
+    warr = dropdims(mean(wds["W"][:,:,:,:],dims=4),dims=4)
+    parr = dropdims(mean(pds["P"][:,:,:,:],dims=4),dims=4)
+    tarr = dropdims(mean(tds["T"][:,:,:,:],dims=4),dims=4)
+    psfc = dropdims(mean(wds["PSFC"][:,:,:],dims=3),dims=3)
+
+    close(wds)
+    close(pds)
+    close(tds)
+    close(sds)
+
+    for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
+        parr[ilon,ilat,ilvl] += pbse[ilon,ilat,ilvl]
+        tarr[ilon,ilat,ilvl] += 290
+        tarr[ilon,ilat,ilvl]  = tarr[ilon,ilat,ilvl] * (100000 / parr[ilon,ilat,ilvl]) ^ (287/1004)
+    end        
+
+    for ilat = 1 : nlat, ilon = 1 : nlon
+        
+        tmp_pvec[1] = psfc[ilon,ilat]
+
+        for ilvl = 1 : nlvl
+            tmp_ρvec[ilvl+1]  =  parr[ilon,ilat,ilvl] / Rd / tarr[ilon,ilat,ilvl]
+            tmp_wvec[ilvl+1]  = (warr[ilon,ilat,ilvl] + warr[ilon,ilat,ilvl+1]) / 2
+            tmp_wvec[ilvl+1] *= (tmp_ρvec[ilvl+1] * -9.81)
+            tmp_pvec[ilvl+1]  =  parr[ilon,ilat,ilvl]
+        end
+
+        calc = trapz(tmp_pvec,tmp_wvec.*tmp_pvec) / trapz(tmp_pvec,tmp_wvec)
+        pwgt[ilon,ilat] = calc
+        σwgt[ilon,ilat] = calc / psfc[ilon,ilat]
+
+    end
+
+    mkpath(datadir("wrf","processed"))
+    fnc = datadir("wrf","processed","p_wwgt.nc")
+    if isfile(fnc); rm(fnc,force=true) end
+
+    ds = NCDataset(fnc,"c")
+    ds.dim["longitude"] = nlon
+    ds.dim["latitude"]  = nlat
+
+    ncpwgt = defVar(ds,"p_wwgt",Float32,("longitude","latitude",),attrib=Dict(
+        "long_name" => "column_mean_lagrangian_tendency_of_air_pressure",
+        "full_name" => "Vertical Wind Weighted Column Pressure",
+        "units"     => "Pa",
+    ))
+
+    ncσwgt = defVar(ds,"σ_wwgt",Float32,("longitude","latitude",),attrib=Dict(
+        "long_name" => "column_mean_lagrangian_tendency_of_sigma",
+        "full_name" => "Vertical Wind Weighted Column Sigma",
+        "units"     => "0-1",
+    ))
+
+    ncpwgt[:,:] = pwgt
+    ncσwgt[:,:] = σwgt
+
+    close(ds)
+
+end
