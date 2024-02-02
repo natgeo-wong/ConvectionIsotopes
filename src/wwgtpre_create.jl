@@ -334,7 +334,6 @@ function climatology_wp(
     @info "$(now()) - ConvectionIsotopes - Extracting the ERA5Variable Information for Surface Pressure, Vertical Winds and Vertical Wind Weighted Column Pressure ..."
 
     disable_logging(Logging.Warn)
-    evar_wp = SingleVariable("p_wwgt");
     evar_sp = SingleVariable("sp");
     evar_tp = SingleVariable("tp");
     evar_wa = Vector{PressureVariable}(undef,np)
@@ -436,7 +435,7 @@ function climatology_wp(
 
     wσ = wp ./sp
 
-    fnc = datadir("$(ereg.string)-p_wwgt-compiled-$(e5ds.start)_$(e5ds.stop).nc")
+    fnc = datadir("$(ereg.string)-p_wwgt-climatology-$(year(e5ds.start))_$(year(e5ds.stop)).nc")
     if isfile(fnc); rm(fnc,force=true) end
     ds  = NCDataset(fnc,"c")
 
