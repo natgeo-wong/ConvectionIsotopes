@@ -153,11 +153,7 @@ function wrfwwgtpre(
 
 end
 
-function wrfwwgtpre(;
-    start :: Date,
-    stop  :: Date,
-	days  :: Int = 0
-)
+function wrfwwgtpre()
 
     Rd = 287.053
     
@@ -166,11 +162,8 @@ function wrfwwgtpre(;
     lat  = ds["latitude"][:,:]
     close(ds)
 
-    dtvec = start : Day(1) : stop
-
-    ggrd = RegionGrid(geo,lon,lat)
-    nlon = length(ggrd.lon)
-    nlat = length(ggrd.lat)
+    nlon = size(lon,1)
+    nlat = size(lat,2)
     nlvl = 50
 
     warr = zeros(Float32,nlon,nlat,nlvl+1)
@@ -197,7 +190,7 @@ function wrfwwgtpre(;
     warr = dropdims(mean(wds["W"][:,:,:,:],dims=4),dims=4)
     parr = dropdims(mean(pds["P"][:,:,:,:],dims=4),dims=4)
     tarr = dropdims(mean(tds["T"][:,:,:,:],dims=4),dims=4)
-    psfc = dropdims(mean(wds["PSFC"][:,:,:],dims=3),dims=3)
+    psfc = dropdims(mean(sds["PSFC"][:,:,:],dims=3),dims=3)
 
     close(wds)
     close(pds)
@@ -228,7 +221,7 @@ function wrfwwgtpre(;
     end
 
     mkpath(datadir("wrf","processed"))
-    fnc = datadir("wrf","processed","p_wwgt.nc")
+    fnc = datadir("wrf","processed","p_wwgt-wrf.nc")
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")

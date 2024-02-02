@@ -346,7 +346,7 @@ function compiled_wp(
 
     for dtii in dtvec
 
-        @info "$(now()) - ConvectionIsotopes - Extracting the Surface Pressure and Vertical Wind dataset over the $(ereg.geo.name) Region for $(year(dtii)) $(month(dtii)) ..."
+        @info "$(now()) - ConvectionIsotopes - Extracting the Surface Pressure and Vertical Wind dataset over the $(ereg.geo.name) Region for $(year(dtii)) $(monthname(dtii)) ..."
 
         ndy = daysinmonth(dtii)
 
