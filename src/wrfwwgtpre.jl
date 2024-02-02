@@ -186,16 +186,19 @@ function wrfwwgtpre()
     pds = NCDataset(datadir("wrf","3D","P-daily.nc"))
     tds = NCDataset(datadir("wrf","3D","T-daily.nc"))
     sds = NCDataset(datadir("wrf","2D","PSFC-daily.nc"))
+    rds = NCDataset(datadir("wrf","2D","RAINNC-daily.nc"))
 
     warr = dropdims(mean(wds["W"][:,:,:,:],dims=4),dims=4)
     parr = dropdims(mean(pds["P"][:,:,:,:],dims=4),dims=4)
     tarr = dropdims(mean(tds["T"][:,:,:,:],dims=4),dims=4)
     psfc = dropdims(mean(sds["PSFC"][:,:,:],dims=3),dims=3)
+    rain = dropdims(mean(rds["RAINNC"][:,:,:],dims=3),dims=3)
 
     close(wds)
     close(pds)
     close(tds)
     close(sds)
+    close(rds)
 
     for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
         parr[ilon,ilat,ilvl] += pbse[ilon,ilat,ilvl]
@@ -215,8 +218,13 @@ function wrfwwgtpre()
         end
 
         calc = trapz(tmp_pvec,tmp_wvec.*tmp_pvec) / trapz(tmp_pvec,tmp_wvec)
-        pwgt[ilon,ilat] = calc
-        σwgt[ilon,ilat] = calc / psfc[ilon,ilat]
+        if (calc > 0) & (calc < psfc[ilon,ilat]) & (rain[ilon,ilat] > 5)
+            pwgt[ilon,ilat] = calc
+            σwgt[ilon,ilat] = calc / psfc[ilon,ilat]
+        else
+            pwgt[ilon,ilat] = NaN32
+            σwgt[ilon,ilat] = NaN32
+        end
 
     end
 
@@ -240,8 +248,22 @@ function wrfwwgtpre()
         "units"     => "0-1",
     ))
 
+    ncrain = defVar(ds,"RAINNC",Float32,("longitude","latitude",),attrib=Dict(
+        "long_name" => "total_precipitation",
+        "full_name" => "Total Precipitation",
+        "units"     => "mm",
+    ))
+
+    ncpsfc = defVar(ds,"PSFC",Float32,("longitude","latitude",),attrib=Dict(
+        "long_name" => "surface_pressure",
+        "full_name" => "Surface Pressure",
+        "units"     => "Pa",
+    ))
+
     ncpwgt[:,:] = pwgt
     ncσwgt[:,:] = σwgt
+    ncrain[:,:] = rain
+    ncpsfc[:,:] = psfc
 
     close(ds)
 
