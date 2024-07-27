@@ -32,6 +32,6 @@ XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
 [compat]
 DrWatson = "2.7"
 ERA5Reanalysis = "0.3"
-GeoRegions = "^5.2"
+GeoRegions = "^5.2, 6"
 NASAPrecipitation = "0.4"
 julia = "1"
