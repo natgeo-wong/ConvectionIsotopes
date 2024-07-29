@@ -173,18 +173,26 @@ function wrfdhqdp(
 	dsq = NCDataset(datadir("wrf","3D","QVAPOR-daily$(days).nc"))
 	dsp = NCDataset(datadir("wrf","3D","P-daily$(days).nc"))
 
+    NCDatasets.load!(dsh["$(iso)QVAPOR"].var,tmph,lon1:lon2,lat1:lat2,:,:)
+    NCDatasets.load!(dsq["QVAPOR"].var,tmpq,lon1:lon2,lat1:lat2,:,:)
+    NCDatasets.load!(dsp["P"].var,tmpp,lon1:lon2,lat1:lat2,:,:)
+
+	close(dsh)
+	close(dsq)
+	close(dsp)
+
     for idt in 1 : ndt
 
         @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
         flush(stderr)
+        
+        iiq = @view tmpq[:,:,:,idt]
+        iih = @view tmph[:,:,:,idt]
+        iip = @view tmpp[:,:,:,idt]
 
-        NCDatasets.load!(dsh["$(iso)QVAPOR"].var,tmph,lon1:lon2,lat1:lat2,:,idt)
-        NCDatasets.load!(dsq["QVAPOR"].var,tmpq,lon1:lon2,lat1:lat2,:,idt)
-        NCDatasets.load!(dsp["P"].var,tmpp,lon1:lon2,lat1:lat2,:,idt)
-
-		q            = dropdims(sum(tmpq .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
-		h            = dropdims(sum(tmph .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
-		pvec[:,idt] .= dropdims(sum(tmpp .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm .+ pbs
+		q            = dropdims(sum(iiq .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
+		h            = dropdims(sum(iih .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
+		pvec[:,idt] .= dropdims(sum(iip .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm .+ pbs
 
         hq[:,idt] .= h ./ q
 
@@ -195,9 +203,6 @@ function wrfdhqdp(
 		dhqdp[end,idt] = (hq[end,idt]-hq[end-1,idt]) / (pvec[end,idt]-pvec[end-1,idt])
 
     end
-
-	close(dsq)
-	close(dsp)
 
     mkpath(datadir("wrf","processed"))
     fnc = datadir("wrf","processed","$(geo.ID)-$(iso)dhqdp$(days).nc")
