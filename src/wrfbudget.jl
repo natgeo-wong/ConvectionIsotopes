@@ -235,10 +235,10 @@ function wrfqdiv(
     arc3 = haversine((lon[lon1,lat1],lat[lon1,lat1]),(lon[lon2,lat1],lat[lon2,lat1]))
     arc4 = haversine((lon[lon1,lat2],lat[lon1,lat2]),(lon[lon2,lat2],lat[lon2,lat2]))
 
-    pds = NCDataset(datadir("wrf2","3D","PB-daily.nc"))
+    pds = NCDataset(datadir("wrf2","raw","$(dtvec[1]).nc"))
     pb = pds["PB"][lon1:lon2,lat1:lat2,:,1]
     close(pds)
-
+    
     for idt in 1 : ndt
 
         @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
@@ -444,7 +444,7 @@ function wrfqdivdecompose(
         arc3 = haversine((lon[lon1,lat1],lat[lon1,lat1]),(lon[lon2,lat1],lat[lon2,lat1]))
         arc4 = haversine((lon[lon1,lat2],lat[lon1,lat2]),(lon[lon2,lat2],lat[lon2,lat2]))
 
-        pds = NCDataset(datadir("wrf2","3D","PB-daily.nc"))
+        pds = NCDataset(datadir("wrf2","raw","$(dtvec[1]).nc"))
         pb = pds["PB"][lon1:lon2,lat1:lat2,:,1]
         close(pds)
 
@@ -614,7 +614,7 @@ function wrfqdivvsiwt(;
     qflxwu = zeros(Float32,nlon,nlat,24,ndt)
     qflxwv = zeros(Float32,nlon,nlat,24,ndt)
 
-    pds = NCDataset(datadir("wrf2","3D","PB-daily.nc"))
+    pds = NCDataset(datadir("wrf2","raw","$(dtvec[1]).nc"))
     pbse = pds["PB"][lon1:lon2,lat1:lat2,:,1]
     close(pds)
 
