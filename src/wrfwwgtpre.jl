@@ -210,7 +210,7 @@ function wrfwwgtpre()
         end
 
         calc = trapz(tmp_pvec,tmp_wvec.*tmp_pvec) / trapz(tmp_pvec,tmp_wvec)
-        if (calc > 0) & (calc < psfc[ilon,ilat]) & (rain[ilon,ilat] > 5)
+        if (calc > 0) & (calc < psfc[ilon,ilat])
             pwgt[ilon,ilat] = calc
             σwgt[ilon,ilat] = calc / psfc[ilon,ilat]
         else
