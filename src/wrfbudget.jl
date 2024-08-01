@@ -67,12 +67,16 @@ function wrfqbudget(
         flush(stderr)
 
         ds1 = NCDataset(datadir("wrf2","raw","$(dtvec[idt]).nc"))
-        fncii = datadir("wrf2","raw","$(dtvec[idt]+Day(1))-e.nc")
-        if isfile(fncii)
+        ds3 = NCDataset(datadir("wrf2","aux","$(dtvec[idt]).nc"))
+        fnci1 = datadir("wrf2","raw","$(dtvec[idt]+Day(1))-e.nc")
+        fnci2 = datadir("wrf2","aux","$(dtvec[idt]+Day(1))-e.nc")
+        if isfile(fnci1)
             @info "$(now()) - ConvectionIsotopes - Tail end"
-            ds2 = NCDataset(fncii)
+            ds2 = NCDataset(fnci1)
+            ds4 = NCDataset(fnci2)
         else
             ds2 = NCDataset(datadir("wrf2","raw","$(dtvec[idt]+Day(1)).nc"))
+            ds4 = NCDataset(datadir("wrf2","aux","$(dtvec[idt]+Day(1)).nc"))
         end
 
         NCDatasets.load!(ds1["$(iso)RAINNC"].var,tmp1,lon1:lon2,lat1:lat2,:)
@@ -84,8 +88,8 @@ function wrfqbudget(
         tmp4 = mean(tmp2,wgtv)
         prcp[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
 
-        NCDatasets.load!(ds1["$(iso)QFX"].var,tmp1,lon1:lon2,lat1:lat2,:)
-        NCDatasets.load!(ds2["$(iso)QFX"].var,tmp2,lon1:lon2,lat1:lat2,1)
+        NCDatasets.load!(ds3["$(iso)QFX"].var,tmp1,lon1:lon2,lat1:lat2,:)
+        NCDatasets.load!(ds4["$(iso)QFX"].var,tmp2,lon1:lon2,lat1:lat2,1)
         for ii = 1 : 24, ilat = 1 : nlat, ilon = 1 : nlon
             tmp1[ilon,ilat,ii] *= wgts[ilon,ilat]
         end
@@ -93,8 +97,8 @@ function wrfqbudget(
         tmp4 = mean(tmp2,wgtv)
         evap[:,idt] = (vcat(tmp3[2:end],tmp4) .+ tmp3) / 2
 
-        NCDatasets.load!(ds1["$(iso)VAPORWP"].var,tmp1,lon1:lon2,lat1:lat2,:)
-        NCDatasets.load!(ds2["$(iso)VAPORWP"].var,tmp2,lon1:lon2,lat1:lat2,1)
+        NCDatasets.load!(ds3["$(iso)VAPORWP"].var,tmp1,lon1:lon2,lat1:lat2,:)
+        NCDatasets.load!(ds4["$(iso)VAPORWP"].var,tmp2,lon1:lon2,lat1:lat2,1)
         for ii = 1 : 24, ilat = 1 : nlat, ilon = 1 : nlon
             tmp1[ilon,ilat,ii] *= wgts[ilon,ilat]
         end
@@ -102,10 +106,10 @@ function wrfqbudget(
         tmp4 = mean(tmp2,wgtv)
         tcwv[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
 
-        NCDatasets.load!(ds1["$(iso)IWTX"].var,tmpqflx_1,lon1,lat1:lat2,:)
-        NCDatasets.load!(ds1["$(iso)IWTX"].var,tmpqflx_2,lon2,lat1:lat2,:)
-        NCDatasets.load!(ds1["$(iso)IWTY"].var,tmpqflx_3,lon1:lon2,lat1,:)
-        NCDatasets.load!(ds1["$(iso)IWTY"].var,tmpqflx_4,lon1:lon2,lat2,:)
+        NCDatasets.load!(ds3["$(iso)IWTX"].var,tmpqflx_1,lon1,lat1:lat2,:)
+        NCDatasets.load!(ds3["$(iso)IWTX"].var,tmpqflx_2,lon2,lat1:lat2,:)
+        NCDatasets.load!(ds3["$(iso)IWTY"].var,tmpqflx_3,lon1:lon2,lat1,:)
+        NCDatasets.load!(ds3["$(iso)IWTY"].var,tmpqflx_4,lon1:lon2,lat2,:)
         for ii = 1 : 24, ilat = 1 : nlat
             tmpqflx_1[ilat,ii] *= wgts[1,ilat]
             tmpqflx_2[ilat,ii] *= wgts[end,ilat]
@@ -120,10 +124,10 @@ function wrfqbudget(
                dropdims(sum(tmpqflx_1,dims=1),dims=1) / wgt1 * arc1 .-
                dropdims(sum(tmpqflx_3,dims=1),dims=1) / wgt3 * arc3
 
-        NCDatasets.load!(ds2["$(iso)IWTX"].var,tmpqflx_5,lon1,lat1:lat2,1)
-        NCDatasets.load!(ds2["$(iso)IWTX"].var,tmpqflx_6,lon2,lat1:lat2,1)
-        NCDatasets.load!(ds2["$(iso)IWTY"].var,tmpqflx_7,lon1:lon2,lat1,1)
-        NCDatasets.load!(ds2["$(iso)IWTY"].var,tmpqflx_8,lon1:lon2,lat2,1)
+        NCDatasets.load!(ds4["$(iso)IWTX"].var,tmpqflx_5,lon1,lat1:lat2,1)
+        NCDatasets.load!(ds4["$(iso)IWTX"].var,tmpqflx_6,lon2,lat1:lat2,1)
+        NCDatasets.load!(ds4["$(iso)IWTY"].var,tmpqflx_7,lon1:lon2,lat1,1)
+        NCDatasets.load!(ds4["$(iso)IWTY"].var,tmpqflx_8,lon1:lon2,lat2,1)
         for ilat = 1 : nlat
             tmpqflx_5[ilat] *= wgts[1,ilat]
             tmpqflx_6[ilat] *= wgts[end,ilat]
@@ -140,6 +144,8 @@ function wrfqbudget(
 
         close(ds1)
         close(ds2)
+        close(ds3)
+        close(ds4)
 
     end
 
@@ -238,7 +244,7 @@ function wrfqdiv(
     pds = NCDataset(datadir("wrf2","raw","$(dtvec[1]).nc"))
     pb = pds["PB"][lon1:lon2,lat1:lat2,:,1]
     close(pds)
-    
+
     for idt in 1 : ndt
 
         @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
