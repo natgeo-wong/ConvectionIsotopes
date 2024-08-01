@@ -88,14 +88,14 @@ function wrfqbudget(
         tmp4 = mean(tmp2,wgtv)
         prcp[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
 
-        NCDatasets.load!(ds3["$(iso)QFX"].var,tmp1,lon1:lon2,lat1:lat2,:)
-        NCDatasets.load!(ds4["$(iso)QFX"].var,tmp2,lon1:lon2,lat1:lat2,1)
-        for ii = 1 : 24, ilat = 1 : nlat, ilon = 1 : nlon
-            tmp1[ilon,ilat,ii] *= wgts[ilon,ilat]
-        end
-        tmp3 = dropdims(sum(tmp1,dims=(1,2)),dims=(1,2)) / wgtm
-        tmp4 = mean(tmp2,wgtv)
-        evap[:,idt] = (vcat(tmp3[2:end],tmp4) .+ tmp3) / 2
+        # NCDatasets.load!(ds3["$(iso)QFX"].var,tmp1,lon1:lon2,lat1:lat2,:)
+        # NCDatasets.load!(ds4["$(iso)QFX"].var,tmp2,lon1:lon2,lat1:lat2,1)
+        # for ii = 1 : 24, ilat = 1 : nlat, ilon = 1 : nlon
+        #     tmp1[ilon,ilat,ii] *= wgts[ilon,ilat]
+        # end
+        # tmp3 = dropdims(sum(tmp1,dims=(1,2)),dims=(1,2)) / wgtm
+        # tmp4 = mean(tmp2,wgtv)
+        # evap[:,idt] = (vcat(tmp3[2:end],tmp4) .+ tmp3) / 2
 
         NCDatasets.load!(ds3["$(iso)VAPORWP"].var,tmp1,lon1:lon2,lat1:lat2,:)
         NCDatasets.load!(ds4["$(iso)VAPORWP"].var,tmp2,lon1:lon2,lat1:lat2,1)
