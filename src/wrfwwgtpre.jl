@@ -260,3 +260,130 @@ function wrfwwgtpre()
     close(ds)
 
 end
+
+function wrfwwgtpre_monthly()
+
+    Rd = 287.053
+    
+    ds   = NCDataset(datadir("wrf2","grid.nc"))
+    lon  = ds["longitude"][:,:]
+    lat  = ds["latitude"][:,:]
+    close(ds)
+
+    nlon = size(lon,1)
+    nlat = size(lat,2)
+    nlvl = 50
+
+    warr = zeros(Float32,nlon,nlat,nlvl+1)
+    parr = zeros(Float32,nlon,nlat,nlvl)
+    tarr = zeros(Float32,nlon,nlat,nlvl)
+    psfc = zeros(Float32,nlon,nlat)
+
+    tmp_wvec = zeros(Float32,52)
+    tmp_pvec = zeros(Float32,52)
+    tmp_ρvec = zeros(Float32,52)
+
+    pwgt = zeros(Float32,nlon,nlat,12)
+    σwgt = zeros(Float32,nlon,nlat,12)
+    psfc = zeros(Float32,nlon,nlat,12)
+    rain = zeros(Float32,nlon,nlat,12)
+
+    pds  = NCDataset(datadir("wrf2","3D","PB-daily.nc"))
+    pbse = pds["PB"][:,:,:,1]
+    tt   = pds["time"][:]
+    close(pds)
+
+    wds = NCDataset(datadir("wrf2","3D","W-daily.nc"))
+    pds = NCDataset(datadir("wrf2","3D","P-daily.nc"))
+    tds = NCDataset(datadir("wrf2","3D","T-daily.nc"))
+    sds = NCDataset(datadir("wrf2","2D","PSFC-daily.nc"))
+    rds = NCDataset(datadir("wrf2","2D","RAINNC-daily.nc"))
+
+    for it = 1 : 12
+
+        ibeg = findfirst(month.(tt) .== it)
+        iend = findlast(month.(tt) .== it)
+
+        warr = dropdims(mean(wds["W"][:,:,:,ibeg:iend],dims=4),dims=4)
+        parr = dropdims(mean(pds["P"][:,:,:,ibeg:iend],dims=4),dims=4)
+        tarr = dropdims(mean(tds["T"][:,:,:,ibeg:iend],dims=4),dims=4)
+        psfc[:,:,it] = dropdims(mean(sds["PSFC"][:,:,ibeg:iend],dims=3),dims=3)
+        rain[:,:,it] = dropdims(mean(rds["RAINNC"][:,:,ibeg:iend],dims=3),dims=3)
+
+        for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
+            parr[ilon,ilat,ilvl] += pbse[ilon,ilat,ilvl]
+            tarr[ilon,ilat,ilvl] += 290
+            tarr[ilon,ilat,ilvl]  = tarr[ilon,ilat,ilvl] * (100000 / parr[ilon,ilat,ilvl]) ^ (287/1004)
+        end        
+
+        for ilat = 1 : nlat, ilon = 1 : nlon
+            
+            tmp_pvec[1] = psfc[ilon,ilat,it]
+
+            for ilvl = 1 : nlvl
+                tmp_ρvec[ilvl+1]  =  parr[ilon,ilat,ilvl] / Rd / tarr[ilon,ilat,ilvl]
+                tmp_wvec[ilvl+1]  = (warr[ilon,ilat,ilvl] + warr[ilon,ilat,ilvl+1]) / 2
+                tmp_wvec[ilvl+1] *= (tmp_ρvec[ilvl+1] * -9.81)
+                tmp_pvec[ilvl+1]  =  parr[ilon,ilat,ilvl]
+            end
+
+            calc = trapz(tmp_pvec,tmp_wvec.*tmp_pvec) / trapz(tmp_pvec,tmp_wvec)
+            if (calc > 0) & (calc < psfc[ilon,ilat,it])
+                pwgt[ilon,ilat,it] = calc
+                σwgt[ilon,ilat,it] = calc / psfc[ilon,ilat,it]
+            else
+                pwgt[ilon,ilat,it] = NaN32
+                σwgt[ilon,ilat,it] = NaN32
+            end
+
+        end
+
+        mkpath(datadir("wrf2","processed"))
+        fnc = datadir("wrf2","processed","p_wwgt-wrf-monthly.nc")
+        if isfile(fnc); rm(fnc,force=true) end
+
+        ds = NCDataset(fnc,"c")
+        ds.dim["longitude"] = nlon
+        ds.dim["latitude"]  = nlat
+        ds.dim["month"]     = 12
+
+        ncpwgt = defVar(ds,"p_wwgt",Float32,("longitude","latitude","month"),attrib=Dict(
+            "long_name" => "column_mean_lagrangian_tendency_of_air_pressure",
+            "full_name" => "Vertical Wind Weighted Column Pressure",
+            "units"     => "Pa",
+        ))
+
+        ncσwgt = defVar(ds,"σ_wwgt",Float32,("longitude","latitude","month"),attrib=Dict(
+            "long_name" => "column_mean_lagrangian_tendency_of_sigma",
+            "full_name" => "Vertical Wind Weighted Column Sigma",
+            "units"     => "0-1",
+        ))
+
+        ncrain = defVar(ds,"RAINNC",Float32,("longitude","latitude","month"),attrib=Dict(
+            "long_name" => "total_precipitation",
+            "full_name" => "Total Precipitation",
+            "units"     => "mm",
+        ))
+
+        ncpsfc = defVar(ds,"PSFC",Float32,("longitude","latitude","month"),attrib=Dict(
+            "long_name" => "surface_pressure",
+            "full_name" => "Surface Pressure",
+            "units"     => "Pa",
+        ))
+
+        ncpwgt[:,:,:] = pwgt
+        ncσwgt[:,:,:] = σwgt
+        ncrain[:,:,:] = rain
+        ncpsfc[:,:,:] = psfc
+
+        close(ds)
+
+    end
+
+    close(wds)
+    close(pds)
+    close(tds)
+    close(sds)
+    close(rds)
+
+end
