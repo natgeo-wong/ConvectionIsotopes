@@ -22,8 +22,6 @@ function wrfwwgtpre(
     close(ds)
 
     ggrd = RegionGrid(geo,lon,lat)
-    apnt = findall(ggrd.mask .== 1)
-    npnt = length(apnt)
     lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findlast(ggrd.mask .== 1)[1]
     lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findlast(ggrd.mask .== 1)[2]
 
@@ -45,6 +43,8 @@ function wrfwwgtpre(
 
     pwgt = zeros(Float32,ndt)
     σwgt = zeros(Float32,ndt)
+    pvec = zeros(Float32,52,ndt)
+    wvec = zeros(Float32,52,ndt)
 
     pds  = NCDataset(datadir("wrf2","3D","PB-daily.nc"))
     pbse = pds["PB"][lon1:lon2,lat1:lat2,:,1]
@@ -96,8 +96,9 @@ function wrfwwgtpre(
         tmp_pvec = reverse(dropdims(mean(tmp_pmat,dims=(1,2)),dims=(1,2)))
 
         pwgt[ii] = trapz(tmp_pvec,tmp_wvec.*tmp_pvec) / trapz(tmp_pvec,tmp_wvec)
-        
         σwgt[ii] = pwgt[ii] / mean(psfc) 
+        wvec[:,ii] = tmp_wvec
+        pvec[:,ii] = tmp_pvec
 
     end
 
@@ -117,7 +118,8 @@ function wrfwwgtpre(
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")
-    ds.dim["date"]      = ndt
+    ds.dim["date"]   = ndt
+    ds.dim["levels"] = 52
 
     nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
         "units"     => "days since $(start) 00:00:00.0",
@@ -137,9 +139,24 @@ function wrfwwgtpre(
         "units"     => "0-1",
     ))
 
+    ncp = defVar(ds,"P",Float32,("levels","date",),attrib=Dict(
+        "long_name" => "pressure",
+        "full_name" => "Vertical Wind Weighted Column Sigma",
+        "units"     => "Pa",
+    ))
+
+
+    ncw = defVar(ds,"W",Float32,("levels","date",),attrib=Dict(
+        "long_name" => "pressure-velocity",
+        "full_name" => "Pressure Velocity",
+        "units"     => "Pa s**-1",
+    ))
+
     nctime.var[:] = collect(0 : (ndt-1))
     ncpwgt[:] = pwgt
     ncσwgt[:] = σwgt
+    ncp[:,:] = pvec
+    ncw[:,:] = wvec
 
     close(ds)
 
