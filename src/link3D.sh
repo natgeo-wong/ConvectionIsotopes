@@ -9,7 +9,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JAN_P01/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JAN_P01/wrfout3D_d02_2020-01-09_00:00:00 2020-01-09.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JAN_P01/wrfout3D_d02_2020-01-10_00:00:00 2020-01-10.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JAN_P01/wrfout3D_d02_2020-01-11_00:00:00 2020-01-11-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JAN_P02/wrfout3D_d02_2020-01-11_00:00:00 2020-01-11.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JAN_P02/wrfout3D_d02_2020-01-12_00:00:00 2020-01-12.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JAN_P02/wrfout3D_d02_2020-01-13_00:00:00 2020-01-13.nc
@@ -21,7 +21,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JAN_P02/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JAN_P02/wrfout3D_d02_2020-01-19_00:00:00 2020-01-19.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JAN_P02/wrfout3D_d02_2020-01-20_00:00:00 2020-01-20.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JAN_P02/wrfout3D_d02_2020-01-21_00:00:00 2020-01-21-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JAN_P03/wrfout3D_d02_2020-01-21_00:00:00 2020-01-21.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JAN_P03/wrfout3D_d02_2020-01-22_00:00:00 2020-01-22.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JAN_P03/wrfout3D_d02_2020-01-23_00:00:00 2020-01-23.nc
@@ -34,7 +34,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JAN_P03/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JAN_P03/wrfout3D_d02_2020-01-30_00:00:00 2020-01-30.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JAN_P03/wrfout3D_d02_2020-01-31_00:00:00 2020-01-31.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JAN_P03/wrfout3D_d02_2020-02-01_00:00:00 2020-02-01-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P01/wrfout3D_d02_2020-02-01_00:00:00 2020-02-01.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P01/wrfout3D_d02_2020-02-02_00:00:00 2020-02-02.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P01/wrfout3D_d02_2020-02-03_00:00:00 2020-02-03.nc
@@ -46,7 +46,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P01/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P01/wrfout3D_d02_2020-02-09_00:00:00 2020-02-09.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P01/wrfout3D_d02_2020-02-10_00:00:00 2020-02-10.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P01/wrfout3D_d02_2020-02-11_00:00:00 2020-02-11-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P02/wrfout3D_d02_2020-02-11_00:00:00 2020-02-11.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P02/wrfout3D_d02_2020-02-12_00:00:00 2020-02-12.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P02/wrfout3D_d02_2020-02-13_00:00:00 2020-02-13.nc
@@ -58,7 +58,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P02/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P02/wrfout3D_d02_2020-02-19_00:00:00 2020-02-19.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P02/wrfout3D_d02_2020-02-20_00:00:00 2020-02-20.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P02/wrfout3D_d02_2020-02-21_00:00:00 2020-02-21-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P03/wrfout3D_d02_2020-02-21_00:00:00 2020-02-21.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P03/wrfout3D_d02_2020-02-22_00:00:00 2020-02-22.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P03/wrfout3D_d02_2020-02-23_00:00:00 2020-02-23.nc
@@ -69,7 +69,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P03/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P03/wrfout3D_d02_2020-02-28_00:00:00 2020-02-28.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P03/wrfout3D_d02_2020-02-29_00:00:00 2020-02-29.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/FEB_P03/wrfout3D_d02_2020-03-01_00:00:00 2020-03-01-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P01/wrfout3D_d02_2020-03-01_00:00:00 2020-03-01.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P01/wrfout3D_d02_2020-03-02_00:00:00 2020-03-02.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P01/wrfout3D_d02_2020-03-03_00:00:00 2020-03-03.nc
@@ -81,7 +81,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P01/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P01/wrfout3D_d02_2020-03-09_00:00:00 2020-03-09.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P01/wrfout3D_d02_2020-03-10_00:00:00 2020-03-10.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P01/wrfout3D_d02_2020-03-11_00:00:00 2020-03-11-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P02/wrfout3D_d02_2020-03-11_00:00:00 2020-03-11.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P02/wrfout3D_d02_2020-03-12_00:00:00 2020-03-12.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P02/wrfout3D_d02_2020-03-13_00:00:00 2020-03-13.nc
@@ -93,7 +93,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P02/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P02/wrfout3D_d02_2020-03-19_00:00:00 2020-03-19.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P02/wrfout3D_d02_2020-03-20_00:00:00 2020-03-20.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P02/wrfout3D_d02_2020-03-21_00:00:00 2020-03-21-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P03/wrfout3D_d02_2020-03-21_00:00:00 2020-03-21.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P03/wrfout3D_d02_2020-03-22_00:00:00 2020-03-22.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P03/wrfout3D_d02_2020-03-23_00:00:00 2020-03-23.nc
@@ -106,7 +106,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P03/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P03/wrfout3D_d02_2020-03-30_00:00:00 2020-03-30.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P03/wrfout3D_d02_2020-03-31_00:00:00 2020-03-31.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAR_P03/wrfout3D_d02_2020-04-01_00:00:00 2020-04-01-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P01/wrfout3D_d02_2020-04-01_00:00:00 2020-04-01.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P01/wrfout3D_d02_2020-04-02_00:00:00 2020-04-02.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P01/wrfout3D_d02_2020-04-03_00:00:00 2020-04-03.nc
@@ -118,7 +118,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P01/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P01/wrfout3D_d02_2020-04-09_00:00:00 2020-04-09.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P01/wrfout3D_d02_2020-04-10_00:00:00 2020-04-10.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P01/wrfout3D_d02_2020-04-11_00:00:00 2020-04-11-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P02/wrfout3D_d02_2020-04-11_00:00:00 2020-04-11.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P02/wrfout3D_d02_2020-04-12_00:00:00 2020-04-12.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P02/wrfout3D_d02_2020-04-13_00:00:00 2020-04-13.nc
@@ -130,7 +130,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P02/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P02/wrfout3D_d02_2020-04-19_00:00:00 2020-04-19.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P02/wrfout3D_d02_2020-04-20_00:00:00 2020-04-20.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P02/wrfout3D_d02_2020-04-21_00:00:00 2020-04-21-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P03/wrfout3D_d02_2020-04-21_00:00:00 2020-04-21.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P03/wrfout3D_d02_2020-04-22_00:00:00 2020-04-22.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P03/wrfout3D_d02_2020-04-23_00:00:00 2020-04-23.nc
@@ -142,7 +142,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P03/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P03/wrfout3D_d02_2020-04-29_00:00:00 2020-04-29.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P03/wrfout3D_d02_2020-04-30_00:00:00 2020-04-30.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/APR_P03/wrfout3D_d02_2020-05-01_00:00:00 2020-05-01-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P01/wrfout3D_d02_2020-05-01_00:00:00 2020-05-01.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P01/wrfout3D_d02_2020-05-02_00:00:00 2020-05-02.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P01/wrfout3D_d02_2020-05-03_00:00:00 2020-05-03.nc
@@ -154,7 +154,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P01/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P01/wrfout3D_d02_2020-05-09_00:00:00 2020-05-09.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P01/wrfout3D_d02_2020-05-10_00:00:00 2020-05-10.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P01/wrfout3D_d02_2020-05-11_00:00:00 2020-05-11-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P02/wrfout3D_d02_2020-05-11_00:00:00 2020-05-11.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P02/wrfout3D_d02_2020-05-12_00:00:00 2020-05-12.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P02/wrfout3D_d02_2020-05-13_00:00:00 2020-05-13.nc
@@ -166,7 +166,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P02/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P02/wrfout3D_d02_2020-05-19_00:00:00 2020-05-19.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P02/wrfout3D_d02_2020-05-20_00:00:00 2020-05-20.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P02/wrfout3D_d02_2020-05-21_00:00:00 2020-05-21-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P03/wrfout3D_d02_2020-05-21_00:00:00 2020-05-21.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P03/wrfout3D_d02_2020-05-22_00:00:00 2020-05-22.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P03/wrfout3D_d02_2020-05-23_00:00:00 2020-05-23.nc
@@ -179,7 +179,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P03/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P03/wrfout3D_d02_2020-05-30_00:00:00 2020-05-30.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P03/wrfout3D_d02_2020-05-31_00:00:00 2020-05-31.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/MAY_P03/wrfout3D_d02_2020-06-01_00:00:00 2020-06-01-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P01/wrfout3D_d02_2020-06-01_00:00:00 2020-06-01.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P01/wrfout3D_d02_2020-06-02_00:00:00 2020-06-02.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P01/wrfout3D_d02_2020-06-03_00:00:00 2020-06-03.nc
@@ -191,7 +191,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P01/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P01/wrfout3D_d02_2020-06-09_00:00:00 2020-06-09.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P01/wrfout3D_d02_2020-06-10_00:00:00 2020-06-10.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P01/wrfout3D_d02_2020-06-11_00:00:00 2020-06-11-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P02/wrfout3D_d02_2020-06-11_00:00:00 2020-06-11.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P02/wrfout3D_d02_2020-06-12_00:00:00 2020-06-12.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P02/wrfout3D_d02_2020-06-13_00:00:00 2020-06-13.nc
@@ -203,7 +203,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P02/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P02/wrfout3D_d02_2020-06-19_00:00:00 2020-06-19.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P02/wrfout3D_d02_2020-06-20_00:00:00 2020-06-20.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P02/wrfout3D_d02_2020-06-21_00:00:00 2020-06-21-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P03/wrfout3D_d02_2020-06-21_00:00:00 2020-06-21.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P03/wrfout3D_d02_2020-06-22_00:00:00 2020-06-22.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P03/wrfout3D_d02_2020-06-23_00:00:00 2020-06-23.nc
@@ -215,7 +215,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P03/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P03/wrfout3D_d02_2020-06-29_00:00:00 2020-06-29.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P03/wrfout3D_d02_2020-06-30_00:00:00 2020-06-30.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUN_P03/wrfout3D_d02_2020-07-01_00:00:00 2020-07-01-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P01/wrfout3D_d02_2020-07-01_00:00:00 2020-07-01.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P01/wrfout3D_d02_2020-07-02_00:00:00 2020-07-02.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P01/wrfout3D_d02_2020-07-03_00:00:00 2020-07-03.nc
@@ -227,7 +227,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P01/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P01/wrfout3D_d02_2020-07-09_00:00:00 2020-07-09.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P01/wrfout3D_d02_2020-07-10_00:00:00 2020-07-10.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P01/wrfout3D_d02_2020-07-11_00:00:00 2020-07-11-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P02/wrfout3D_d02_2020-07-11_00:00:00 2020-07-11.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P02/wrfout3D_d02_2020-07-12_00:00:00 2020-07-12.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P02/wrfout3D_d02_2020-07-13_00:00:00 2020-07-13.nc
@@ -239,7 +239,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P02/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P02/wrfout3D_d02_2020-07-19_00:00:00 2020-07-19.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P02/wrfout3D_d02_2020-07-20_00:00:00 2020-07-20.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P02/wrfout3D_d02_2020-07-21_00:00:00 2020-07-21-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P03/wrfout3D_d02_2020-07-21_00:00:00 2020-07-21.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P03/wrfout3D_d02_2020-07-22_00:00:00 2020-07-22.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P03/wrfout3D_d02_2020-07-23_00:00:00 2020-07-23.nc
@@ -252,7 +252,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P03/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P03/wrfout3D_d02_2020-07-30_00:00:00 2020-07-30.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P03/wrfout3D_d02_2020-07-31_00:00:00 2020-07-31.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/JUL_P03/wrfout3D_d02_2020-08-01_00:00:00 2020-08-01-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P01/wrfout3D_d02_2020-08-01_00:00:00 2020-08-01.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P01/wrfout3D_d02_2020-08-02_00:00:00 2020-08-02.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P01/wrfout3D_d02_2020-08-03_00:00:00 2020-08-03.nc
@@ -264,7 +264,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P01/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P01/wrfout3D_d02_2020-08-09_00:00:00 2020-08-09.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P01/wrfout3D_d02_2020-08-10_00:00:00 2020-08-10.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P01/wrfout3D_d02_2020-08-11_00:00:00 2020-08-11-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P02/wrfout3D_d02_2020-08-11_00:00:00 2020-08-11.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P02/wrfout3D_d02_2020-08-12_00:00:00 2020-08-12.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P02/wrfout3D_d02_2020-08-13_00:00:00 2020-08-13.nc
@@ -276,7 +276,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P02/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P02/wrfout3D_d02_2020-08-19_00:00:00 2020-08-19.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P02/wrfout3D_d02_2020-08-20_00:00:00 2020-08-20.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P02/wrfout3D_d02_2020-08-21_00:00:00 2020-08-21-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P03/wrfout3D_d02_2020-08-21_00:00:00 2020-08-21.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P03/wrfout3D_d02_2020-08-22_00:00:00 2020-08-22.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P03/wrfout3D_d02_2020-08-23_00:00:00 2020-08-23.nc
@@ -289,7 +289,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P03/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P03/wrfout3D_d02_2020-08-30_00:00:00 2020-08-30.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P03/wrfout3D_d02_2020-08-31_00:00:00 2020-08-31.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/AUG_P03/wrfout3D_d02_2020-09-01_00:00:00 2020-09-01-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P01/wrfout3D_d02_2020-09-01_00:00:00 2020-09-01.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P01/wrfout3D_d02_2020-09-02_00:00:00 2020-09-02.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P01/wrfout3D_d02_2020-09-03_00:00:00 2020-09-03.nc
@@ -301,7 +301,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P01/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P01/wrfout3D_d02_2020-09-09_00:00:00 2020-09-09.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P01/wrfout3D_d02_2020-09-10_00:00:00 2020-09-10.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P01/wrfout3D_d02_2020-09-11_00:00:00 2020-09-11-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P02/wrfout3D_d02_2020-09-11_00:00:00 2020-09-11.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P02/wrfout3D_d02_2020-09-12_00:00:00 2020-09-12.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P02/wrfout3D_d02_2020-09-13_00:00:00 2020-09-13.nc
@@ -313,7 +313,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P02/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P02/wrfout3D_d02_2020-09-19_00:00:00 2020-09-19.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P02/wrfout3D_d02_2020-09-20_00:00:00 2020-09-20.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P02/wrfout3D_d02_2020-09-21_00:00:00 2020-09-21-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P03/wrfout3D_d02_2020-09-21_00:00:00 2020-09-21.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P03/wrfout3D_d02_2020-09-22_00:00:00 2020-09-22.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P03/wrfout3D_d02_2020-09-23_00:00:00 2020-09-23.nc
@@ -325,7 +325,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P03/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P03/wrfout3D_d02_2020-09-29_00:00:00 2020-09-29.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P03/wrfout3D_d02_2020-09-30_00:00:00 2020-09-30.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/SEP_P03/wrfout3D_d02_2020-10-01_00:00:00 2020-10-01-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P01/wrfout3D_d02_2020-10-01_00:00:00 2020-10-01.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P01/wrfout3D_d02_2020-10-02_00:00:00 2020-10-02.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P01/wrfout3D_d02_2020-10-03_00:00:00 2020-10-03.nc
@@ -337,7 +337,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P01/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P01/wrfout3D_d02_2020-10-09_00:00:00 2020-10-09.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P01/wrfout3D_d02_2020-10-10_00:00:00 2020-10-10.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P01/wrfout3D_d02_2020-10-11_00:00:00 2020-10-11-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P02/wrfout3D_d02_2020-10-11_00:00:00 2020-10-11.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P02/wrfout3D_d02_2020-10-12_00:00:00 2020-10-12.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P02/wrfout3D_d02_2020-10-13_00:00:00 2020-10-13.nc
@@ -349,7 +349,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P02/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P02/wrfout3D_d02_2020-10-19_00:00:00 2020-10-19.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P02/wrfout3D_d02_2020-10-20_00:00:00 2020-10-20.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P02/wrfout3D_d02_2020-10-21_00:00:00 2020-10-21-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P03/wrfout3D_d02_2020-10-21_00:00:00 2020-10-21.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P03/wrfout3D_d02_2020-10-22_00:00:00 2020-10-22.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P03/wrfout3D_d02_2020-10-23_00:00:00 2020-10-23.nc
@@ -362,7 +362,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P03/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P03/wrfout3D_d02_2020-10-30_00:00:00 2020-10-30.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P03/wrfout3D_d02_2020-10-31_00:00:00 2020-10-31.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/OCT_P03/wrfout3D_d02_2020-11-01_00:00:00 2020-11-01-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P01/wrfout3D_d02_2020-11-01_00:00:00 2020-11-01.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P01/wrfout3D_d02_2020-11-02_00:00:00 2020-11-02.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P01/wrfout3D_d02_2020-11-03_00:00:00 2020-11-03.nc
@@ -374,7 +374,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P01/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P01/wrfout3D_d02_2020-11-09_00:00:00 2020-11-09.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P01/wrfout3D_d02_2020-11-10_00:00:00 2020-11-10.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P01/wrfout3D_d02_2020-11-11_00:00:00 2020-11-11-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P02/wrfout3D_d02_2020-11-11_00:00:00 2020-11-11.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P02/wrfout3D_d02_2020-11-12_00:00:00 2020-11-12.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P02/wrfout3D_d02_2020-11-13_00:00:00 2020-11-13.nc
@@ -386,7 +386,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P02/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P02/wrfout3D_d02_2020-11-19_00:00:00 2020-11-19.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P02/wrfout3D_d02_2020-11-20_00:00:00 2020-11-20.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P02/wrfout3D_d02_2020-11-21_00:00:00 2020-11-21-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P03/wrfout3D_d02_2020-11-21_00:00:00 2020-11-21.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P03/wrfout3D_d02_2020-11-22_00:00:00 2020-11-22.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P03/wrfout3D_d02_2020-11-23_00:00:00 2020-11-23.nc
@@ -398,7 +398,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P03/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P03/wrfout3D_d02_2020-11-29_00:00:00 2020-11-29.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P03/wrfout3D_d02_2020-11-30_00:00:00 2020-11-30.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/NOV_P03/wrfout3D_d02_2020-12-01_00:00:00 2020-12-01-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/DEC_P01/wrfout3D_d02_2020-12-01_00:00:00 2020-12-01.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/DEC_P01/wrfout3D_d02_2020-12-02_00:00:00 2020-12-02.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/DEC_P01/wrfout3D_d02_2020-12-03_00:00:00 2020-12-03.nc
@@ -410,7 +410,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/DEC_P01/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/DEC_P01/wrfout3D_d02_2020-12-09_00:00:00 2020-12-09.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/DEC_P01/wrfout3D_d02_2020-12-10_00:00:00 2020-12-10.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/DEC_P01/wrfout3D_d02_2020-12-11_00:00:00 2020-12-11-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/DEC_P02/wrfout3D_d02_2020-12-11_00:00:00 2020-12-11.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/DEC_P02/wrfout3D_d02_2020-12-12_00:00:00 2020-12-12.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/DEC_P02/wrfout3D_d02_2020-12-13_00:00:00 2020-12-13.nc
@@ -422,7 +422,7 @@ ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/DEC_P02/wrfout3D_d02_2020
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/DEC_P02/wrfout3D_d02_2020-12-19_00:00:00 2020-12-19.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/DEC_P02/wrfout3D_d02_2020-12-20_00:00:00 2020-12-20.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/DEC_P02/wrfout3D_d02_2020-12-21_00:00:00 2020-12-21-e.nc
-3D
+
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/DEC_P03/wrfout3D_d02_2020-12-21_00:00:00 2020-12-21.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/DEC_P03/wrfout3D_d02_2020-12-22_00:00:00 2020-12-22.nc
 ln -s /n/kuangdss01/lab/zOTRECrotatedRUNS_SEP2024/2020/DEC_P03/wrfout3D_d02_2020-12-23_00:00:00 2020-12-23.nc
