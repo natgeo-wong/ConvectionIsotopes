@@ -13,7 +13,7 @@ function wrfqbudget(
     stop  :: Date
 )
     
-    ds   = NCDataset(datadir("wrf2","grid.nc"))
+    ds   = NCDataset(datadir("wrf3","grid.nc"))
     lon  = ds["longitude"][:,:]
     lat  = ds["latitude"][:,:]
     close(ds)
@@ -66,17 +66,17 @@ function wrfqbudget(
         @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
         flush(stderr)
 
-        ds1 = NCDataset(datadir("wrf2","raw","$(dtvec[idt]).nc"))
-        ds3 = NCDataset(datadir("wrf2","aux","$(dtvec[idt]).nc"))
-        fnci1 = datadir("wrf2","raw","$(dtvec[idt]+Day(1))-e.nc")
-        fnci2 = datadir("wrf2","aux","$(dtvec[idt]+Day(1))-e.nc")
+        ds1 = NCDataset(datadir("wrf3","raw","2D","$(dtvec[idt]).nc"))
+        ds3 = NCDataset(datadir("wrf3","raw","aux","$(dtvec[idt]).nc"))
+        fnci1 = datadir("wrf3","raw","2D","$(dtvec[idt]+Day(1))-e.nc")
+        fnci2 = datadir("wrf3","raw","aux","$(dtvec[idt]+Day(1))-e.nc")
         if isfile(fnci1)
             @info "$(now()) - ConvectionIsotopes - Tail end"
             ds2 = NCDataset(fnci1)
             ds4 = NCDataset(fnci2)
         else
-            ds2 = NCDataset(datadir("wrf2","raw","$(dtvec[idt]+Day(1)).nc"))
-            ds4 = NCDataset(datadir("wrf2","aux","$(dtvec[idt]+Day(1)).nc"))
+            ds2 = NCDataset(datadir("wrf3","raw","2D","$(dtvec[idt]+Day(1)).nc"))
+            ds4 = NCDataset(datadir("wrf3","raw","aux","$(dtvec[idt]+Day(1)).nc"))
         end
 
         NCDatasets.load!(ds1["$(iso)RAINNC"].var,tmp1,lon1:lon2,lat1:lat2,:)
@@ -88,17 +88,17 @@ function wrfqbudget(
         tmp4 = mean(tmp2,wgtv)
         prcp[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
 
-        # NCDatasets.load!(ds3["$(iso)QFX"].var,tmp1,lon1:lon2,lat1:lat2,:)
-        # NCDatasets.load!(ds4["$(iso)QFX"].var,tmp2,lon1:lon2,lat1:lat2,1)
-        # for ii = 1 : 24, ilat = 1 : nlat, ilon = 1 : nlon
-        #     tmp1[ilon,ilat,ii] *= wgts[ilon,ilat]
-        # end
-        # tmp3 = dropdims(sum(tmp1,dims=(1,2)),dims=(1,2)) / wgtm
-        # tmp4 = mean(tmp2,wgtv)
-        # evap[:,idt] = (vcat(tmp3[2:end],tmp4) .+ tmp3) / 2
+        NCDatasets.load!(ds3["$(iso)SFCEVP"].var,tmp1,lon1:lon2,lat1:lat2,:)
+        NCDatasets.load!(ds4["$(iso)SFCEVP"].var,tmp2,lon1:lon2,lat1:lat2,1)
+        for ii = 1 : 24, ilat = 1 : nlat, ilon = 1 : nlon
+            tmp1[ilon,ilat,ii] *= wgts[ilon,ilat]
+        end
+        tmp3 = dropdims(sum(tmp1,dims=(1,2)),dims=(1,2)) / wgtm
+        tmp4 = mean(tmp2,wgtv)
+        evap[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
 
-        NCDatasets.load!(ds3["$(iso)VAPORWP"].var,tmp1,lon1:lon2,lat1:lat2,:)
-        NCDatasets.load!(ds4["$(iso)VAPORWP"].var,tmp2,lon1:lon2,lat1:lat2,1)
+        NCDatasets.load!(ds1["$(iso)VAPORWP"].var,tmp1,lon1:lon2,lat1:lat2,:)
+        NCDatasets.load!(ds2["$(iso)VAPORWP"].var,tmp2,lon1:lon2,lat1:lat2,1)
         for ii = 1 : 24, ilat = 1 : nlat, ilon = 1 : nlon
             tmp1[ilon,ilat,ii] *= wgts[ilon,ilat]
         end
@@ -106,10 +106,10 @@ function wrfqbudget(
         tmp4 = mean(tmp2,wgtv)
         tcwv[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
 
-        NCDatasets.load!(ds3["$(iso)IWTX"].var,tmpqflx_1,lon1,lat1:lat2,:)
-        NCDatasets.load!(ds3["$(iso)IWTX"].var,tmpqflx_2,lon2,lat1:lat2,:)
-        NCDatasets.load!(ds3["$(iso)IWTY"].var,tmpqflx_3,lon1:lon2,lat1,:)
-        NCDatasets.load!(ds3["$(iso)IWTY"].var,tmpqflx_4,lon1:lon2,lat2,:)
+        NCDatasets.load!(ds1["$(iso)IWTX"].var,tmpqflx_1,lon1,lat1:lat2,:)
+        NCDatasets.load!(ds1["$(iso)IWTX"].var,tmpqflx_2,lon2,lat1:lat2,:)
+        NCDatasets.load!(ds1["$(iso)IWTY"].var,tmpqflx_3,lon1:lon2,lat1,:)
+        NCDatasets.load!(ds1["$(iso)IWTY"].var,tmpqflx_4,lon1:lon2,lat2,:)
         for ii = 1 : 24, ilat = 1 : nlat
             tmpqflx_1[ilat,ii] *= wgts[1,ilat]
             tmpqflx_2[ilat,ii] *= wgts[end,ilat]
@@ -124,10 +124,10 @@ function wrfqbudget(
                dropdims(sum(tmpqflx_1,dims=1),dims=1) / wgt1 * arc1 .-
                dropdims(sum(tmpqflx_3,dims=1),dims=1) / wgt3 * arc3
 
-        NCDatasets.load!(ds4["$(iso)IWTX"].var,tmpqflx_5,lon1,lat1:lat2,1)
-        NCDatasets.load!(ds4["$(iso)IWTX"].var,tmpqflx_6,lon2,lat1:lat2,1)
-        NCDatasets.load!(ds4["$(iso)IWTY"].var,tmpqflx_7,lon1:lon2,lat1,1)
-        NCDatasets.load!(ds4["$(iso)IWTY"].var,tmpqflx_8,lon1:lon2,lat2,1)
+        NCDatasets.load!(ds2["$(iso)IWTX"].var,tmpqflx_5,lon1,lat1:lat2,1)
+        NCDatasets.load!(ds2["$(iso)IWTX"].var,tmpqflx_6,lon2,lat1:lat2,1)
+        NCDatasets.load!(ds2["$(iso)IWTY"].var,tmpqflx_7,lon1:lon2,lat1,1)
+        NCDatasets.load!(ds2["$(iso)IWTY"].var,tmpqflx_8,lon1:lon2,lat2,1)
         for ilat = 1 : nlat
             tmpqflx_5[ilat] *= wgts[1,ilat]
             tmpqflx_6[ilat] *= wgts[end,ilat]
@@ -149,8 +149,8 @@ function wrfqbudget(
 
     end
 
-    mkpath(datadir("wrf2","processed"))
-    fnc = datadir("wrf2","processed","$(geo.ID)-$(iso)QBUDGET.nc")
+    mkpath(datadir("wrf3","processed"))
+    fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)QBUDGET.nc")
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")
@@ -199,7 +199,7 @@ function wrfqdiv(
     stop  :: Date
 )
         
-    ds   = NCDataset(datadir("wrf2","grid.nc"))
+    ds   = NCDataset(datadir("wrf3","grid.nc"))
     lon  = ds["longitude"][:,:]
     lat  = ds["latitude"][:,:]
     close(ds)
@@ -241,7 +241,7 @@ function wrfqdiv(
     arc3 = haversine((lon[lon1,lat1],lat[lon1,lat1]),(lon[lon2,lat1],lat[lon2,lat1]))
     arc4 = haversine((lon[lon1,lat2],lat[lon1,lat2]),(lon[lon2,lat2],lat[lon2,lat2]))
 
-    pds = NCDataset(datadir("wrf2","raw","$(dtvec[1]).nc"))
+    pds = NCDataset(datadir("wrf3","raw","$(dtvec[1]).nc"))
     pb = pds["PB"][lon1:lon2,lat1:lat2,:,1]
     close(pds)
 
@@ -250,13 +250,13 @@ function wrfqdiv(
         @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
         flush(stderr)
 
-        ds1 = NCDataset(datadir("wrf2","raw","$(dtvec[idt]).nc"))
-        fncii = datadir("wrf2","raw","$(dtvec[idt]+Day(1))-e.nc")
+        ds1 = NCDataset(datadir("wrf3","raw","$(dtvec[idt]).nc"))
+        fncii = datadir("wrf3","raw","$(dtvec[idt]+Day(1))-e.nc")
         if isfile(fncii)
             @info "$(now()) - ConvectionIsotopes - Tail end"
             ds2 = NCDataset(fncii)
         else
-            ds2 = NCDataset(datadir("wrf2","raw","$(dtvec[idt]+Day(1)).nc"))
+            ds2 = NCDataset(datadir("wrf3","raw","$(dtvec[idt]+Day(1)).nc"))
         end
 
         for it = 1 : 24
@@ -363,8 +363,8 @@ function wrfqdiv(
 
     end
 
-    mkpath(datadir("wrf2","processed"))
-    fnc = datadir("wrf2","processed","$(geo.ID)-$(iso)∇.nc")
+    mkpath(datadir("wrf3","processed"))
+    fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)∇.nc")
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")
@@ -397,12 +397,12 @@ function wrfqdivdecompose(
 )
 
     if iso != ""; iso = "$(iso)_" end
-    fnc = datadir("wrf2","processed","$(geo.ID)-$(iso)∇decompose.nc")
+    fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)∇decompose.nc")
     if !isfile(fnc) || overwrite
 
         rm(fnc,force=true)
     
-        ds   = NCDataset(datadir("wrf2","grid.nc"))
+        ds   = NCDataset(datadir("wrf3","grid.nc"))
         lon  = ds["longitude"][:,:]
         lat  = ds["latitude"][:,:]
         close(ds)
@@ -450,7 +450,7 @@ function wrfqdivdecompose(
         arc3 = haversine((lon[lon1,lat1],lat[lon1,lat1]),(lon[lon2,lat1],lat[lon2,lat1]))
         arc4 = haversine((lon[lon1,lat2],lat[lon1,lat2]),(lon[lon2,lat2],lat[lon2,lat2]))
 
-        pds = NCDataset(datadir("wrf2","raw","$(dtvec[1]).nc"))
+        pds = NCDataset(datadir("wrf3","raw","$(dtvec[1]).nc"))
         pb = pds["PB"][lon1:lon2,lat1:lat2,:,1]
         close(pds)
 
@@ -459,13 +459,13 @@ function wrfqdivdecompose(
             @info "$(now()) - ConvectionIsotopes - Extracting $(iso)QVAPOR data during $(dtvec[idt]) for $(geo.name)"
             flush(stderr)
 
-            ds1 = NCDataset(datadir("wrf2","raw","$(dtvec[idt]).nc"))
-            fncii = datadir("wrf2","raw","$(dtvec[idt]+Day(1))-e.nc")
+            ds1 = NCDataset(datadir("wrf3","raw","$(dtvec[idt]).nc"))
+            fncii = datadir("wrf3","raw","$(dtvec[idt]+Day(1))-e.nc")
             if isfile(fncii)
                 @info "$(now()) - ConvectionIsotopes - Tail end"
-                ds2 = NCDataset(datadir("wrf2","raw","$(dtvec[idt]+Day(1))-e.nc"))
+                ds2 = NCDataset(datadir("wrf3","raw","$(dtvec[idt]+Day(1))-e.nc"))
             else
-                ds2 = NCDataset(datadir("wrf2","raw","$(dtvec[idt]+Day(1)).nc"))
+                ds2 = NCDataset(datadir("wrf3","raw","$(dtvec[idt]+Day(1)).nc"))
             end
 
             for it = 1 : 24
@@ -552,7 +552,7 @@ function wrfqdivdecompose(
 
         end
 
-        mkpath(datadir("wrf2","processed"))
+        mkpath(datadir("wrf3","processed"))
 
         ds = NCDataset(fnc,"c")
         ds.dim["date"] = ndt * 24
@@ -592,7 +592,7 @@ function wrfqdivvsiwt(;
     stop  :: Date
 )
     
-    ds   = NCDataset(datadir("wrf2","grid.nc"))
+    ds   = NCDataset(datadir("wrf3","grid.nc"))
     lon  = ds["longitude"][:,:,1]
     lat  = ds["latitude"][:,:,1]
     close(ds)
@@ -620,7 +620,7 @@ function wrfqdivvsiwt(;
     qflxwu = zeros(Float32,nlon,nlat,24,ndt)
     qflxwv = zeros(Float32,nlon,nlat,24,ndt)
 
-    pds = NCDataset(datadir("wrf2","raw","$(dtvec[1]).nc"))
+    pds = NCDataset(datadir("wrf3","raw","$(dtvec[1]).nc"))
     pbse = pds["PB"][lon1:lon2,lat1:lat2,:,1]
     close(pds)
 
@@ -632,7 +632,7 @@ function wrfqdivvsiwt(;
         iiqflxu = @view qflxwu[:,:,:,idt]
         iiqflxv = @view qflxwv[:,:,:,idt]
 
-        ds = NCDataset(datadir("wrf2","raw","$(dtvec[idt]).nc"))
+        ds = NCDataset(datadir("wrf3","raw","$(dtvec[idt]).nc"))
 
         NCDatasets.load!(ds["$(iso)IWTX"].var,iiqflxu,lon1:lon2,lat1:lat2,:)
 
@@ -671,8 +671,8 @@ function wrfqdivvsiwt(;
 
     end
 
-    mkpath(datadir("wrf2","processed"))
-    fnc = datadir("wrf2","processed","$(geo.ID)-$(iso)IWT_wrfvscalc.nc")
+    mkpath(datadir("wrf3","processed"))
+    fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)IWT_wrfvscalc.nc")
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")

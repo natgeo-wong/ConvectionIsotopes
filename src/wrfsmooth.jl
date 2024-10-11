@@ -23,7 +23,7 @@ function wrf3Dsmooth(
 	days :: Int = 1
 )
 
-    ds   = NCDataset(datadir("wrf2","3D","$(wvar)-daily.nc"))
+    ds   = NCDataset(datadir("wrf3","3D","$(wvar)-daily.nc"))
 	lon  = ds["longitude"][:,:]; nlon = ds.dim["longitude"]
     lat  = ds["latitude"][:,:];  nlat = ds.dim["latitude"]
 	nlvl = ds.dim["levels"]
@@ -42,7 +42,7 @@ function wrf3Dsmooth(
 		@info "$(now()) - ConvectionIsotopes - Extracting $wvar data for Day $ii of $ndt"
 		flush(stderr)
 
-		ids = NCDataset(datadir("wrf2","3D","$(wvar)-daily.nc"))
+		ids = NCDataset(datadir("wrf3","3D","$(wvar)-daily.nc"))
 		NCDatasets.load!(ids[wvar].var,oarr,:,:,:,ii.+(-buffer:buffer))
 		close(ids)
 
@@ -55,7 +55,7 @@ function wrf3Dsmooth(
 
 	end
 
-	fnc = datadir("wrf2","3D","$wvar-daily-smooth_$(@sprintf("%02d",days))days.nc")
+	fnc = datadir("wrf3","3D","$wvar-daily-smooth_$(@sprintf("%02d",days))days.nc")
 	if isfile(fnc); rm(fnc,force=true) end
 
 	ds = NCDataset(fnc,"c")
@@ -92,12 +92,12 @@ function wrf3Dsmooth(
 
 end
 
-function wrf2Dsmooth(
+function wrf3Dsmooth(
     wvar :: AbstractString;
 	days :: Int = 1
 )
 
-    ds   = NCDataset(datadir("wrf2","2D","$(wvar)-daily.nc"))
+    ds   = NCDataset(datadir("wrf3","2D","$(wvar)-daily.nc"))
 	lon  = ds["longitude"][:]; nlon = ds.dim["longitude"]
     lat  = ds["latitude"][:];  nlat = ds.dim["latitude"]
     ndt  = ds.dim["date"]; start = ds["time"][1]
@@ -115,7 +115,7 @@ function wrf2Dsmooth(
 		@info "$(now()) - ConvectionIsotopes - Extracting $wvar data for Day $ii of $ndt"
 		flush(stderr)
 
-		ids = NCDataset(datadir("wrf2","2D","$(wvar)-daily.nc"))
+		ids = NCDataset(datadir("wrf3","2D","$(wvar)-daily.nc"))
 		NCDatasets.load!(ids[wvar].var,oarr,:,:,ii.+(-buffer:buffer))
 		close(ids)
 
@@ -128,7 +128,7 @@ function wrf2Dsmooth(
 
 	end
 
-	fnc = datadir("wrf2","2D","$wvar-daily-smooth_$(@sprintf("%02d",days))days.nc")
+	fnc = datadir("wrf3","2D","$wvar-daily-smooth_$(@sprintf("%02d",days))days.nc")
 	if isfile(fnc); rm(fnc,force=true) end
 
 	ds = NCDataset(fnc,"c")

@@ -5,14 +5,14 @@ using NCDatasets
 
 function wrfgrid()
     
-    ds   = NCDataset(datadir("wrf2","raw","2020-01-01.nc"))
+    ds   = NCDataset(datadir("wrf3","raw","2020-01-01.nc"))
     lon   = ds["XLONG"][:,:,1]; nlon = size(lon,1)
     lat   = ds["XLAT"][:,:,1];  nlat = size(lat,2)
     lon_u = ds["XLONG_U"][:,:,1]; lat_u = ds["XLAT_U"][:,:,1]
     lon_v = ds["XLONG_V"][:,:,1]; lat_v = ds["XLAT_V"][:,:,1]
     close(ds)
 
-    fnc = datadir("wrf2","grid.nc")
+    fnc = datadir("wrf3","grid.nc")
 	if isfile(fnc); rm(fnc,force=true) end
 
 	ds = NCDataset(fnc,"c")

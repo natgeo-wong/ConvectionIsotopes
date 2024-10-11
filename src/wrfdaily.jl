@@ -8,9 +8,16 @@ function wrf3Ddaily(
     wvar :: AbstractString;
 	start :: Date,
 	stop  :: Date,
+	isdefault :: Bool = true
 )
 
-    ds  = NCDataset(datadir("wrf2","raw","$(start).nc"))
+	if isdefault
+		fol3D = "2D"
+	else
+		fol3D = "3D"
+	end
+
+    ds  = NCDataset(datadir("wrf3","raw",fol3D,"$(start).nc"))
 	nlon,nlat,nlvl = size(ds[wvar])[[1,2,3]]
 	if wvar == "U"
 		lon = ds["XLONG_U"][:,:,1]
@@ -35,7 +42,7 @@ function wrf3Ddaily(
 		@info "$(now()) - ConvectionIsotopes - Extracting $wvar data for $(dtvec[ii])"
 		flush(stderr)
 
-		ids = NCDataset(datadir("wrf2","raw","$(dtvec[ii]).nc"))
+		ids = NCDataset(datadir("wrf3","raw",fol3D,"$(dtvec[ii]).nc"))
 		NCDatasets.load!(ids[wvar].var,oarr,:,:,:,:)
 		close(ids)
 
@@ -45,7 +52,7 @@ function wrf3Ddaily(
 
 	end
 
-	fnc = datadir("wrf2","3D","$wvar-daily.nc")
+	fnc = datadir("wrf3","3D","$wvar-daily.nc")
 	if isfile(fnc); rm(fnc,force=true) end
 
 	ds = NCDataset(fnc,"c")
@@ -86,10 +93,17 @@ function wrf2Ddaily(
     wvar :: AbstractString;
 	start :: Date,
 	stop  :: Date,
-	isaccum :: Bool = false
+	isaccum   :: Bool = false,
+	isdefault :: Bool = true
 )
 
-    ds  = NCDataset(datadir("wrf2","raw","$(start).nc"))
+	if isdefault
+		fol2D = "2D"
+	else
+		fol2D = "aux"
+	end
+
+    ds  = NCDataset(datadir("wrf3","raw",fol2D,"$(start).nc"))
 	nlon,nlat = size(ds[wvar])[[1,2]]
 	lon = ds["XLONG"][:,:,1]
 	lat = ds["XLAT"][:,:,1]
@@ -109,16 +123,16 @@ function wrf2Ddaily(
 		@info "$(now()) - ConvectionIsotopes - Extracting $wvar data for $(dtvec[ii])"
 		flush(stderr)
 
-		ids = NCDataset(datadir("wrf2","raw","$(dtvec[ii]).nc"))
+		ids = NCDataset(datadir("wrf3","raw",fol2D,"$(dtvec[ii]).nc"))
 		NCDatasets.load!(ids[wvar].var,oarr,:,:,:)
 		close(ids)
 		if isaccum
-			fncii = datadir("wrf2","raw","$(dtvec[ii]+Day(1))-e.nc")
+			fncii = datadir("wrf3","raw",fol2D,"$(dtvec[ii]+Day(1))-e.nc")
 			if isfile(fncii)
 				@info "$(now()) - ConvectionIsotopes - Tail end"
 				ids = NCDataset(fncii)
 			else
-				ids = NCDataset(datadir("wrf2","raw","$(dtvec[ii]+Day(1)).nc"))
+				ids = NCDataset(datadir("wrf3","raw",fol2D,"$(dtvec[ii]+Day(1)).nc"))
 			end
 			NCDatasets.load!(ids[wvar].var,aarr,:,:,1)
 			close(ids)
@@ -137,7 +151,7 @@ function wrf2Ddaily(
 
 	end
 
-	fnc = datadir("wrf2","2D","$wvar-daily.nc")
+	fnc = datadir("wrf3","2D","$wvar-daily.nc")
 	if isfile(fnc); rm(fnc,force=true) end
 
 	ds = NCDataset(fnc,"c")
