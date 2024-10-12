@@ -92,7 +92,7 @@ function wrf3Dsmooth(
 
 end
 
-function wrf3Dsmooth(
+function wrf2Dsmooth(
     wvar :: AbstractString;
 	days :: Int = 1
 )
