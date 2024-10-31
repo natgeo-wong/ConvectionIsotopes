@@ -45,12 +45,17 @@ function wrf3Ddaily(
 		fnc = datadir("wrf3","raw",fol3D,"$(dtvec[ii]).nc")
 		if isfile(fnc)
 
-			ids = NCDataset(datadir("wrf3","raw",fol3D,"$(dtvec[ii]).nc"))
-			NCDatasets.load!(ids[wvar].var,oarr,:,:,:,:)
-			close(ids)
+			ids = NCDataset(fnc)
+			if ids.dim["Time"] == 24
+				NCDatasets.load!(ids[wvar].var,oarr,:,:,:,:)
+				close(ids)
 
-			for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
-				narr[ilon,ilat,ilvl,ii] = Float32(mean(view(oarr,ilon,ilat,ilvl,:)))
+				for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
+					narr[ilon,ilat,ilvl,ii] = Float32(mean(view(oarr,ilon,ilat,ilvl,:)))
+				end
+			else
+				@warn "$(now()) - ConvectionIsotopes - Unable to extract $wvar data for $(dtvec[ii]), 24 hours not given"
+				close(ids)
 			end
 
 		else
@@ -138,29 +143,34 @@ function wrf2Ddaily(
 		if isfile(fnc)
 
 			ids = NCDataset(fnc)
-			NCDatasets.load!(ids[wvar].var,oarr,:,:,:)
-			close(ids)
-			if isaccum
-				fncii = datadir("wrf3","raw",fol2D,"$(dtvec[ii]+Day(1))-e.nc")
-				if isfile(fncii)
-					@info "$(now()) - ConvectionIsotopes - Tail end"
-					ids = NCDataset(fncii)
-				else
-					ids = NCDataset(datadir("wrf3","raw",fol2D,"$(dtvec[ii]+Day(1)).nc"))
-				end
-				NCDatasets.load!(ids[wvar].var,aarr,:,:,1)
+			if ids.dim["Time"] == 24
+				NCDatasets.load!(ids[wvar].var,oarr,:,:,:)
 				close(ids)
-			end
+				if isaccum
+					fncii = datadir("wrf3","raw",fol2D,"$(dtvec[ii]+Day(1))-e.nc")
+					if isfile(fncii)
+						@info "$(now()) - ConvectionIsotopes - Tail end"
+						ids = NCDataset(fncii)
+					else
+						ids = NCDataset(datadir("wrf3","raw",fol2D,"$(dtvec[ii]+Day(1)).nc"))
+					end
+					NCDatasets.load!(ids[wvar].var,aarr,:,:,1)
+					close(ids)
+				end
 
 
-			if isaccum
-				for ilat = 1 : nlat, ilon = 1 : nlon
-					narr[ilon,ilat,ii] = aarr[ilon,ilat] - oarr[ilon,ilat,1]
+				if isaccum
+					for ilat = 1 : nlat, ilon = 1 : nlon
+						narr[ilon,ilat,ii] = aarr[ilon,ilat] - oarr[ilon,ilat,1]
+					end
+				else
+					for ilat = 1 : nlat, ilon = 1 : nlon
+						narr[ilon,ilat,ii] = Float32(mean(view(oarr,ilon,ilat,:)))
+					end
 				end
 			else
-				for ilat = 1 : nlat, ilon = 1 : nlon
-					narr[ilon,ilat,ii] = Float32(mean(view(oarr,ilon,ilat,:)))
-				end
+				@warn "$(now()) - ConvectionIsotopes - Unable to extract $wvar data for $(dtvec[ii]), 24 hours not given"
+				close(ids)
 			end
 
 		else
