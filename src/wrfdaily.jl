@@ -42,12 +42,21 @@ function wrf3Ddaily(
 		@info "$(now()) - ConvectionIsotopes - Extracting $wvar data for $(dtvec[ii])"
 		flush(stderr)
 
-		ids = NCDataset(datadir("wrf3","raw",fol3D,"$(dtvec[ii]).nc"))
-		NCDatasets.load!(ids[wvar].var,oarr,:,:,:,:)
-		close(ids)
+		fnc = datadir("wrf3","raw",fol3D,"$(dtvec[ii]).nc")
+		if isfile(fnc)
 
-		for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
-			narr[ilon,ilat,ilvl,ii] = Float32(mean(view(oarr,ilon,ilat,ilvl,:)))
+			ids = NCDataset(datadir("wrf3","raw",fol3D,"$(dtvec[ii]).nc"))
+			NCDatasets.load!(ids[wvar].var,oarr,:,:,:,:)
+			close(ids)
+
+			for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
+				narr[ilon,ilat,ilvl,ii] = Float32(mean(view(oarr,ilon,ilat,ilvl,:)))
+			end
+
+		else
+
+			@warn "$(now()) - ConvectionIsotopes - Unable to extract $wvar data for $(dtvec[ii]), the file does not exist"
+
 		end
 
 	end
@@ -125,30 +134,39 @@ function wrf2Ddaily(
 		@info "$(now()) - ConvectionIsotopes - Extracting $wvar data for $(dtvec[ii])"
 		flush(stderr)
 
-		ids = NCDataset(datadir("wrf3","raw",fol2D,"$(dtvec[ii]).nc"))
-		NCDatasets.load!(ids[wvar].var,oarr,:,:,:)
-		close(ids)
-		if isaccum
-			fncii = datadir("wrf3","raw",fol2D,"$(dtvec[ii]+Day(1))-e.nc")
-			if isfile(fncii)
-				@info "$(now()) - ConvectionIsotopes - Tail end"
-				ids = NCDataset(fncii)
-			else
-				ids = NCDataset(datadir("wrf3","raw",fol2D,"$(dtvec[ii]+Day(1)).nc"))
-			end
-			NCDatasets.load!(ids[wvar].var,aarr,:,:,1)
+		fnc = datadir("wrf3","raw",fol2D,"$(dtvec[ii]).nc")
+		if isfile(fnc)
+
+			ids = NCDataset(fnc)
+			NCDatasets.load!(ids[wvar].var,oarr,:,:,:)
 			close(ids)
-		end
-
-
-		if isaccum
-			for ilat = 1 : nlat, ilon = 1 : nlon
-				narr[ilon,ilat,ii] = aarr[ilon,ilat] - oarr[ilon,ilat,1]
+			if isaccum
+				fncii = datadir("wrf3","raw",fol2D,"$(dtvec[ii]+Day(1))-e.nc")
+				if isfile(fncii)
+					@info "$(now()) - ConvectionIsotopes - Tail end"
+					ids = NCDataset(fncii)
+				else
+					ids = NCDataset(datadir("wrf3","raw",fol2D,"$(dtvec[ii]+Day(1)).nc"))
+				end
+				NCDatasets.load!(ids[wvar].var,aarr,:,:,1)
+				close(ids)
 			end
+
+
+			if isaccum
+				for ilat = 1 : nlat, ilon = 1 : nlon
+					narr[ilon,ilat,ii] = aarr[ilon,ilat] - oarr[ilon,ilat,1]
+				end
+			else
+				for ilat = 1 : nlat, ilon = 1 : nlon
+					narr[ilon,ilat,ii] = Float32(mean(view(oarr,ilon,ilat,:)))
+				end
+			end
+
 		else
-			for ilat = 1 : nlat, ilon = 1 : nlon
-				narr[ilon,ilat,ii] = Float32(mean(view(oarr,ilon,ilat,:)))
-			end
+
+			@warn "$(now()) - ConvectionIsotopes - Unable to extract $wvar data for $(dtvec[ii]), the file does not exist"
+
 		end
 
 	end
