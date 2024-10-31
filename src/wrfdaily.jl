@@ -52,7 +52,9 @@ function wrf3Ddaily(
 
 	end
 
-	fnc = datadir("wrf3","3D","$wvar-daily.nc")
+	dtbegstr = Dates.format(start,dateformat"yyyymmdd")
+	dtbegend = Dates.format(stop,dateformat"yyyymmdd")
+	fnc = datadir("wrf3","3D","$wvar-daily-$(dtbegstr)_$(dtbegend).nc")
 	if isfile(fnc); rm(fnc,force=true) end
 
 	ds = NCDataset(fnc,"c")
@@ -151,7 +153,9 @@ function wrf2Ddaily(
 
 	end
 
-	fnc = datadir("wrf3","2D","$wvar-daily.nc")
+	dtbegstr = Dates.format(start,dateformat"yyyymmdd")
+	dtbegend = Dates.format(stop,dateformat"yyyymmdd")
+	fnc = datadir("wrf3","2D","$wvar-daily-$(dtbegstr)_$(dtbegend).nc")
 	if isfile(fnc); rm(fnc,force=true) end
 
 	ds = NCDataset(fnc,"c")
