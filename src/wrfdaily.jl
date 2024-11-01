@@ -12,7 +12,6 @@ function wrf3Ddaily(
 )
 
     ds  = NCDataset(datadir("wrf3","grid.nc"))
-	nlon,nlat,nlvl = size(ds[wvar])[[1,2,3]]
 	if wvar == "U"
 		lon = ds["longitude_u"][:,:,1]
 		lat = ds["latitude_u"][:,:,1]
@@ -23,6 +22,16 @@ function wrf3Ddaily(
 		lon = ds["longitude"][:,:,1]
 		lat = ds["latitude"][:,:,1]
 	end
+	nlon,nlat = size(lon)[[1,2]]
+	close(ds)
+
+	if isdefault
+		fol3D = "2D"
+	else
+		fol3D = "3D"
+	end
+	ds  = NCDataset(datadir("wrf3","raw",fol3D,"$start.nc"))
+	nlvl = size(ds[wvar])[3]
 	attrib = Dict(ds[wvar].attrib)
 	close(ds)
 
