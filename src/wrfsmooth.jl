@@ -48,7 +48,7 @@ function wrf3Dsmooth(
 		@info "$(now()) - ConvectionIsotopes - Extracting $wvar data for Day $ii of $ndt"
 		flush(stderr)
 
-		ids = NCDataset(datadir("wrf3","3D","$(wvar)-daily.nc"))
+		ids = NCDataset(datadir("wrf3","3D","$(wvar)-daily-$(dtbegstr)_$(dtbegend).nc"))
 		NCDatasets.load!(ids[wvar].var,oarr,:,:,:,ii.+(-buffer:buffer))
 		close(ids)
 
@@ -127,7 +127,7 @@ function wrf2Dsmooth(
 		@info "$(now()) - ConvectionIsotopes - Extracting $wvar data for Day $ii of $ndt"
 		flush(stderr)
 
-		ids = NCDataset(datadir("wrf3","2D","$(wvar)-daily.nc"))
+		ids = NCDataset(datadir("wrf3","2D","$(wvar)-daily-$(dtbegstr)_$(dtbegend).nc"))
 		NCDatasets.load!(ids[wvar].var,oarr,:,:,ii.+(-buffer:buffer))
 		close(ids)
 
