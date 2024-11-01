@@ -19,11 +19,17 @@ function calculatebufferweights(shiftsteps)
 end
 
 function wrf3Dsmooth(
-    wvar :: AbstractString;
-	days :: Int = 1
+    wvar  :: AbstractString;
+	start :: Date,
+	stop  :: Date,
+	days  :: Int = 1
 )
 
-    ds   = NCDataset(datadir("wrf3","3D","$(wvar)-daily.nc"))
+	dtbegstr = Dates.format(start,dateformat"yyyymmdd")
+	dtbegend = Dates.format(stop,dateformat"yyyymmdd")
+	fnc = datadir("wrf3","3D","$wvar-daily-$(dtbegstr)_$(dtbegend).nc")
+	
+    ds   = NCDataset(fnc)
 	lon  = ds["longitude"][:,:]; nlon = ds.dim["longitude"]
     lat  = ds["latitude"][:,:];  nlat = ds.dim["latitude"]
 	nlvl = ds.dim["levels"]
@@ -55,7 +61,7 @@ function wrf3Dsmooth(
 
 	end
 
-	fnc = datadir("wrf3","3D","$wvar-daily-smooth_$(@sprintf("%02d",days))days.nc")
+	fnc = datadir("wrf3","3D","$wvar-daily-$(dtbegstr)_$(dtbegend)-smooth_$(@sprintf("%02d",days))days.nc")
 	if isfile(fnc); rm(fnc,force=true) end
 
 	ds = NCDataset(fnc,"c")
@@ -94,10 +100,16 @@ end
 
 function wrf2Dsmooth(
     wvar :: AbstractString;
+	start :: Date,
+	stop  :: Date,
 	days :: Int = 1
 )
 
-    ds   = NCDataset(datadir("wrf3","2D","$(wvar)-daily.nc"))
+	dtbegstr = Dates.format(start,dateformat"yyyymmdd")
+	dtbegend = Dates.format(stop,dateformat"yyyymmdd")
+	fnc = datadir("wrf3","2D","$wvar-daily-$(dtbegstr)_$(dtbegend).nc")
+
+    ds   = NCDataset(fnc)
 	lon  = ds["longitude"][:]; nlon = ds.dim["longitude"]
     lat  = ds["latitude"][:];  nlat = ds.dim["latitude"]
     ndt  = ds.dim["date"]; start = ds["time"][1]
@@ -128,7 +140,7 @@ function wrf2Dsmooth(
 
 	end
 
-	fnc = datadir("wrf3","2D","$wvar-daily-smooth_$(@sprintf("%02d",days))days.nc")
+	fnc = datadir("wrf3","2D","$wvar-daily-$(dtbegstr)_$(dtbegend)-smooth_$(@sprintf("%02d",days))days.nc")
 	if isfile(fnc); rm(fnc,force=true) end
 
 	ds = NCDataset(fnc,"c")
