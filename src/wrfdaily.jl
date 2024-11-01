@@ -11,23 +11,17 @@ function wrf3Ddaily(
 	isdefault :: Bool = true
 )
 
-	if isdefault
-		fol3D = "2D"
-	else
-		fol3D = "3D"
-	end
-
-    ds  = NCDataset(datadir("wrf3","raw",fol3D,"$(start).nc"))
+    ds  = NCDataset(datadir("wrf3","grid.nc"))
 	nlon,nlat,nlvl = size(ds[wvar])[[1,2,3]]
 	if wvar == "U"
-		lon = ds["XLONG_U"][:,:,1]
-		lat = ds["XLAT_U"][:,:,1]
+		lon = ds["longitude_u"][:,:,1]
+		lat = ds["latitude_u"][:,:,1]
 	elseif wvar == "V"
-		lon = ds["XLONG_V"][:,:,1]
-		lat = ds["XLAT_V"][:,:,1]
+		lon = ds["longitude_v"][:,:,1]
+		lat = ds["latitude_v"][:,:,1]
 	else
-		lon = ds["XLONG"][:,:,1]
-		lat = ds["XLAT"][:,:,1]
+		lon = ds["longitude"][:,:,1]
+		lat = ds["latitude"][:,:,1]
 	end
 	attrib = Dict(ds[wvar].attrib)
 	close(ds)
@@ -41,6 +35,12 @@ function wrf3Ddaily(
 
 		@info "$(now()) - ConvectionIsotopes - Extracting $wvar data for $(dtvec[ii])"
 		flush(stderr)
+
+		if isdefault || ((dtvec[ii]<=Date(2019,09,20)) && (dtvec[ii]>=Date(2019,09,1)))
+			fol3D = "2D"
+		else
+			fol3D = "3D"
+		end
 
 		fnc = datadir("wrf3","raw",fol3D,"$(dtvec[ii]).nc")
 		if isfile(fnc)
