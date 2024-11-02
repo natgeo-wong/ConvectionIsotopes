@@ -45,7 +45,7 @@ function wrf3Ddaily(
 		@info "$(now()) - ConvectionIsotopes - Extracting $wvar data for $(dtvec[ii])"
 		flush(stderr)
 
-		if isdefault || ((dtvec[ii]<=Date(2019,09,30)) && (dtvec[ii]>=Date(2019,09,1)))
+		if isdefault || ((dtvec[ii]<=Date(2019,10,10)) && (dtvec[ii]>=Date(2019,09,1)))
 			fol3D = "2D"
 		else
 			fol3D = "3D"

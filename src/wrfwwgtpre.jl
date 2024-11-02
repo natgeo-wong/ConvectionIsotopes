@@ -14,6 +14,11 @@ function wrfwwgtpre(
 	days  :: Int = 0
 )
 
+    dtbegstr = Dates.format(start,dateformat"yyyymmdd")
+    dtbegend = Dates.format(stop,dateformat"yyyymmdd")
+    timestr = "$(dtbegstr)_$(dtbegend)"
+    smthstr = "smooth_$(@sprintf("%02d",days))days"
+
     Rd = 287.053
     
     ds   = NCDataset(datadir("wrf3","grid.nc"))
@@ -46,21 +51,20 @@ function wrfwwgtpre(
     pvec = zeros(Float32,52,ndt)
     wvec = zeros(Float32,52,ndt)
 
-    pds  = NCDataset(datadir("wrf3","3D","PB-daily.nc"))
+    pds  = NCDataset(datadir("wrf3","3D","PB-daily-$timestr.nc"))
     pbse = pds["PB"][lon1:lon2,lat1:lat2,:,1]
     close(pds)
 
     if iszero(days)
-        wds = NCDataset(datadir("wrf3","3D","W-daily.nc"))
-        pds = NCDataset(datadir("wrf3","3D","P-daily.nc"))
-        tds = NCDataset(datadir("wrf3","3D","T-daily.nc"))
-        sds = NCDataset(datadir("wrf3","2D","PSFC-daily.nc"))
+        wds = NCDataset(datadir("wrf3","3D","W-daily-$timestr.nc"))
+        pds = NCDataset(datadir("wrf3","3D","P-daily-$timestr.nc"))
+        tds = NCDataset(datadir("wrf3","3D","T-daily-$timestr.nc"))
+        sds = NCDataset(datadir("wrf3","2D","PSFC-daily-$timestr.nc"))
     else
-        smthstr = "smooth_$(@sprintf("%02d",days))days"
-        wds = NCDataset(datadir("wrf3","3D","W-daily-$smthstr.nc"))
-        pds = NCDataset(datadir("wrf3","3D","P-daily-$smthstr.nc"))
-        tds = NCDataset(datadir("wrf3","3D","T-daily-$smthstr.nc"))
-        sds = NCDataset(datadir("wrf3","2D","PSFC-daily-$smthstr.nc"))
+        wds = NCDataset(datadir("wrf3","3D","W-daily-$timestr-$smthstr.nc"))
+        pds = NCDataset(datadir("wrf3","3D","P-daily-$timestr-$smthstr.nc"))
+        tds = NCDataset(datadir("wrf3","3D","T-daily-$timestr-$smthstr.nc"))
+        sds = NCDataset(datadir("wrf3","2D","PSFC-daily-$timestr-$smthstr.nc"))
     end
 
     for ii in 1 : ndt
@@ -109,10 +113,9 @@ function wrfwwgtpre(
 
     mkpath(datadir("wrf3","processed"))
     if iszero(days)
-        fnc = datadir("wrf3","processed","$(geo.ID)-p_wwgt-daily.nc")
+        fnc = datadir("wrf3","processed","$(geo.ID)-p_wwgt-daily-$timestr.nc")
     else
-        smthstr = "smooth_$(@sprintf("%02d",days))days"
-        fnc = datadir("wrf3","processed","$(geo.ID)-p_wwgt-daily-$smthstr.nc")
+        fnc = datadir("wrf3","processed","$(geo.ID)-p_wwgt-daily-$timestr-$smthstr.nc")
     end
 
     if isfile(fnc); rm(fnc,force=true) end
@@ -187,15 +190,15 @@ function wrfwwgtpre()
     pwgt = zeros(Float32,nlon,nlat)
     σwgt = zeros(Float32,nlon,nlat)
 
-    pds  = NCDataset(datadir("wrf3","3D","PB-daily.nc"))
+    pds  = NCDataset(datadir("wrf3","3D","PB-daily-$timestr.nc"))
     pbse = pds["PB"][:,:,:,1]
     close(pds)
 
-    wds = NCDataset(datadir("wrf3","3D","W-daily.nc"))
-    pds = NCDataset(datadir("wrf3","3D","P-daily.nc"))
-    tds = NCDataset(datadir("wrf3","3D","T-daily.nc"))
-    sds = NCDataset(datadir("wrf3","2D","PSFC-daily.nc"))
-    rds = NCDataset(datadir("wrf3","2D","RAINNC-daily.nc"))
+    wds = NCDataset(datadir("wrf3","3D","W-daily-$timestr.nc"))
+    pds = NCDataset(datadir("wrf3","3D","P-daily-$timestr.nc"))
+    tds = NCDataset(datadir("wrf3","3D","T-daily-$timestr.nc"))
+    sds = NCDataset(datadir("wrf3","2D","PSFC-daily-$timestr.nc"))
+    rds = NCDataset(datadir("wrf3","2D","RAINNC-daily-$timestr.nc"))
 
     warr = dropdims(mean(wds["W"][:,:,:,:],dims=4),dims=4)
     parr = dropdims(mean(pds["P"][:,:,:,:],dims=4),dims=4)
@@ -238,7 +241,7 @@ function wrfwwgtpre()
     end
 
     mkpath(datadir("wrf3","processed"))
-    fnc = datadir("wrf3","processed","p_wwgt-wrf.nc")
+    fnc = datadir("wrf3","processed","p_wwgt-wrf-$timestr.nc")
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")
