@@ -244,11 +244,11 @@ function wrfwwgtpre(;
 
             calc = trapz(tmp_pvec,tmp_wvec.*tmp_pvec) / trapz(tmp_pvec,tmp_wvec)
             if (calc > 0) & (calc < psfc[ilon,ilat])
-                pwgt[ilon,ilat] = calc
-                σwgt[ilon,ilat] = calc / psfc[ilon,ilat]
+                pwgt[ilon,ilat,idt] = calc
+                σwgt[ilon,ilat,idt] = calc / psfc[ilon,ilat]
             else
-                pwgt[ilon,ilat] = NaN32
-                σwgt[ilon,ilat] = NaN32
+                pwgt[ilon,ilat,idt] = NaN32
+                σwgt[ilon,ilat,idt] = NaN32
             end
 
         end
