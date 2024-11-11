@@ -165,7 +165,16 @@ function wrfwwgtpre(
 
 end
 
-function wrfwwgtpre()
+function wrfwwgtpre(
+    start :: Date,
+    stop  :: Date,
+    days  :: Int = 0
+)
+
+    dtbegstr = Dates.format(start,dateformat"yyyymmdd")
+    dtbegend = Dates.format(stop,dateformat"yyyymmdd")
+    timestr = "$(dtbegstr)_$(dtbegend)"
+    smthstr = "smooth_$(@sprintf("%02d",days))days"
 
     Rd = 287.053
     
@@ -174,9 +183,12 @@ function wrfwwgtpre()
     lat  = ds["latitude"][:,:]
     close(ds)
 
-    nlon = size(lon,1)
-    nlat = size(lat,2)
+    dtvec = start : Day(1) : stop
+
+    nlon = lon2 - lon1 + 1
+    nlat = lat2 - lat1 + 1
     nlvl = 50
+    ndt  = length(dtvec)
 
     warr = zeros(Float32,nlon,nlat,nlvl+1)
     parr = zeros(Float32,nlon,nlat,nlvl)
@@ -187,24 +199,61 @@ function wrfwwgtpre()
     tmp_pvec = zeros(Float32,52)
     tmp_ρvec = zeros(Float32,52)
 
-    pwgt = zeros(Float32,nlon,nlat)
-    σwgt = zeros(Float32,nlon,nlat)
+    pwgt = zeros(Float32,nlon,nlat,ndt)
+    σwgt = zeros(Float32,nlon,nlat,ndt)
 
     pds  = NCDataset(datadir("wrf3","3D","PB-daily-$timestr.nc"))
     pbse = pds["PB"][:,:,:,1]
     close(pds)
 
-    wds = NCDataset(datadir("wrf3","3D","W-daily-$timestr.nc"))
-    pds = NCDataset(datadir("wrf3","3D","P-daily-$timestr.nc"))
-    tds = NCDataset(datadir("wrf3","3D","T-daily-$timestr.nc"))
-    sds = NCDataset(datadir("wrf3","2D","PSFC-daily-$timestr.nc"))
-    rds = NCDataset(datadir("wrf3","2D","RAINNC-daily-$timestr.nc"))
+    if iszero(days)
+        wds = NCDataset(datadir("wrf3","3D","W-daily-$timestr.nc"))
+        pds = NCDataset(datadir("wrf3","3D","P-daily-$timestr.nc"))
+        tds = NCDataset(datadir("wrf3","3D","T-daily-$timestr.nc"))
+        sds = NCDataset(datadir("wrf3","2D","PSFC-daily-$timestr.nc"))
+    else
+        wds = NCDataset(datadir("wrf3","3D","W-daily-$timestr-$smthstr.nc"))
+        pds = NCDataset(datadir("wrf3","3D","P-daily-$timestr-$smthstr.nc"))
+        tds = NCDataset(datadir("wrf3","3D","T-daily-$timestr-$smthstr.nc"))
+        sds = NCDataset(datadir("wrf3","2D","PSFC-daily-$timestr-$smthstr.nc"))
+    end
 
-    warr = dropdims(mean(wds["W"][:,:,:,:],dims=4),dims=4)
-    parr = dropdims(mean(pds["P"][:,:,:,:],dims=4),dims=4)
-    tarr = dropdims(mean(tds["T"][:,:,:,:],dims=4),dims=4)
-    psfc = dropdims(mean(sds["PSFC"][:,:,:],dims=3),dims=3)
-    rain = dropdims(mean(rds["RAINNC"][:,:,:],dims=3),dims=3)
+    for idt = 1 : ndt
+
+        NCDatasets.load!(wds["W"].var,warr,:,:,:,idt)
+        NCDatasets.load!(pds["P"].var,parr,:,:,:,idt)
+        NCDatasets.load!(tds["T"].var,tarr,:,:,:,idt)
+        NCDatasets.load!(sds["PSFC"].var,psfc,:,:,idt)
+
+        for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
+            parr[ilon,ilat,ilvl] += pbse[ilon,ilat,ilvl]
+            tarr[ilon,ilat,ilvl] += 290
+            tarr[ilon,ilat,ilvl]  = tarr[ilon,ilat,ilvl] * (100000 / parr[ilon,ilat,ilvl]) ^ (287/1004)
+        end
+
+        for ilat = 1 : nlat, ilon = 1 : nlon
+            
+            tmp_pvec[1] = psfc[ilon,ilat]
+
+            for ilvl = 1 : nlvl
+                tmp_ρvec[ilvl+1]  =  parr[ilon,ilat,ilvl] / Rd / tarr[ilon,ilat,ilvl]
+                tmp_wvec[ilvl+1]  = (warr[ilon,ilat,ilvl] + warr[ilon,ilat,ilvl+1]) / 2
+                tmp_wvec[ilvl+1] *= (tmp_ρvec[ilvl+1] * -9.81)
+                tmp_pvec[ilvl+1]  =  parr[ilon,ilat,ilvl]
+            end
+
+            calc = trapz(tmp_pvec,tmp_wvec.*tmp_pvec) / trapz(tmp_pvec,tmp_wvec)
+            if (calc > 0) & (calc < psfc[ilon,ilat])
+                pwgt[ilon,ilat] = calc
+                σwgt[ilon,ilat] = calc / psfc[ilon,ilat]
+            else
+                pwgt[ilon,ilat] = NaN32
+                σwgt[ilon,ilat] = NaN32
+            end
+
+        end
+
+    end
 
     close(wds)
     close(pds)
@@ -212,66 +261,50 @@ function wrfwwgtpre()
     close(sds)
     close(rds)
 
-    for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
-        parr[ilon,ilat,ilvl] += pbse[ilon,ilat,ilvl]
-        tarr[ilon,ilat,ilvl] += 290
-        tarr[ilon,ilat,ilvl]  = tarr[ilon,ilat,ilvl] * (100000 / parr[ilon,ilat,ilvl]) ^ (287/1004)
-    end        
-
-    for ilat = 1 : nlat, ilon = 1 : nlon
-        
-        tmp_pvec[1] = psfc[ilon,ilat]
-
-        for ilvl = 1 : nlvl
-            tmp_ρvec[ilvl+1]  =  parr[ilon,ilat,ilvl] / Rd / tarr[ilon,ilat,ilvl]
-            tmp_wvec[ilvl+1]  = (warr[ilon,ilat,ilvl] + warr[ilon,ilat,ilvl+1]) / 2
-            tmp_wvec[ilvl+1] *= (tmp_ρvec[ilvl+1] * -9.81)
-            tmp_pvec[ilvl+1]  =  parr[ilon,ilat,ilvl]
-        end
-
-        calc = trapz(tmp_pvec,tmp_wvec.*tmp_pvec) / trapz(tmp_pvec,tmp_wvec)
-        if (calc > 0) & (calc < psfc[ilon,ilat])
-            pwgt[ilon,ilat] = calc
-            σwgt[ilon,ilat] = calc / psfc[ilon,ilat]
-        else
-            pwgt[ilon,ilat] = NaN32
-            σwgt[ilon,ilat] = NaN32
-        end
-
-    end
-
     mkpath(datadir("wrf3","processed"))
-    fnc = datadir("wrf3","processed","p_wwgt-wrf-$timestr.nc")
+    if iszero(days)
+        fnc = datadir("wrf3","processed","$(geo.ID)-p_wwgt-wrf-$timestr.nc")
+    else
+        fnc = datadir("wrf3","processed","$(geo.ID)-p_wwgt-wrf-$timestr-$smthstr.nc")
+    end
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")
     ds.dim["longitude"] = nlon
     ds.dim["latitude"]  = nlat
+    ds.dim["time"]      = ndt
 
-    ncpwgt = defVar(ds,"p_wwgt",Float32,("longitude","latitude",),attrib=Dict(
+    nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
+        "units"     => "days since $(start) 00:00:00.0",
+        "long_name" => "time",
+        "calendar"  => "gregorian"
+    ))
+
+    ncpwgt = defVar(ds,"p_wwgt",Float32,("longitude","latitude","time",),attrib=Dict(
         "long_name" => "column_mean_lagrangian_tendency_of_air_pressure",
         "full_name" => "Vertical Wind Weighted Column Pressure",
         "units"     => "Pa",
     ))
 
-    ncσwgt = defVar(ds,"σ_wwgt",Float32,("longitude","latitude",),attrib=Dict(
+    ncσwgt = defVar(ds,"σ_wwgt",Float32,("longitude","latitude","time",),attrib=Dict(
         "long_name" => "column_mean_lagrangian_tendency_of_sigma",
         "full_name" => "Vertical Wind Weighted Column Sigma",
         "units"     => "0-1",
     ))
 
-    ncrain = defVar(ds,"RAINNC",Float32,("longitude","latitude",),attrib=Dict(
+    ncrain = defVar(ds,"RAINNC",Float32,("longitude","latitude","time",),attrib=Dict(
         "long_name" => "total_precipitation",
         "full_name" => "Total Precipitation",
         "units"     => "mm",
     ))
 
-    ncpsfc = defVar(ds,"PSFC",Float32,("longitude","latitude",),attrib=Dict(
+    ncpsfc = defVar(ds,"PSFC",Float32,("longitude","latitude","time",),attrib=Dict(
         "long_name" => "surface_pressure",
         "full_name" => "Surface Pressure",
         "units"     => "Pa",
     ))
 
+    nctime.var[:] = collect(0 : (ndt-1))
     ncpwgt[:,:] = pwgt
     ncσwgt[:,:] = σwgt
     ncrain[:,:] = rain
