@@ -220,6 +220,9 @@ function wrfwwgtpre(;
 
     for idt = 1 : ndt
 
+        @info "$(now()) - ConvectionIsotopes - Calculating p_wwgt and σ_wwgt for $idt"
+		flush(stderr)
+
         NCDatasets.load!(wds["W"].var,warr,:,:,:,idt)
         NCDatasets.load!(pds["P"].var,parr,:,:,:,idt)
         NCDatasets.load!(tds["T"].var,tarr,:,:,:,idt)
