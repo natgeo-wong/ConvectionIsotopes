@@ -185,8 +185,8 @@ function wrfwwgtpre(;
 
     dtvec = start : Day(1) : stop
 
-    nlon = lon2 - lon1 + 1
-    nlat = lat2 - lat1 + 1
+    nlon = size(lon,1)
+    nlat = size(lat,2)
     nlvl = 50
     ndt  = length(dtvec)
 
