@@ -63,13 +63,15 @@ function wrf3Ddaily(
 					narr[ilon,ilat,ilvl,ii] = Float32(mean(view(oarr,ilon,ilat,ilvl,:)))
 				end
 			else
-				@warn "$(now()) - ConvectionIsotopes - Unable to extract $wvar data for $(dtvec[ii]), 24 hours not given"
+				@warn "$(now()) - ConvectionIsotopes - Unable to extract $wvar data for $(dtvec[ii]), 24 hours not given, set to NaN"
 				close(ids)
+				narr[:,:,:,ii] .= NaN32
 			end
 
 		else
 
-			@warn "$(now()) - ConvectionIsotopes - Unable to extract $wvar data for $(dtvec[ii]), the file does not exist"
+			@warn "$(now()) - ConvectionIsotopes - Unable to extract $wvar data for $(dtvec[ii]), the file does not exist, set to NaN"
+			narr[:,:,:,ii] .= NaN32
 
 		end
 
@@ -178,13 +180,15 @@ function wrf2Ddaily(
 					end
 				end
 			else
-				@warn "$(now()) - ConvectionIsotopes - Unable to extract $wvar data for $(dtvec[ii]), 24 hours not given"
+				@warn "$(now()) - ConvectionIsotopes - Unable to extract $wvar data for $(dtvec[ii]), 24 hours not given, set to NaN"
 				close(ids)
+				narr[:,:,ii] .= NaN32
 			end
 
 		else
 
 			@warn "$(now()) - ConvectionIsotopes - Unable to extract $wvar data for $(dtvec[ii]), the file does not exist"
+			narr[:,:,ii] .= NaN32
 
 		end
 
