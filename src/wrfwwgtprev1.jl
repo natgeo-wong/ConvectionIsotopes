@@ -185,7 +185,7 @@ function wrfwwgtpre(;
 
     pwgt = zeros(Float32,nlon,nlat,ndt)
     σwgt = zeros(Float32,nlon,nlat,ndt)
-    psfc = zeros(Float32,nlon,nlat,ndt)
+    psfc = zeros(Float32,nlon,nlat,ndt+1)
 
     if iszero(days)
         wds = NCDataset(datadir("wrf","3D","W-daily.nc"))
@@ -285,7 +285,7 @@ function wrfwwgtpre(;
     nctime.var[:] = collect(0 : (ndt-1))
     ncpwgt[:,:,:] = pwgt
     ncσwgt[:,:,:] = σwgt
-    ncpsfc[:,:,:] = psfc
+    ncpsfc[:,:,:] = psfc[:,:,1:end-1]
 
     close(ds)
 
