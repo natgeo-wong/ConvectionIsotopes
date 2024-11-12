@@ -169,7 +169,6 @@ function wrfwwgtpre(;
     nlon = size(lon,1)
     nlat = size(lat,2)
     nlvl = 50
-    ndt  = length(dtvec)
 
     warr = zeros(Float32,nlon,nlat,nlvl+1)
     parr = zeros(Float32,nlon,nlat,nlvl)
