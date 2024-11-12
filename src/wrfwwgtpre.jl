@@ -276,7 +276,7 @@ function wrfwwgtpre(;
     ds.dim["latitude"]  = nlat
     ds.dim["time"]      = ndt
 
-    nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
+    nctime = defVar(ds,"time",Int32,("time",),attrib=Dict(
         "units"     => "days since $(start) 00:00:00.0",
         "long_name" => "time",
         "calendar"  => "gregorian"
