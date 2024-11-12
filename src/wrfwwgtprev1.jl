@@ -154,8 +154,6 @@ function wrfwwgtpre(
 end
 
 function wrfwwgtpre(;
-    start :: Date,
-    stop  :: Date,
     days  :: Int = 0
 )
 
@@ -167,8 +165,6 @@ function wrfwwgtpre(;
     lon  = ds["longitude"][:,:]
     lat  = ds["latitude"][:,:]
     close(ds)
-
-    dtvec = start : Day(1) : stop
 
     nlon = size(lon,1)
     nlat = size(lat,2)
@@ -189,6 +185,7 @@ function wrfwwgtpre(;
 
     pds  = NCDataset(datadir("wrf","3D","PB-daily.nc"))
     pbse = pds["PB"][:,:,:,1]
+    ndt  = pds.dim["date"]
     close(pds)
 
     if iszero(days)
