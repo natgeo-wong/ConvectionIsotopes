@@ -243,7 +243,6 @@ function wrfwwgtpre(;
     close(pds)
     close(tds)
     close(sds)
-    close(rds)
 
     mkpath(datadir("wrf","processed"))
     if iszero(days)
