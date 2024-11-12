@@ -179,13 +179,13 @@ function wrfwwgtpre(;
     tmp_pvec = zeros(Float32,52)
     tmp_ρvec = zeros(Float32,52)
 
-    pwgt = zeros(Float32,nlon,nlat,ndt)
-    σwgt = zeros(Float32,nlon,nlat,ndt)
-
     pds  = NCDataset(datadir("wrf","3D","PB-daily.nc"))
     pbse = pds["PB"][:,:,:,1]
     ndt  = pds.dim["date"]
     close(pds)
+
+    pwgt = zeros(Float32,nlon,nlat,ndt)
+    σwgt = zeros(Float32,nlon,nlat,ndt)
 
     if iszero(days)
         wds = NCDataset(datadir("wrf","3D","W-daily.nc"))
