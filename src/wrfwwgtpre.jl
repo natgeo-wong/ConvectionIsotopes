@@ -193,7 +193,6 @@ function wrfwwgtpre(;
     warr = zeros(Float32,nlon,nlat,nlvl+1)
     parr = zeros(Float32,nlon,nlat,nlvl)
     tarr = zeros(Float32,nlon,nlat,nlvl)
-    psfc = zeros(Float32,nlon,nlat)
 
     tmp_wvec = zeros(Float32,52)
     tmp_pvec = zeros(Float32,52)
@@ -201,6 +200,7 @@ function wrfwwgtpre(;
 
     pwgt = zeros(Float32,nlon,nlat,ndt)
     σwgt = zeros(Float32,nlon,nlat,ndt)
+    psfc = zeros(Float32,nlon,nlat,ndt)
 
     pds  = NCDataset(datadir("wrf3","3D","PB-daily-$timestr.nc"))
     pbse = pds["PB"][:,:,:,1]
@@ -218,6 +218,8 @@ function wrfwwgtpre(;
         sds = NCDataset(datadir("wrf3","2D","PSFC-daily-$timestr-$smthstr.nc"))
     end
 
+    NCDatasets.load!(sds["PSFC"].var,psfc,:,:,:)
+
     for idt = 1 : ndt
 
         @info "$(now()) - ConvectionIsotopes - Calculating p_wwgt and σ_wwgt for $idt"
@@ -226,7 +228,6 @@ function wrfwwgtpre(;
         NCDatasets.load!(wds["W"].var,warr,:,:,:,idt)
         NCDatasets.load!(pds["P"].var,parr,:,:,:,idt)
         NCDatasets.load!(tds["T"].var,tarr,:,:,:,idt)
-        NCDatasets.load!(sds["PSFC"].var,psfc,:,:,idt)
 
         for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
             parr[ilon,ilat,ilvl] += pbse[ilon,ilat,ilvl]
@@ -236,7 +237,7 @@ function wrfwwgtpre(;
 
         for ilat = 1 : nlat, ilon = 1 : nlon
             
-            tmp_pvec[1] = psfc[ilon,ilat]
+            tmp_pvec[1] = psfc[ilon,ilat,idt]
 
             for ilvl = 1 : nlvl
                 tmp_ρvec[ilvl+1]  =  parr[ilon,ilat,ilvl] / Rd / tarr[ilon,ilat,ilvl]
@@ -246,9 +247,9 @@ function wrfwwgtpre(;
             end
 
             calc = trapz(tmp_pvec,tmp_wvec.*tmp_pvec) / trapz(tmp_pvec,tmp_wvec)
-            if (calc > 0) & (calc < psfc[ilon,ilat])
+            if (calc > 0) & (calc < psfc[ilon,ilat,idt])
                 pwgt[ilon,ilat,idt] = calc
-                σwgt[ilon,ilat,idt] = calc / psfc[ilon,ilat]
+                σwgt[ilon,ilat,idt] = calc / psfc[ilon,ilat,idt]
             else
                 pwgt[ilon,ilat,idt] = NaN32
                 σwgt[ilon,ilat,idt] = NaN32
@@ -301,9 +302,9 @@ function wrfwwgtpre(;
     ))
 
     nctime.var[:] = collect(0 : (ndt-1))
-    ncpwgt[:,:] = pwgt
-    ncσwgt[:,:] = σwgt
-    ncpsfc[:,:] = psfc
+    ncpwgt[:,:,:] = pwgt
+    ncσwgt[:,:,:] = σwgt
+    ncpsfc[:,:,:] = psfc
 
     close(ds)
 
