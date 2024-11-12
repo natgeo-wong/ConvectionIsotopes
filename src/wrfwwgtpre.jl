@@ -266,9 +266,9 @@ function wrfwwgtpre(;
 
     mkpath(datadir("wrf3","processed"))
     if iszero(days)
-        fnc = datadir("wrf3","processed","$(geo.ID)-p_wwgt-wrf-$timestr.nc")
+        fnc = datadir("wrf3","processed","p_wwgt-wrf-$timestr.nc")
     else
-        fnc = datadir("wrf3","processed","$(geo.ID)-p_wwgt-wrf-$timestr-$smthstr.nc")
+        fnc = datadir("wrf3","processed","p_wwgt-wrf-$timestr-$smthstr.nc")
     end
     if isfile(fnc); rm(fnc,force=true) end
 
@@ -295,12 +295,6 @@ function wrfwwgtpre(;
         "units"     => "0-1",
     ))
 
-    ncrain = defVar(ds,"RAINNC",Float32,("longitude","latitude","time",),attrib=Dict(
-        "long_name" => "total_precipitation",
-        "full_name" => "Total Precipitation",
-        "units"     => "mm",
-    ))
-
     ncpsfc = defVar(ds,"PSFC",Float32,("longitude","latitude","time",),attrib=Dict(
         "long_name" => "surface_pressure",
         "full_name" => "Surface Pressure",
@@ -310,7 +304,6 @@ function wrfwwgtpre(;
     nctime.var[:] = collect(0 : (ndt-1))
     ncpwgt[:,:] = pwgt
     ncσwgt[:,:] = σwgt
-    ncrain[:,:] = rain
     ncpsfc[:,:] = psfc
 
     close(ds)
