@@ -247,9 +247,9 @@ function wrfwwgtpre(;
 
     mkpath(datadir("wrf","processed"))
     if iszero(days)
-        fnc = datadir("wrf","processed","p_wwgt-wrf.nc")
+        fnc = datadir("wrf","2D","p_wwgt.nc")
     else
-        fnc = datadir("wrf","processed","p_wwgt-wrf-$smthstr.nc")
+        fnc = datadir("wrf","2D","p_wwgt-$smthstr.nc")
     end
     if isfile(fnc); rm(fnc,force=true) end
 
