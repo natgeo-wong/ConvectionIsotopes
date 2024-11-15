@@ -58,7 +58,11 @@ function wrfnewregridera5(
 	close(wds)
 
 	if !isdir(datadir("wrf3","regridded")); mkpath(datadir("wrf3","regridded")) end
-	fnc = datadir("wrf3","regridded","$wvar-$timestr-$smthstr.nc")
+	if iszero(days)
+        fnc = datadir("wrf3","regridded","$wvar-$timestr.nc")
+    else
+        fnc = datadir("wrf3","regridded","$wvar-$timestr-$smthstr.nc")
+    end
 	if isfile(fnc); rm(fnc,force=true) end
 
 	ds = NCDataset(fnc,"c")
@@ -142,7 +146,11 @@ function wrfoldregridera5(
 	close(wds)
 
 	if !isdir(datadir("wrf","regridded")); mkpath(datadir("wrf","regridded")) end
-	fnc = datadir("wrf","regridded","$wvar-$smthstr.nc")
+	if iszero(days)
+        fnc = datadir("wrf","regridded","$wvar.nc")
+    else
+        fnc = datadir("wrf","regridded","$wvar-$smthstr.nc")
+    end
 	if isfile(fnc); rm(fnc,force=true) end
 
 	ds = NCDataset(fnc,"c")
