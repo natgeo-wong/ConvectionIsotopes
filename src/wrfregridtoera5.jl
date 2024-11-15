@@ -7,7 +7,7 @@ function wrfnewregridera5(
 	wvar  :: AbstractString;
 	start :: Date,
 	stop  :: Date,
-	days  :: Int = 1
+	days  :: Int = 0
 )
 
 	dtbegstr = Dates.format(start,dateformat"yyyymmdd")
@@ -96,7 +96,7 @@ end
 
 function wrfoldregridera5(
 	wvar  :: AbstractString;
-	days  :: Int = 1
+	days  :: Int = 0
 )
 
     smthstr = "smooth_$(@sprintf("%02d",days))days"
