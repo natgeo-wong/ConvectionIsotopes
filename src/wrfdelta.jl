@@ -62,9 +62,9 @@ function wrfdelta(
         NCDatasets.load!(ds2["HDO_RAINNC"].var,tmpHDO,lon1:lon2,lat1:lat2,ii)
         NCDatasets.load!(ds3["O18_RAINNC"].var,tmpO18,lon1:lon2,lat1:lat2,ii)
 
-        rain[ii] = reverse(dropdims(mean(tmpRAIN,dims=(1,2)),dims=(1,2)))
-        HDOr[ii] = reverse(dropdims(mean(tmpHDO,dims=(1,2)),dims=(1,2)))
-        O18r[ii] = reverse(dropdims(mean(tmpO18,dims=(1,2)),dims=(1,2)))
+        rain[ii] = dropdims(mean(tmpRAIN,dims=(1,2)),dims=(1,2))
+        HDOr[ii] = dropdims(mean(tmpHDO,dims=(1,2)),dims=(1,2))
+        O18r[ii] = dropdims(mean(tmpO18,dims=(1,2)),dims=(1,2))
         
 
     end
