@@ -42,8 +42,8 @@ function wrfwwgtpre(
     tarr = zeros(Float32,nlon,nlat,nlvl)
     psfc = zeros(Float32,nlon,nlat)
 
-    tmp_wmat = zeros(Float32,nlon,nlat,52); tmp_wvec = zeros(Float32,52)
-    tmp_pmat = zeros(Float32,nlon,nlat,52); tmp_pvec = zeros(Float32,52)
+    tmp_wmat = zeros(Float32,nlon,nlat,52)
+    tmp_pmat = zeros(Float32,nlon,nlat,52)
     tmp_ρmat = zeros(Float32,nlon,nlat,52)
 
     pwgt = zeros(Float32,ndt)
@@ -96,13 +96,19 @@ function wrfwwgtpre(
 
         end
 
-        tmp_wvec = reverse(dropdims(mean(tmp_wmat,dims=(1,2)),dims=(1,2)))
-        tmp_pvec = reverse(dropdims(mean(tmp_pmat,dims=(1,2)),dims=(1,2)))
+        tmp_wvec = dropdims(mean(tmp_wmat,dims=(1,2)),dims=(1,2))
+        tmp_pvec = dropdims(mean(tmp_pmat,dims=(1,2)),dims=(1,2))
 
-        pwgt[ii] = trapz(tmp_pvec,tmp_wvec.*tmp_pvec) / trapz(tmp_pvec,tmp_wvec)
-        σwgt[ii] = pwgt[ii] / mean(psfc) 
-        wvec[:,ii] = tmp_wvec
-        pvec[:,ii] = tmp_pvec
+        calc = trapz(tmp_pvec,tmp_wvec.*tmp_pvec) / trapz(tmp_pvec,tmp_wvec)
+        if (calc > 0) & (calc < mean(psfc))
+            pwgt[ii] = calc
+            σwgt[ii] = calc / mean(psfc)
+        else
+            pwgt[ii] = NaN32
+            σwgt[ii] = NaN32
+        end
+        wvec[:,ii] = reverse(tmp_wvec)
+        pvec[:,ii] = reverse(tmp_pvec)
 
     end
 
