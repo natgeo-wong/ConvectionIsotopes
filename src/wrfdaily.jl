@@ -25,12 +25,7 @@ function wrf3Ddaily(
 	nlon,nlat = size(lon)[[1,2]]
 	close(ds)
 
-	if isdefault
-		fol3D = "2D"
-	else
-		fol3D = "3D"
-	end
-	ds  = NCDataset(datadir("wrf3","raw",fol3D,"$start.nc"))
+	ds  = NCDataset(datadir("wrf3","raw","$start.nc"))
 	nlvl = size(ds[wvar])[3]
 	attrib = Dict(ds[wvar].attrib)
 	close(ds)
@@ -45,13 +40,7 @@ function wrf3Ddaily(
 		@info "$(now()) - ConvectionIsotopes - Extracting $wvar data for $(dtvec[ii])"
 		flush(stderr)
 
-		if isdefault || ((dtvec[ii]<=Date(2019,10,10)) && (dtvec[ii]>=Date(2019,09,1))) || ((dtvec[ii]>=Date(2020,6,1)) && (dtvec[ii]<=Date(2020,6,10)))
-			fol3D = "2D"
-		else
-			fol3D = "3D"
-		end
-
-		fnc = datadir("wrf3","raw",fol3D,"$(dtvec[ii]).nc")
+		fnc = datadir("wrf3","raw","$(dtvec[ii]).nc")
 		if isfile(fnc)
 
 			ids = NCDataset(fnc)
@@ -121,19 +110,15 @@ function wrf2Ddaily(
 	start :: Date,
 	stop  :: Date,
 	isaccum   :: Bool = false,
-	isdefault :: Bool = true
 )
 
-	if isdefault
-		fol2D = "2D"
-	else
-		fol2D = "aux"
-	end
+	ds  = NCDataset(datadir("wrf3","grid.nc"))
+	lon = ds["longitude"][:,:,1]
+	lat = ds["latitude"][:,:,1]
+	nlon,nlat = size(lon)[[1,2]]
+	close(ds)
 
-    ds  = NCDataset(datadir("wrf3","raw",fol2D,"$(start).nc"))
-	nlon,nlat = size(ds[wvar])[[1,2]]
-	lon = ds["XLONG"][:,:,1]
-	lat = ds["XLAT"][:,:,1]
+	ds  = NCDataset(datadir("wrf3","raw","$start.nc"))
 	attrib = Dict(ds[wvar].attrib)
 	close(ds)
 
@@ -150,7 +135,7 @@ function wrf2Ddaily(
 		@info "$(now()) - ConvectionIsotopes - Extracting $wvar data for $(dtvec[ii])"
 		flush(stderr)
 
-		fnc = datadir("wrf3","raw",fol2D,"$(dtvec[ii]).nc")
+		fnc = datadir("wrf3","raw","$(dtvec[ii]).nc")
 		if isfile(fnc)
 
 			ids = NCDataset(fnc)
@@ -158,12 +143,12 @@ function wrf2Ddaily(
 				NCDatasets.load!(ids[wvar].var,oarr,:,:,:)
 				close(ids)
 				if isaccum
-					fncii = datadir("wrf3","raw",fol2D,"$(dtvec[ii]+Day(1))-e.nc")
+					fncii = datadir("wrf3","raw","$(dtvec[ii]+Day(1))-e.nc")
 					if isfile(fncii)
 						@info "$(now()) - ConvectionIsotopes - Tail end"
 						ids = NCDataset(fncii)
 					else
-						ids = NCDataset(datadir("wrf3","raw",fol2D,"$(dtvec[ii]+Day(1)).nc"))
+						ids = NCDataset(datadir("wrf3","raw","$(dtvec[ii]+Day(1)).nc"))
 					end
 					NCDatasets.load!(ids[wvar].var,aarr,:,:,1)
 					close(ids)
