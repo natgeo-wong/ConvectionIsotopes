@@ -61,7 +61,7 @@ function wrfgrid()
 
 	nclon[:,:] = lon; nclonu[:,:] = lon_u; nclonv[:,:] = lon_v
 	nclat[:,:] = lat; nclatu[:,:] = lat_u; nclatv[:,:] = lat_v
-	nclvl[:,:] = lvl
+	nclvl[:,:,:] = lvl
 
 	close(ds)
 
