@@ -13,14 +13,14 @@ function wrf3Ddaily(
 
     ds  = NCDataset(datadir("wrf3","grid.nc"))
 	if wvar == "U"
-		lon = ds["longitude_u"][:,:,1]
-		lat = ds["latitude_u"][:,:,1]
+		lon = ds["longitude_u"][:,:]
+		lat = ds["latitude_u"][:,:]
 	elseif wvar == "V"
-		lon = ds["longitude_v"][:,:,1]
-		lat = ds["latitude_v"][:,:,1]
+		lon = ds["longitude_v"][:,:]
+		lat = ds["latitude_v"][:,:]
 	else
-		lon = ds["longitude"][:,:,1]
-		lat = ds["latitude"][:,:,1]
+		lon = ds["longitude"][:,:]
+		lat = ds["latitude"][:,:]
 	end
 	nlon,nlat = size(lon)[[1,2]]
 	close(ds)
@@ -113,8 +113,8 @@ function wrf2Ddaily(
 )
 
 	ds  = NCDataset(datadir("wrf3","grid.nc"))
-	lon = ds["longitude"][:,:,1]
-	lat = ds["latitude"][:,:,1]
+	lon = ds["longitude"][:,:]
+	lat = ds["latitude"][:,:]
 	nlon,nlat = size(lon)[[1,2]]
 	close(ds)
 
