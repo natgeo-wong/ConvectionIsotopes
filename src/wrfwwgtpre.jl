@@ -52,9 +52,9 @@ function wrfwwgtpre(
     pvec = zeros(Float32,52,ndt)
     wvec = zeros(Float32,52,ndt)
 
-    pds  = NCDataset(datadir("wrf3","3D","PB-daily-$timestr.nc"))
-    pbse = pds["PB"][lon1:lon2,lat1:lat2,:,1]
-    close(pds)
+    ds   = NCDataset(datadir("wrf3","grid.nc"))
+    pbse = pds["pressure_base"][lon1:lon2,lat1:lat2]
+    close(ds)
 
     if iszero(days)
         wds = NCDataset(datadir("wrf3","3D","W-daily-$timestr.nc"))
