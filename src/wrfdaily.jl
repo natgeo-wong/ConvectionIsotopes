@@ -8,7 +8,6 @@ function wrf3Ddaily(
     wvar :: AbstractString;
 	start :: Date,
 	stop  :: Date,
-	isdefault :: Bool = true
 )
 
     ds  = NCDataset(datadir("wrf3","grid.nc"))
