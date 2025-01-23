@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.46
+# v0.20.0
 
 using Markdown
 using InteractiveUtils
@@ -83,23 +83,17 @@ function extract(geoname,iso,days)
 
 	ds = NCDataset(datadir(
 		"wrf3","processed",
-		"$geoname-$(iso)QBUDGET.nc"
+		"$geoname-rain-daily-20190801_20201230-smooth_$(dystr)days.nc"
 	))
-	hvyp = smooth(dropdims(sum(reshape(ds["$(iso)P"][:],24,:),dims=1),dims=1),days)
-	close(ds)
-
-	ds = NCDataset(datadir(
-		"wrf3","processed",
-		"$geoname-QBUDGET.nc"
-	))
-	prcp = smooth(dropdims(sum(reshape(ds["P"][:],24,:),dims=1),dims=1),days)
+	prcp = ds["RAINNC"][1:152]
+	hvyp = ds["$(iso)RAINNC"][1:152]
 	close(ds)
 
 	dsp = NCDataset(datadir(
 		"wrf3","processed",
-		"$geoname-p_wwgt-daily-smooth_$(dystr)days.nc"
+		"$geoname-p_wwgt-daily-20190801_20201230-smooth_$(dystr)days.nc"
 	))
-	pwgt = dsp["p_wwgt"][:] / 100
+	pwgt = dsp["p_wwgt"][1:152] / 100
 	pwgt[(pwgt.>1000).|(pwgt.<0)] .= NaN
 	close(dsp)
 
@@ -321,14 +315,14 @@ begin
 	)
 
 	c1_1,c1_2 = 
-	plotbin!(a1,1,rbin,pbin,hbin,hprc,hnum,-75:5:-15,returncinfo=true)
-	plotbin!(a1,2,rbin,pbin,bbin,bprc,bnum,-75:5:-15)
-	plotbin!(a1,3,rbin,pbin,cbin,cprc,cnum,-75:5:-15)
-	plotbin!(a1,4,rbin,pbin,dbin,dprc,dnum,-75:5:-15)
-	plotbin!(a1,5,rbin,pbin,ibin,iprc,inum,-75:5:-15)
-	plotbin!(a1,6,rbin,pbin,ebin,eprc,enum,-75:5:-15)
-	plotbin!(a1,7,rbin,pbin,fbin,fprc,fnum,-75:5:-15)
-	plotbin!(a1,8,rbin,pbin,gbin,gprc,gnum,-75:5:-15)
+	plotbin!(a1,1,rbin,pbin,hbin,hprc,hnum,-120:5:-15,returncinfo=true)
+	plotbin!(a1,2,rbin,pbin,bbin,bprc,bnum,-120:5:-15)
+	plotbin!(a1,3,rbin,pbin,cbin,cprc,cnum,-120:5:-15)
+	plotbin!(a1,4,rbin,pbin,dbin,dprc,dnum,-120:5:-15)
+	plotbin!(a1,5,rbin,pbin,ibin,iprc,inum,-120:5:-15)
+	plotbin!(a1,6,rbin,pbin,ebin,eprc,enum,-120:5:-15)
+	plotbin!(a1,7,rbin,pbin,fbin,fprc,fnum,-120:5:-15)
+	plotbin!(a1,8,rbin,pbin,gbin,gprc,gnum,-120:5:-15)
 
 	axesformat!(a1)
 	a1[1].format(suptitle="7-Day WRF Moving Average")
@@ -392,14 +386,14 @@ begin
 	)
 
 	c2_1,c2_2 = 
-	plotbin!(a2,1,rbin,pbin,hbin,hprc,hnum,-7:0.1:-6,returncinfo=true)
-	plotbin!(a2,2,rbin,pbin,bbin,bprc,bnum,-7:0.1:-6)
-	plotbin!(a2,3,rbin,pbin,cbin,cprc,cnum,-7:0.1:-6)
-	plotbin!(a2,4,rbin,pbin,dbin,dprc,dnum,-7:0.1:-6)
-	plotbin!(a2,5,rbin,pbin,ibin,iprc,inum,-7:0.1:-6)
-	plotbin!(a2,6,rbin,pbin,ebin,eprc,enum,-7:0.1:-6)
-	plotbin!(a2,7,rbin,pbin,fbin,fprc,fnum,-7:0.1:-6)
-	plotbin!(a2,8,rbin,pbin,gbin,gprc,gnum,-7:0.1:-6)
+	plotbin!(a2,1,rbin,pbin,hbin,hprc,hnum,-14:0.1:-6,returncinfo=true)
+	plotbin!(a2,2,rbin,pbin,bbin,bprc,bnum,-14:0.1:-6)
+	plotbin!(a2,3,rbin,pbin,cbin,cprc,cnum,-14:0.1:-6)
+	plotbin!(a2,4,rbin,pbin,dbin,dprc,dnum,-14:0.1:-6)
+	plotbin!(a2,5,rbin,pbin,ibin,iprc,inum,-14:0.1:-6)
+	plotbin!(a2,6,rbin,pbin,ebin,eprc,enum,-14:0.1:-6)
+	plotbin!(a2,7,rbin,pbin,fbin,fprc,fnum,-14:0.1:-6)
+	plotbin!(a2,8,rbin,pbin,gbin,gprc,gnum,-14:0.1:-6)
 
 	axesformat!(a2)
 	a2[1].format(suptitle="7-Day WRF Moving Average")
@@ -566,7 +560,7 @@ end
 # ╟─7e66a747-056c-445e-a021-0d919ddc26bb
 # ╟─3bb9d01b-b214-44b1-975e-fcab56d8eb99
 # ╟─2fd946e2-bf3e-406f-9a19-5aa72b5d1640
-# ╟─b6500812-fd5e-4842-8855-655822d170f4
-# ╟─c57ae725-3056-481c-a004-a916192744be
+# ╠═b6500812-fd5e-4842-8855-655822d170f4
+# ╠═c57ae725-3056-481c-a004-a916192744be
 # ╟─738c6dde-cc6b-489f-8251-849e4ca67d8c
 # ╟─3d3a2954-fe7e-40da-a6d9-fe9affcc581b

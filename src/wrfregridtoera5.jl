@@ -111,7 +111,7 @@ function wrfoldregridera5(
         wds = NCDataset(datadir("wrf","2D","$wvar-daily-$smthstr.nc"))
     end
 	attrib = Dict(wds[wvar].attrib)
-	ndt  = wds.dim["time"]; start = wds["time"][1]
+	ndt  = wds.dim["date"]; start = wds["time"][1]
     
     ds   = NCDataset(datadir("wrf","grid.nc"))
     wlon = ds["longitude"][:,:]; nx,ny = size(wlon)
