@@ -27,7 +27,7 @@ function wrfwwgtpre(
     lat  = ds["latitude"][:,:]
     close(ds)
 
-    ggrd = RegionGrid(geo,lon,lat)
+    ggrd = RegionGrid(geo,Point2.(lon,lat))
     lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findlast(ggrd.mask .== 1)[1]
     lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findlast(ggrd.mask .== 1)[2]
 
