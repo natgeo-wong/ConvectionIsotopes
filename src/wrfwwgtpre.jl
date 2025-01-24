@@ -28,8 +28,8 @@ function wrfwwgtpre(
     close(ds)
 
     ggrd = RegionGrid(geo,Point2.(lon,lat))
-    lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findlast(ggrd.mask .== 1)[1]
-    lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findlast(ggrd.mask .== 1)[2]
+    lon1 = minimum(ggrd.ilon); lon2 = maximum(ggrd.ilon)
+    lat1 = minimum(ggrd.ilat); lat2 = maximum(ggrd.ilat)
 
     dtvec = start : Day(1) : stop
 
@@ -53,7 +53,7 @@ function wrfwwgtpre(
     wvec = zeros(Float32,52,ndt)
 
     ds   = NCDataset(datadir("wrf3","grid.nc"))
-    pbse = pds["pressure_base"][lon1:lon2,lat1:lat2]
+    pbse = ds["pressure_base"][lon1:lon2,lat1:lat2,:]
     close(ds)
 
     if iszero(days)
