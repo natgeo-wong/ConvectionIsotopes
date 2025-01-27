@@ -33,19 +33,19 @@ function wrfwdecompose(
     close(ds)
 
     nt = size(p,2)
-    c  = zeros(nt,2)
+    c  = zeros(nt,nc)
 
     for it = 1 : nt
 
         iω = @views ω[:,it]
         ip = @views p[:,it]; ps = ip[end]
-        iiω = @views iω[ip.>=100]
-        iip = @views ip[ip.>=100]; np = length(iip)
+        iiω = @views iω[(ip.>=100).&(ip.<=(ps*0.95))]
+        iip = @views ip[(ip.>=100).&(ip.<=(ps*0.95))]; np = length(iip)
 
         if np > 1
             for ic = 1 : nc
 
-                c[it,1] += iiω[1] * sin(ic*pi*(iip[1]-100)/(ps-100)) * (iip[1]-100)
+                c[it,ic] += iiω[1] * sin(ic*pi*(iip[1]-100)/(ps-100)) * (iip[1]-100)
 
                 for jp = 2 : np
 
@@ -87,7 +87,7 @@ function wrfwdecompose(
     ))
 
     nct.var[:] = collect(0 : (nt-1))
-    ncc[:] = c
+    ncc[:] = c * 2
 
     close(ds)
 
