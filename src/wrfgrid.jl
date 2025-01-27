@@ -9,6 +9,7 @@ function wrfgrid()
     lon   = ds["XLONG"][:,:,1]; nlon = size(lon,1)
     lat   = ds["XLAT"][:,:,1];  nlat = size(lat,2)
     lvl   = ds["PB"][:,:,:,1];  nlvl = size(lvl,3)
+    geo   = ds["PHB"][:,:,:,1]; nlvl = size(lvl,3)
     lon_u = ds["XLONG_U"][:,:,1]; lat_u = ds["XLAT_U"][:,:,1]
     lon_v = ds["XLONG_V"][:,:,1]; lat_v = ds["XLAT_V"][:,:,1]
     close(ds)
@@ -21,8 +22,9 @@ function wrfgrid()
 	ds.dim["longitude"] = nlon
 	ds.dim["latitude"]  = nlat
 	ds.dim["level"]	    = nlvl
-	ds.dim["longitude_u"] = nlon + 1
-	ds.dim["latitude_v"]  = nlat + 1
+	ds.dim["geopotential"] = nlvl + 1
+	ds.dim["longitude_u"]  = nlon + 1
+	ds.dim["latitude_v"]   = nlat + 1
 
 	nclon = defVar(ds,"longitude",Float32,("longitude","latitude"),attrib=Dict(
 		"units"     => "degrees_east",
@@ -37,6 +39,11 @@ function wrfgrid()
 	nclvl = defVar(ds,"pressure_base",Float32,("longitude","latitude","level"),attrib=Dict(
 		"units"     => "Pa",
         "long_name" => "base state pressure",
+	))
+
+	ncgeo = defVar(ds,"geopotential_base",Float32,("longitude","latitude","geopotential"),attrib=Dict(
+		"units"     => "m**2 s**-2",
+        "long_name" => "base state geopotential",
 	))
 
 	nclonu = defVar(ds,"longitude_u",Float32,("longitude_u","latitude"),attrib=Dict(
@@ -62,6 +69,7 @@ function wrfgrid()
 	nclon[:,:] = lon; nclonu[:,:] = lon_u; nclonv[:,:] = lon_v
 	nclat[:,:] = lat; nclatu[:,:] = lat_u; nclatv[:,:] = lat_v
 	nclvl[:,:,:] = lvl
+	ncgeo[:,:,:] = geo
 
 	close(ds)
 
