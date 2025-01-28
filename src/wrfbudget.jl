@@ -18,9 +18,9 @@ function wrfqbudget(
     lat  = ds["latitude"][:,:]
     close(ds)
 
-    ggrd = RegionGrid(geo,lon,lat)
-    lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findlast(ggrd.mask .== 1)[1]
-    lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findlast(ggrd.mask .== 1)[2]
+    ggrd = RegionGrid(geo,Point2.(lon,lat))
+    lon1 = minimum(ggrd.ilon); lon2 = maximum(ggrd.ilon)
+    lat1 = minimum(ggrd.ilat); lat2 = maximum(ggrd.ilat)
 
     dtvec = start : Day(1) : stop
 
@@ -66,86 +66,89 @@ function wrfqbudget(
         @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
         flush(stderr)
 
-        ds1 = NCDataset(datadir("wrf3","raw","2D","$(dtvec[idt]).nc"))
-        ds3 = NCDataset(datadir("wrf3","raw","aux","$(dtvec[idt]).nc"))
-        fnci1 = datadir("wrf3","raw","2D","$(dtvec[idt]+Day(1))-e.nc")
-        fnci2 = datadir("wrf3","raw","aux","$(dtvec[idt]+Day(1))-e.nc")
-        if isfile(fnci1)
-            @info "$(now()) - ConvectionIsotopes - Tail end"
-            ds2 = NCDataset(fnci1)
-            ds4 = NCDataset(fnci2)
-        else
-            ds2 = NCDataset(datadir("wrf3","raw","2D","$(dtvec[idt]+Day(1)).nc"))
-            ds4 = NCDataset(datadir("wrf3","raw","aux","$(dtvec[idt]+Day(1)).nc"))
-        end
+        ds1 = NCDataset(datadir("wrf3","raw","$(dtvec[idt]).nc"))
+        fnc1 = datadir("wrf3","raw","$(dtvec[idt]).nc")
+        if isfile(fnc1)
 
-        NCDatasets.load!(ds1["$(iso)RAINNC"].var,tmp1,lon1:lon2,lat1:lat2,:)
-        NCDatasets.load!(ds2["$(iso)RAINNC"].var,tmp2,lon1:lon2,lat1:lat2,1)
-        for ii = 1 : 24, ilat = 1 : nlat, ilon = 1 : nlon
-            tmp1[ilon,ilat,ii] *= wgts[ilon,ilat]
-        end
-        tmp3 = dropdims(sum(tmp1,dims=(1,2)),dims=(1,2)) / wgtm
-        tmp4 = mean(tmp2,wgtv)
-        prcp[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
+            ds1 = NCDataset(fnc1)
 
-        NCDatasets.load!(ds3["$(iso)SFCEVP"].var,tmp1,lon1:lon2,lat1:lat2,:)
-        NCDatasets.load!(ds4["$(iso)SFCEVP"].var,tmp2,lon1:lon2,lat1:lat2,1)
-        for ii = 1 : 24, ilat = 1 : nlat, ilon = 1 : nlon
-            tmp1[ilon,ilat,ii] *= wgts[ilon,ilat]
-        end
-        tmp3 = dropdims(sum(tmp1,dims=(1,2)),dims=(1,2)) / wgtm
-        tmp4 = mean(tmp2,wgtv)
-        evap[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
+            if ds1.dim["Time"] == 24
+                
+                fnc2 = datadir("wrf3","raw","$(dtvec[idt]+Day(1))-e.nc")
+                if !isfile(fnc2)
+                    @info "$(now()) - ConvectionIsotopes - Tail end"
+                    fnc2 = datadir("wrf3","raw","$(dtvec[idt]+Day(1)).nc")
+                end
 
-        NCDatasets.load!(ds1["$(iso)VAPORWP"].var,tmp1,lon1:lon2,lat1:lat2,:)
-        NCDatasets.load!(ds2["$(iso)VAPORWP"].var,tmp2,lon1:lon2,lat1:lat2,1)
-        for ii = 1 : 24, ilat = 1 : nlat, ilon = 1 : nlon
-            tmp1[ilon,ilat,ii] *= wgts[ilon,ilat]
-        end
-        tmp3 = dropdims(sum(tmp1,dims=(1,2)),dims=(1,2)) / wgtm
-        tmp4 = mean(tmp2,wgtv)
-        tcwv[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
+                NCDatasets.load!(ds1["$(iso)RAINNC"].var,tmp1,lon1:lon2,lat1:lat2,:)
+                NCDatasets.load!(ds2["$(iso)RAINNC"].var,tmp2,lon1:lon2,lat1:lat2,1)
+                for ii = 1 : 24, ilat = 1 : nlat, ilon = 1 : nlon
+                    tmp1[ilon,ilat,ii] *= wgts[ilon,ilat]
+                end
+                tmp3 = dropdims(sum(tmp1,dims=(1,2)),dims=(1,2)) / wgtm
+                tmp4 = mean(tmp2,wgtv)
+                prcp[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
 
-        NCDatasets.load!(ds1["$(iso)IWTX"].var,tmpqflx_1,lon1,lat1:lat2,:)
-        NCDatasets.load!(ds1["$(iso)IWTX"].var,tmpqflx_2,lon2,lat1:lat2,:)
-        NCDatasets.load!(ds1["$(iso)IWTY"].var,tmpqflx_3,lon1:lon2,lat1,:)
-        NCDatasets.load!(ds1["$(iso)IWTY"].var,tmpqflx_4,lon1:lon2,lat2,:)
-        for ii = 1 : 24, ilat = 1 : nlat
-            tmpqflx_1[ilat,ii] *= wgts[1,ilat]
-            tmpqflx_2[ilat,ii] *= wgts[end,ilat]
-        end
-        for ii = 1 : 24, ilon = 1 : nlon
-            tmpqflx_3[ilon,ii] *= wgts[ilon,1]
-            tmpqflx_4[ilon,ii] *= wgts[ilon,end]
-        end
-        
-        tmp3 = dropdims(sum(tmpqflx_2,dims=1),dims=1) / wgt2 * arc2 .+ 
-               dropdims(sum(tmpqflx_4,dims=1),dims=1) / wgt4 * arc4 .-
-               dropdims(sum(tmpqflx_1,dims=1),dims=1) / wgt1 * arc1 .-
-               dropdims(sum(tmpqflx_3,dims=1),dims=1) / wgt3 * arc3
+                NCDatasets.load!(ds1["$(iso)SFCEVP"].var,tmp1,lon1:lon2,lat1:lat2,:)
+                NCDatasets.load!(ds2["$(iso)SFCEVP"].var,tmp2,lon1:lon2,lat1:lat2,1)
+                for ii = 1 : 24, ilat = 1 : nlat, ilon = 1 : nlon
+                    tmp1[ilon,ilat,ii] *= wgts[ilon,ilat]
+                end
+                tmp3 = dropdims(sum(tmp1,dims=(1,2)),dims=(1,2)) / wgtm
+                tmp4 = mean(tmp2,wgtv)
+                evap[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
 
-        NCDatasets.load!(ds2["$(iso)IWTX"].var,tmpqflx_5,lon1,lat1:lat2,1)
-        NCDatasets.load!(ds2["$(iso)IWTX"].var,tmpqflx_6,lon2,lat1:lat2,1)
-        NCDatasets.load!(ds2["$(iso)IWTY"].var,tmpqflx_7,lon1:lon2,lat1,1)
-        NCDatasets.load!(ds2["$(iso)IWTY"].var,tmpqflx_8,lon1:lon2,lat2,1)
-        for ilat = 1 : nlat
-            tmpqflx_5[ilat] *= wgts[1,ilat]
-            tmpqflx_6[ilat] *= wgts[end,ilat]
-        end
-        for ilon = 1 : nlon
-            tmpqflx_7[ilon] *= wgts[ilon,1]
-            tmpqflx_8[ilon] *= wgts[ilon,end]
-        end
-        
-        tmp4 = sum(tmpqflx_6) / wgt2 * arc2 .+ sum(tmpqflx_8) / wgt4 * arc4 .-
-               sum(tmpqflx_5) / wgt1 * arc1 .- sum(tmpqflx_7) / wgt3 * arc3
+                NCDatasets.load!(ds1["$(iso)VAPORWP"].var,tmp1,lon1:lon2,lat1:lat2,:)
+                NCDatasets.load!(ds2["$(iso)VAPORWP"].var,tmp2,lon1:lon2,lat1:lat2,1)
+                for ii = 1 : 24, ilat = 1 : nlat, ilon = 1 : nlon
+                    tmp1[ilon,ilat,ii] *= wgts[ilon,ilat]
+                end
+                tmp3 = dropdims(sum(tmp1,dims=(1,2)),dims=(1,2)) / wgtm
+                tmp4 = mean(tmp2,wgtv)
+                tcwv[:,idt] = vcat(tmp3[2:end],tmp4) .- tmp3
 
-        qflx[:,idt] = (vcat(tmp3[2:end],tmp4) .+ tmp3) / 2
+                NCDatasets.load!(ds1["$(iso)IWTX"].var,tmpqflx_1,lon1,lat1:lat2,:)
+                NCDatasets.load!(ds1["$(iso)IWTX"].var,tmpqflx_2,lon2,lat1:lat2,:)
+                NCDatasets.load!(ds1["$(iso)IWTY"].var,tmpqflx_3,lon1:lon2,lat1,:)
+                NCDatasets.load!(ds1["$(iso)IWTY"].var,tmpqflx_4,lon1:lon2,lat2,:)
+                for ii = 1 : 24, ilat = 1 : nlat
+                    tmpqflx_1[ilat,ii] *= wgts[1,ilat]
+                    tmpqflx_2[ilat,ii] *= wgts[end,ilat]
+                end
+                for ii = 1 : 24, ilon = 1 : nlon
+                    tmpqflx_3[ilon,ii] *= wgts[ilon,1]
+                    tmpqflx_4[ilon,ii] *= wgts[ilon,end]
+                end
+                
+                tmp3 = dropdims(sum(tmpqflx_2,dims=1),dims=1) / wgt2 * arc2 .+ 
+                    dropdims(sum(tmpqflx_4,dims=1),dims=1) / wgt4 * arc4 .-
+                    dropdims(sum(tmpqflx_1,dims=1),dims=1) / wgt1 * arc1 .-
+                    dropdims(sum(tmpqflx_3,dims=1),dims=1) / wgt3 * arc3
 
-        close(ds1)
-        close(ds2)
-        close(ds3)
-        close(ds4)
+                NCDatasets.load!(ds2["$(iso)IWTX"].var,tmpqflx_5,lon1,lat1:lat2,1)
+                NCDatasets.load!(ds2["$(iso)IWTX"].var,tmpqflx_6,lon2,lat1:lat2,1)
+                NCDatasets.load!(ds2["$(iso)IWTY"].var,tmpqflx_7,lon1:lon2,lat1,1)
+                NCDatasets.load!(ds2["$(iso)IWTY"].var,tmpqflx_8,lon1:lon2,lat2,1)
+                for ilat = 1 : nlat
+                    tmpqflx_5[ilat] *= wgts[1,ilat]
+                    tmpqflx_6[ilat] *= wgts[end,ilat]
+                end
+                for ilon = 1 : nlon
+                    tmpqflx_7[ilon] *= wgts[ilon,1]
+                    tmpqflx_8[ilon] *= wgts[ilon,end]
+                end
+                
+                tmp4 = sum(tmpqflx_6) / wgt2 * arc2 .+ sum(tmpqflx_8) / wgt4 * arc4 .-
+                    sum(tmpqflx_5) / wgt1 * arc1 .- sum(tmpqflx_7) / wgt3 * arc3
+
+                qflx[:,idt] = (vcat(tmp3[2:end],tmp4) .+ tmp3) / 2
+
+                close(ds1)
+                close(ds2)
+
+            end
+
+        end
 
     end
 
