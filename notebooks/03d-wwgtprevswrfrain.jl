@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.0
+# v0.20.4
 
 using Markdown
 using InteractiveUtils
@@ -83,21 +83,25 @@ function extract(geoname,iso,days)
 
 	ds = NCDataset(datadir(
 		"wrf3","processed",
-		"$geoname-rain-daily-20190801_20201230-smooth_$(dystr)days.nc"
+		"$geoname-rain-daily-20190801_20201231-smooth_$(dystr)days.nc"
 	))
-	prcp = ds["RAINNC"][1:152]
-	hvyp = ds["$(iso)RAINNC"][1:152]
+	prcp = ds["RAINNC"][:]
+	hvyp = ds["$(iso)RAINNC"][:]
 	close(ds)
 
 	dsp = NCDataset(datadir(
 		"wrf3","processed",
-		"$geoname-p_wwgt-daily-20190801_20201230-smooth_$(dystr)days.nc"
+		"$geoname-wcoeff-daily-20190801_20201231-smooth_$(dystr)days.nc"
 	))
-	pwgt = dsp["p_wwgt"][1:152] / 100
-	pwgt[(pwgt.>1000).|(pwgt.<0)] .= NaN
+	wc = dsp["wcoeff"][:,:]
 	close(dsp)
+	wcconv = sum(wc[:,[1,3,5,7,9]],dims=2)[:];
+	wctpbt = sum(wc[:,[2,4,6,8,10]],dims=2)[:];
+	wcabs  = sqrt.(wcconv.^2 .+ wctpbt.^2)[:];
+	wctpbt = wctpbt ./ wcabs
+	ii = wcconv .< 0
 
-	return pwgt,prcp,hvyp
+	return wctpbt[ii],prcp[ii],hvyp[ii]
 	
 end
 
@@ -221,7 +225,7 @@ function axesformat!(axesnum)
 
 	for ax in axesnum
 		ax.format(
-			ylim=(1000,0),xlim=(0,60),xlocator=0:25:100,ylabel=L"$p_\omega$ / hPa",
+			ylim=(1,-1),xlim=(0,60),xlocator=0:25:100,ylabel=L"$p_\omega$ / hPa",
 			xlabel=L"$P$ / kg m$^{-2}$ day$^{-1}$"
 		)
 	end
@@ -230,17 +234,17 @@ function axesformat!(axesnum)
 	axesnum[2].format(ultitle="(a) Colombia")
 	axesnum[4].format(ultitle="(b) San Andres")
 	axesnum[6].format(ultitle="(c) Buenaventura")
-	axesnum[6].text(22,220,"Bahia Solano",fontsize=10)
+	axesnum[6].text(22,-0.56,"Bahia Solano",fontsize=10)
 	axesnum[8].format(ultitle="(d) Quibdo")
 	axesnum[10].format(ultitle="(e) Costa Rica")
 	axesnum[12].format(ultitle="(f) EEFMB")
-	axesnum[12].text(18.5,220,"ADMQ",fontsize=10)
-	axesnum[12].text(18.5,320,"CGFI",fontsize=10)
+	axesnum[12].text(18.5,-0.56,"ADMQ",fontsize=10)
+	axesnum[12].text(18.5,-0.4,"CGFI",fontsize=10)
 	axesnum[14].format(ultitle="(g) Cahuita")
-	axesnum[14].text(22,220,"Bataan",fontsize=10)
-	axesnum[14].text(22,320,"Limon",fontsize=10)
+	axesnum[14].text(22,-0.56,"Bataan",fontsize=10)
+	axesnum[14].text(22,-0.4,"Limon",fontsize=10)
 	axesnum[16].format(ultitle="(h) Liberia")
-	axesnum[16].text(22,220,"OSA",fontsize=10)
+	axesnum[16].text(22,-0.56,"OSA",fontsize=10)
 
 	return
 
@@ -249,7 +253,7 @@ end
 # ╔═╡ 2fd946e2-bf3e-406f-9a19-5aa72b5d1640
 begin
 	rbin = 0 : 5 : 200; rpnt = (rbin[1:(end-1)] .+ rbin[2:end]) / 2
-	pbin = 0 : 50 : 1000; ppnt = (pbin[1:(end-1)] .+ pbin[2:end]) / 2
+	pbin = -1 : 0.1 : 1; ppnt = (pbin[1:(end-1)] .+ pbin[2:end]) / 2
 	nr = length(rpnt); np = length(ppnt)
 	abin = zeros(nr,np); anum = zeros(nr,np); aprc = zeros(nr,np)
 	bbin = zeros(nr,np); bnum = zeros(nr,np); bprc = zeros(nr,np)
@@ -315,19 +319,19 @@ begin
 	)
 
 	c1_1,c1_2 = 
-	plotbin!(a1,1,rbin,pbin,hbin,hprc,hnum,-120:5:-15,returncinfo=true)
-	plotbin!(a1,2,rbin,pbin,bbin,bprc,bnum,-120:5:-15)
-	plotbin!(a1,3,rbin,pbin,cbin,cprc,cnum,-120:5:-15)
-	plotbin!(a1,4,rbin,pbin,dbin,dprc,dnum,-120:5:-15)
-	plotbin!(a1,5,rbin,pbin,ibin,iprc,inum,-120:5:-15)
-	plotbin!(a1,6,rbin,pbin,ebin,eprc,enum,-120:5:-15)
-	plotbin!(a1,7,rbin,pbin,fbin,fprc,fnum,-120:5:-15)
-	plotbin!(a1,8,rbin,pbin,gbin,gprc,gnum,-120:5:-15)
+	plotbin!(a1,1,rbin,pbin,hbin,hprc,hnum,-75:2.5:-30,returncinfo=true)
+	plotbin!(a1,2,rbin,pbin,bbin,bprc,bnum,-75:2.5:-30)
+	plotbin!(a1,3,rbin,pbin,cbin,cprc,cnum,-75:2.5:-30)
+	plotbin!(a1,4,rbin,pbin,dbin,dprc,dnum,-75:2.5:-30)
+	plotbin!(a1,5,rbin,pbin,ibin,iprc,inum,-75:2.5:-30)
+	plotbin!(a1,6,rbin,pbin,ebin,eprc,enum,-75:2.5:-30)
+	plotbin!(a1,7,rbin,pbin,fbin,fprc,fnum,-75:2.5:-30)
+	plotbin!(a1,8,rbin,pbin,gbin,gprc,gnum,-75:2.5:-30)
 
 	axesformat!(a1)
 	a1[1].format(suptitle="7-Day WRF Moving Average")
 
-	f1.colorbar(c1_1,loc="r",rows=1,locator=-120:15:-40,label=L"$\delta^2$H / $\perthousand$")
+	f1.colorbar(c1_1,loc="r",rows=1,locator=-120:15:-30,label=L"$\delta^2$H / $\perthousand$")
 	f1.colorbar(c1_2,loc="r",rows=2,locator=0:2:10,label="Probability Density / %")
 	
 	f1.savefig(plotsdir("03d-p_wwgtvswrfrain-07dyHDO.png"),transparent=false,dpi=400)
@@ -386,14 +390,14 @@ begin
 	)
 
 	c2_1,c2_2 = 
-	plotbin!(a2,1,rbin,pbin,hbin,hprc,hnum,-14:0.1:-6,returncinfo=true)
-	plotbin!(a2,2,rbin,pbin,bbin,bprc,bnum,-14:0.1:-6)
-	plotbin!(a2,3,rbin,pbin,cbin,cprc,cnum,-14:0.1:-6)
-	plotbin!(a2,4,rbin,pbin,dbin,dprc,dnum,-14:0.1:-6)
-	plotbin!(a2,5,rbin,pbin,ibin,iprc,inum,-14:0.1:-6)
-	plotbin!(a2,6,rbin,pbin,ebin,eprc,enum,-14:0.1:-6)
-	plotbin!(a2,7,rbin,pbin,fbin,fprc,fnum,-14:0.1:-6)
-	plotbin!(a2,8,rbin,pbin,gbin,gprc,gnum,-14:0.1:-6)
+	plotbin!(a2,1,rbin,pbin,hbin,hprc,hnum,-13:0.5:-6,returncinfo=true)
+	plotbin!(a2,2,rbin,pbin,bbin,bprc,bnum,-13:0.5:-6)
+	plotbin!(a2,3,rbin,pbin,cbin,cprc,cnum,-13:0.5:-6)
+	plotbin!(a2,4,rbin,pbin,dbin,dprc,dnum,-13:0.5:-6)
+	plotbin!(a2,5,rbin,pbin,ibin,iprc,inum,-13:0.5:-6)
+	plotbin!(a2,6,rbin,pbin,ebin,eprc,enum,-13:0.5:-6)
+	plotbin!(a2,7,rbin,pbin,fbin,fprc,fnum,-13:0.5:-6)
+	plotbin!(a2,8,rbin,pbin,gbin,gprc,gnum,-13:0.5:-6)
 
 	axesformat!(a2)
 	a2[1].format(suptitle="7-Day WRF Moving Average")
@@ -457,14 +461,14 @@ begin
 	)
 
 	c3_1,c3_2 = 
-	plotbin!(a3,1,rbin,pbin,hbin,hprc,hnum,-120:5:-45,returncinfo=true)
-	plotbin!(a3,2,rbin,pbin,bbin,bprc,bnum,-120:5:-45)
-	plotbin!(a3,3,rbin,pbin,cbin,cprc,cnum,-120:5:-45)
-	plotbin!(a3,4,rbin,pbin,dbin,dprc,dnum,-120:5:-45)
-	plotbin!(a3,5,rbin,pbin,ibin,iprc,inum,-120:5:-45)
-	plotbin!(a3,6,rbin,pbin,ebin,eprc,enum,-120:5:-45)
-	plotbin!(a3,7,rbin,pbin,fbin,fprc,fnum,-120:5:-45)
-	plotbin!(a3,8,rbin,pbin,gbin,gprc,gnum,-120:5:-45)
+	plotbin!(a3,1,rbin,pbin,hbin,hprc,hnum,-75:2.5:-30,returncinfo=true)
+	plotbin!(a3,2,rbin,pbin,bbin,bprc,bnum,-75:2.5:-30)
+	plotbin!(a3,3,rbin,pbin,cbin,cprc,cnum,-75:2.5:-30)
+	plotbin!(a3,4,rbin,pbin,dbin,dprc,dnum,-75:2.5:-30)
+	plotbin!(a3,5,rbin,pbin,ibin,iprc,inum,-75:2.5:-30)
+	plotbin!(a3,6,rbin,pbin,ebin,eprc,enum,-75:2.5:-30)
+	plotbin!(a3,7,rbin,pbin,fbin,fprc,fnum,-75:2.5:-30)
+	plotbin!(a3,8,rbin,pbin,gbin,gprc,gnum,-75:2.5:-30)
 
 	axesformat!(a3)
 	a3[1].format(suptitle="30-Day WRF Moving Average")
@@ -558,9 +562,9 @@ end
 # ╠═5bf90248-6ad6-4851-9c56-613d69f83d4b
 # ╟─42c325e3-d1df-4e09-8d59-8e1505210c43
 # ╟─7e66a747-056c-445e-a021-0d919ddc26bb
-# ╟─3bb9d01b-b214-44b1-975e-fcab56d8eb99
+# ╠═3bb9d01b-b214-44b1-975e-fcab56d8eb99
 # ╟─2fd946e2-bf3e-406f-9a19-5aa72b5d1640
 # ╠═b6500812-fd5e-4842-8855-655822d170f4
 # ╠═c57ae725-3056-481c-a004-a916192744be
-# ╟─738c6dde-cc6b-489f-8251-849e4ca67d8c
-# ╟─3d3a2954-fe7e-40da-a6d9-fe9affcc581b
+# ╠═738c6dde-cc6b-489f-8251-849e4ca67d8c
+# ╠═3d3a2954-fe7e-40da-a6d9-fe9affcc581b
