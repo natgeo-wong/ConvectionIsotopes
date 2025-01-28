@@ -1,5 +1,6 @@
 using Distances
 using GeoRegions
+using RegionGrids
 using NCDatasets
 using StatsBase
 using Trapz
@@ -66,7 +67,6 @@ function wrfqbudget(
         @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
         flush(stderr)
 
-        ds1 = NCDataset(datadir("wrf3","raw","$(dtvec[idt]).nc"))
         fnc1 = datadir("wrf3","raw","$(dtvec[idt]).nc")
         if isfile(fnc1)
 
@@ -76,9 +76,11 @@ function wrfqbudget(
                 
                 fnc2 = datadir("wrf3","raw","$(dtvec[idt]+Day(1))-e.nc")
                 if !isfile(fnc2)
-                    @info "$(now()) - ConvectionIsotopes - Tail end"
                     fnc2 = datadir("wrf3","raw","$(dtvec[idt]+Day(1)).nc")
+                else
+                    @info "$(now()) - ConvectionIsotopes - Tail end"
                 end
+                ds2 = NCDataset(fnc2)
 
                 NCDatasets.load!(ds1["$(iso)RAINNC"].var,tmp1,lon1:lon2,lat1:lat2,:)
                 NCDatasets.load!(ds2["$(iso)RAINNC"].var,tmp2,lon1:lon2,lat1:lat2,1)
@@ -152,8 +154,10 @@ function wrfqbudget(
 
     end
 
+    dtbegstr = Dates.format(start,dateformat"yyyymmdd")
+	dtbegend = Dates.format(stop,dateformat"yyyymmdd")
     mkpath(datadir("wrf3","processed"))
-    fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)QBUDGET.nc")
+    fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)QBUDGET-$(dtbegstr)_$(dtbegend).nc")
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")
