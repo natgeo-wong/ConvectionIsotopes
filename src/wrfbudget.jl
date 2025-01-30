@@ -52,10 +52,10 @@ function wrfqbudget(
     tmpqflx_7 = zeros(Float32,nlon)
     tmpqflx_8 = zeros(Float32,nlon)
     
-    prcp = zeros(24,ndt)
-    evap = zeros(24,ndt)
-    tcwv = zeros(24,ndt)
-    qflx = zeros(24,ndt)
+    prcp = zeros(24,ndt) * NaN
+    evap = zeros(24,ndt) * NaN
+    tcwv = zeros(24,ndt) * NaN
+    qflx = zeros(24,ndt) * NaN
 
     arc1 = haversine((lon[lon1,lat1],lat[lon1,lat1]),(lon[lon1,lat2],lat[lon1,lat2]))
     arc2 = haversine((lon[lon2,lat1],lat[lon2,lat1]),(lon[lon2,lat2],lat[lon2,lat2]))
