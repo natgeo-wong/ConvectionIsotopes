@@ -72,7 +72,7 @@ function wrfnewregridgpm2D(
 					ihr = div(idx - 1, (nlat * nlon)) + 1
 					ilat = div(mod(idx - 1, (nlat * nlon)), nlon) + 1
 					ilon = mod(idx - 1, nlon) + 1
-					
+
 					ind = (ipnt_lon.==ilon).&(ipnt_lat.==ilat)
 					idata = @view tmp3[:,:,ihr]
 					idata = @view idata[ind]
@@ -88,7 +88,7 @@ function wrfnewregridgpm2D(
 	close(wds)
 
 	if !isdir(datadir("wrf3","regridded")); mkpath(datadir("wrf3","regridded")) end
-	fnc = datadir("wrf3","regridded","gpm-RAINNC-$timestr.nc")
+	fnc = datadir("wrf3","regridded","gpm-$(wvar)-$timestr.nc")
 	if isfile(fnc); rm(fnc,force=true) end
 
 	ds = NCDataset(fnc,"c")
