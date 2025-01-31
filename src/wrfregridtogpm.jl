@@ -78,14 +78,15 @@ function wrfnewregridgpm2D(
 					idata = @view idata[ind]
 					ndata[ilon,ilat,ihr,idt] = mean(idata[.!isnan.(idata)])
 				end
+				close(ds2)
 
 			end
+
+			close(ds1)
 
 		end
 
 	end
-
-	close(wds)
 
 	if !isdir(datadir("wrf3","regridded")); mkpath(datadir("wrf3","regridded")) end
 	fnc = datadir("wrf3","regridded","gpm-$(wvar)-$timestr.nc")
