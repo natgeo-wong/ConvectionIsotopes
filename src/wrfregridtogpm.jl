@@ -1,3 +1,4 @@
+using Base.Threads
 using Dates
 using NASAPrecipitation
 using NCDatasets
@@ -66,9 +67,10 @@ function wrfnewregridgpm2D(
                 NCDatasets.load!(ds2[wvar].var,tmp2,:,:,1)
                 tmp3 .= cat(tmp1[:,:,2:end],tmp2,dims=3) .- tmp1
 
-				for ihr = 1 : 24, ilat = 1 : nlat, ilon = 1 : nlon
+				Threads.@threads for ihr = 1 : 24, ilat = 1 : nlat, ilon = 1 : nlon
 					ind = (ipnt_lon.==ilon).&(ipnt_lat.==ilat)
-					idata = @view tmp3[:,:,ihr][ind]
+					idata = @view tmp3[:,:,ihr]
+					idata = @view idata[ind]
 					ndata[ilon,ilat,ihr,idt] = mean(idata[.!isnan.(idata)])
 				end
 
