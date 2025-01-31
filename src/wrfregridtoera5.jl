@@ -35,8 +35,8 @@ function wrfnewregridera2D(
 	ipnt_lon = zeros(Int,nx,ny)
 	ipnt_lat = zeros(Int,nx,ny)
 	for ilat = 1 : ny, ilon = 1 : nx
-		ipnt_lon[ilon,ilat] = argmin(abs.(wlon[ilon,ilat].-lsd.lon.+360))
-		ipnt_lat[ilon,ilat] = argmin(abs.(wlat[ilon,ilat].-lsd.lat))
+		ipnt_lon[ilon,ilat] = argmin(abs.(wlon[ilon,ilat].-elsd.lon.+360))
+		ipnt_lat[ilon,ilat] = argmin(abs.(wlat[ilon,ilat].-elsd.lat))
 	end
 
 	tmp1 = zeros(Float32,nx,ny,24)
@@ -115,8 +115,8 @@ function wrfnewregridera2D(
 
 	ncvar = defVar(ds,wvar,Float32,("longitude","latitude","date"),attrib=attrib)
 
-	nclon[:] = lsd.lon
-	nclat[:] = lsd.lat
+	nclon[:] = elsd.lon
+	nclat[:] = elsd.lat
 	nctime.var[:] = collect(0 : (ndt*24 -1)) .+ 0.5
 	ncvar[:,:,:] = ndata
 
