@@ -171,12 +171,12 @@ function wrfqbudget(
 
     ncprcp = defVar(ds,"$(iso)P",Float32,("date",),attrib=Dict(
         "units" => "kg m**-2",
-        "long_name" => "Accumulated 3-hour Precipitation"
+        "long_name" => "Accumulated hourly Precipitation"
     ))
 
     ncevap = defVar(ds,"$(iso)E",Float32,("date",),attrib=Dict(
-        "units" => "kg m**-2 s**-1",
-        "long_name" => "Evaporation Rate"
+        "units" => "kg m**-2",
+        "long_name" => "Accumulated hourly Evaporation"
     ))
 
     nctcwv = defVar(ds,"$(iso)ΔWVP",Float32,("date",),attrib=Dict(
