@@ -67,7 +67,12 @@ function wrfnewregridgpm2D(
                 NCDatasets.load!(ds2[wvar].var,tmp2,:,:,1)
                 tmp3 .= cat(tmp1[:,:,2:end],tmp2,dims=3) .- tmp1
 
-				Threads.@threads for ihr = 1 : 24, ilat = 1 : nlat, ilon = 1 : nlon
+				Threads.@threads for idx in 1:(24 * nlat * nlon)
+					# Compute indices
+					ihr = div(idx - 1, (nlat * nlon)) + 1
+					ilat = div(mod(idx - 1, (nlat * nlon)), nlon) + 1
+					ilon = mod(idx - 1, nlon) + 1
+					
 					ind = (ipnt_lon.==ilon).&(ipnt_lat.==ilat)
 					idata = @view tmp3[:,:,ihr]
 					idata = @view idata[ind]
