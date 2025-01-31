@@ -47,7 +47,7 @@ function wrfnewregridgpm2D(
 		@info "$(now()) - ConvectionIsotopes - Regridding $wvar data for Day $idt of $ndt"
 		flush(stderr)
 		fnc1 = datadir("wrf3","raw","$(dtvec[idt]).nc")
-		
+
         if isfile(fnc1)
 
             ds1 = NCDataset(fnc1)
@@ -68,7 +68,7 @@ function wrfnewregridgpm2D(
 
 				for ihr = 1 : 24, ilat = 1 : nlat, ilon = 1 : nlon
 					ind = (ipnt_lon.==ilon).&(ipnt_lat.==ilat)
-					idata = @view tmp3[:,:,ihr,ind][ind]
+					idata = @view tmp3[:,:,ihr][ind]
 					ndata[ilon,ilat,ihr,idt] = mean(idata[.!isnan.(idata)])
 				end
 
