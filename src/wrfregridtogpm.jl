@@ -108,7 +108,7 @@ function wrfnewregridgpm2D(
         "long_name" => "latitude",
 	))
 
-	nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
+	nctime = defVar(ds,"time",Float64,("date",),attrib=Dict(
 		"units"     => "days since $(start) 00:00:00.0",
         "long_name" => "time",
         "calendar"  => "gregorian"
