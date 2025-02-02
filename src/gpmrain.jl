@@ -4,7 +4,7 @@ using Printf
 using Statistics
 
 function gpmrain(
-    npd  :: IMERGFinalHH,
+    npd  :: NASAPrecipitation.IMERGHalfHourly,
     geo  :: GeoRegion;
 )
 
