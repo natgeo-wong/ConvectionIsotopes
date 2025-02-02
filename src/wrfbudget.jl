@@ -473,8 +473,8 @@ function wrfqdivdecompose(
         μv = zeros(nlvl+2); Δv  = zeros(nlvl+2)
         μp = zeros(nlvl+2); Δv  = zeros(nlvl+2)
         
-        qadv = zeros(24,ndt)
-        qdiv = zeros(24,ndt)
+        qadv = zeros(Float32,24,ndt) * NaN
+        qdiv = zeros(Float32,24,ndt) * NaN
 
         arc1 = haversine((lon[lon1,lat1],lat[lon1,lat1]),(lon[lon1,lat2],lat[lon1,lat2]))
         arc2 = haversine((lon[lon2,lat1],lat[lon2,lat1]),(lon[lon2,lat2],lat[lon2,lat2]))
