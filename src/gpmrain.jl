@@ -17,7 +17,7 @@ function gpmrain(
     nlsd = getLandSea(npd,geo)
     ggrd = RegionGrid(geo,olsd.lon,olsd.lat)
 
-    dtvec = npd.start : Day(1) : npd.stop; ndt = length(dtvec) * 24
+    dtvec = npd.start : Day(1) : npd.stop; ndt = length(dtvec)
 
     tmp1 = zeros(Float32,length(olsd.lon),length(olsd.lat),48)
     tmp2 = zeros(Float32,length(nlsd.lon),length(nlsd.lat),48)
