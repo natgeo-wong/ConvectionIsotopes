@@ -24,7 +24,7 @@ function gpmrain(
     ii = 0
 	for idt = npd.start : Day(1) : npd.stop
 		ds = read(npd,GeoRegion("OTREC",path=srcdir()),idt)
-		NCDatasets.load!(ds["precipitation"].var,tmp,:,:,:)
+		NCDatasets.load!(ds["precipitation"].var,tmp1,:,:,:)
 		close(ds)
 
         extract!(tmp2,tmp1,ggrd)
