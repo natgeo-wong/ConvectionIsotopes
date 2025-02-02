@@ -12,7 +12,8 @@ function gpmrain(
     dtbegend = Dates.format(npd.stop,dateformat"yyyymmdd")
     timestr = "$(dtbegstr)_$(dtbegend)"
     
-    olsd = getLandSea(npd,GeoRegion("OTREC",path=srcdir()))
+    ogeo = GeoRegion("OTREC",path=srcdir())
+    olsd = getLandSea(npd,ogeo)
     nlsd = getLandSea(npd,geo)
     ggrd = RegionGrid(geo,olsd.lon,olsd.lat)
 
@@ -23,7 +24,7 @@ function gpmrain(
     pvec = zeros(ndt*48)
     ii = 0
 	for idt = npd.start : Day(1) : npd.stop
-		ds = read(npd,GeoRegion("OTREC",path=srcdir()),idt)
+		ds = read(npd,ogeo,idt)
 		NCDatasets.load!(ds["precipitation"].var,tmp1,:,:,:)
 		close(ds)
 
@@ -46,7 +47,7 @@ function gpmrain(
     ds = NCDataset(fnc,"c")
     ds.dim["date"]   = ndt * 24
 
-    nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
+    nctime = defVar(ds,"time",Float64,("date",),attrib=Dict(
         "units"     => "hours since $(npd.start) 00:00:00.0",
         "long_name" => "time",
         "calendar"  => "gregorian"
