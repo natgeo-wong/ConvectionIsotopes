@@ -420,7 +420,7 @@ function wrfqdiv(
 end
 
 function wrfqdivdecompose(
-    geo   :: GeoRegion;
+    gvec  :: Vector{GeoRegion};
     iso   :: AbstractString = "",
     start :: Date,
     stop  :: Date,
@@ -429,177 +429,201 @@ function wrfqdivdecompose(
 
     if iso == "H2O"; iso = "" end
     if iso != ""; iso = "$(iso)_" end
-    dtbegstr = Dates.format(start,dateformat"yyyymmdd")
-	dtbegend = Dates.format(stop,dateformat"yyyymmdd")
-    fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)∇decompose-$(dtbegstr)_$(dtbegend).nc")
-    if !isfile(fnc) || overwrite
-
-        rm(fnc,force=true)
     
-        ds   = NCDataset(datadir("wrf3","grid.nc"))
-        lon  = ds["longitude"][:,:]
-        lat  = ds["latitude"][:,:]
-        close(ds)
+    ds   = NCDataset(datadir("wrf3","grid.nc"))
+    lon  = ds["longitude"][:,:]; nlon,nlat = size(lon)
+    lat  = ds["latitude"][:,:]
+    close(ds)
+    nlvl = 50
 
-        ggrd = RegionGrid(geo,Point2.(lon,lat))
-        lon1 = minimum(ggrd.ilon); lon2 = maximum(ggrd.ilon)
-        lat1 = minimum(ggrd.ilat); lat2 = maximum(ggrd.ilat)
+    ngeo = length(gvec)
+    ggrdvec = Vector{GeneralizedGrid}(undef,ngeo)
+    lon1vec = zeros(Int64,ngeo)
+    lat1vec = zeros(Int64,ngeo)
+    lon2vec = zeros(Int64,ngeo)
+    lat2vec = zeros(Int64,ngeo)
+    for igeo = 1 : ngeo
+        ggrdvec[igeo] = RegionGrid(gvec[igeo],Point2.(lon,lat))
+        lonvec1[igeo] = minimum(ggrd.ilon); lon2vec[igeo] = maximum(ggrd.ilon)
+        latvec1[igeo] = minimum(ggrd.ilat); lat2vec[igeo] = maximum(ggrd.ilat)
+    end
 
-        dtvec = start : Day(1) : stop
+    dtvec = start : Day(1) : stop
+    ndt  = length(dtvec)
 
-        nlon = lon2 - lon1 + 1
-        nlat = lat2 - lat1 + 1
-        nlvl = 50
-        ndt  = length(dtvec)
+    utmp1 = zeros(Float32,nlon+1,nlat  ,nlvl); utmp2 = zeros(Float32,nlon+1,nlat  ,nlvl)
+    vtmp1 = zeros(Float32,nlon  ,nlat+1,nlvl); vtmp2 = zeros(Float32,nlon  ,nlat+1,nlvl)
 
-        wgts = ones(nlon,nlat)
-        wgts[1,:] *= 0.5; wgts[end,:] *= 0.5
-        wgts[:,1] *= 0.5; wgts[:,end] *= 0.5
-        wgtv  = weights(wgts)
-        lon1w = weights(wgts[1,:]); lon2w = weights(wgts[end,:])
-        lat1w = weights(wgts[:,1]); lat2w = weights(wgts[:,end])
+    u1 = zeros(Float32,nlon,nlat,nlvl); u2 = zeros(Float32,nlon,nlat,nlvl)
+    v1 = zeros(Float32,nlon,nlat,nlvl); v2 = zeros(Float32,nlon,nlat,nlvl)
+    q1 = zeros(Float32,nlon,nlat,nlvl); q2 = zeros(Float32,nlon,nlat,nlvl)
+    p1 = zeros(Float32,nlon,nlat,nlvl); p2 = zeros(Float32,nlon,nlat,nlvl)
 
-        utmp1 = zeros(Float32,nlon+1,nlat  ,nlvl); utmp2 = zeros(Float32,nlon+1,nlat  ,nlvl)
-        vtmp1 = zeros(Float32,nlon  ,nlat+1,nlvl); vtmp2 = zeros(Float32,nlon  ,nlat+1,nlvl)
+    us1 = zeros(Float32,nlon,nlat); us2 = zeros(Float32,nlon,nlat)
+    vs1 = zeros(Float32,nlon,nlat); vs2 = zeros(Float32,nlon,nlat)
+    ps1 = zeros(Float32,nlon,nlat); ps2 = zeros(Float32,nlon,nlat)
 
-        u1 = zeros(Float32,nlon,nlat,nlvl); u2 = zeros(Float32,nlon,nlat,nlvl)
-        v1 = zeros(Float32,nlon,nlat,nlvl); v2 = zeros(Float32,nlon,nlat,nlvl)
-        q1 = zeros(Float32,nlon,nlat,nlvl); q2 = zeros(Float32,nlon,nlat,nlvl)
-        p1 = zeros(Float32,nlon,nlat,nlvl); p2 = zeros(Float32,nlon,nlat,nlvl)
+    μq = zeros(nlvl+2); Δqu = zeros(nlvl+2); Δqv = zeros(nlvl+2)
+    μu = zeros(nlvl+2); Δu  = zeros(nlvl+2)
+    μv = zeros(nlvl+2); Δv  = zeros(nlvl+2)
+    μp = zeros(nlvl+2); Δv  = zeros(nlvl+2)
+    
+    qadv = zeros(Float32,24,ndt,ngeo) * NaN
+    qdiv = zeros(Float32,24,ndt,ngeo) * NaN
 
-        us1 = zeros(Float32,nlon,nlat); us2 = zeros(Float32,nlon,nlat)
-        vs1 = zeros(Float32,nlon,nlat); vs2 = zeros(Float32,nlon,nlat)
-        ps1 = zeros(Float32,nlon,nlat); ps2 = zeros(Float32,nlon,nlat)
+    pds = NCDataset(datadir("wrf3","raw","$(dtvec[1]).nc"))
+    pb = pds["PB"][:,:,:,1]
+    close(pds)
 
-        μq = zeros(nlvl+2); Δqu = zeros(nlvl+2); Δqv = zeros(nlvl+2)
-        μu = zeros(nlvl+2); Δu  = zeros(nlvl+2)
-        μv = zeros(nlvl+2); Δv  = zeros(nlvl+2)
-        μp = zeros(nlvl+2); Δv  = zeros(nlvl+2)
-        
-        qadv = zeros(Float32,24,ndt) * NaN
-        qdiv = zeros(Float32,24,ndt) * NaN
+    for idt in 1 : ndt
 
-        arc1 = haversine((lon[lon1,lat1],lat[lon1,lat1]),(lon[lon1,lat2],lat[lon1,lat2]))
-        arc2 = haversine((lon[lon2,lat1],lat[lon2,lat1]),(lon[lon2,lat2],lat[lon2,lat2]))
-        arc3 = haversine((lon[lon1,lat1],lat[lon1,lat1]),(lon[lon2,lat1],lat[lon2,lat1]))
-        arc4 = haversine((lon[lon1,lat2],lat[lon1,lat2]),(lon[lon2,lat2],lat[lon2,lat2]))
+        @info "$(now()) - ConvectionIsotopes - Extracting $(iso)QVAPOR data during $(dtvec[idt]) for $(geo.name)"
+        flush(stderr)
 
-        pds = NCDataset(datadir("wrf3","raw","$(dtvec[1]).nc"))
-        pb = pds["PB"][lon1:lon2,lat1:lat2,:,1]
-        close(pds)
+        fnc1 = datadir("wrf3","raw","$(dtvec[idt]).nc")
+        if isfile(fnc1)
 
-        for idt in 1 : ndt
+            ds1 = NCDataset(fnc1)
 
-            @info "$(now()) - ConvectionIsotopes - Extracting $(iso)QVAPOR data during $(dtvec[idt]) for $(geo.name)"
-            flush(stderr)
+            if ds1.dim["Time"] == 24
+                
+                fnc2 = datadir("wrf3","raw","$(dtvec[idt]+Day(1))-e.nc")
+                if !isfile(fnc2)
+                    fnc2 = datadir("wrf3","raw","$(dtvec[idt]+Day(1)).nc")
+                else
+                    @info "$(now()) - ConvectionIsotopes - Tail end"
+                end
+                ds2 = NCDataset(fnc2)
 
-            fnc1 = datadir("wrf3","raw","$(dtvec[idt]).nc")
-            if isfile(fnc1)
+                for it = 1 : 24
 
-                ds1 = NCDataset(fnc1)
+                    NCDatasets.load!(ds1["$(iso)QVAPOR"].var,q1,:,:,:,it)
+                    NCDatasets.load!(ds1["P"].var,p1,:,:,:,it)
+                    NCDatasets.load!(ds1["U"].var,utmp1,:,:,:,it)
+                    NCDatasets.load!(ds1["V"].var,vtmp1,:,:,:,it)
+                    NCDatasets.load!(ds1["PSFC"].var,ps1,:,:,it)
+                    NCDatasets.load!(ds1["U10"].var,us1,:,:,it)
+                    NCDatasets.load!(ds1["V10"].var,vs1,:,:,it)
 
-                if ds1.dim["Time"] == 24
-                    
-                    fnc2 = datadir("wrf3","raw","$(dtvec[idt]+Day(1))-e.nc")
-                    if !isfile(fnc2)
-                        fnc2 = datadir("wrf3","raw","$(dtvec[idt]+Day(1)).nc")
+                    if it < 24
+                        NCDatasets.load!(ds1["$(iso)QVAPOR"].var,q2,:,:,:,it+1)
+                        NCDatasets.load!(ds1["P"].var,p2,:,:,:,it+1)
+                        NCDatasets.load!(ds1["U"].var,utmp2,:,:,:,it+1)
+                        NCDatasets.load!(ds1["V"].var,vtmp2,:,:,:,it+1)
+
+                        NCDatasets.load!(ds1["PSFC"].var,ps2,:,:,it+1)
+                        NCDatasets.load!(ds1["U10"].var,us2,:,:,it+1)
+                        NCDatasets.load!(ds1["V10"].var,vs2,:,:,it+1)
                     else
-                        @info "$(now()) - ConvectionIsotopes - Tail end"
+                        NCDatasets.load!(ds2["$(iso)QVAPOR"].var,q2,:,:,:,1)
+                        NCDatasets.load!(ds2["P"].var,p2,:,:,:,1)
+                        NCDatasets.load!(ds2["U"].var,utmp2,:,:,:,1)
+                        NCDatasets.load!(ds2["V"].var,vtmp2,:,:,:,1)
+                        
+                        NCDatasets.load!(ds2["PSFC"].var,ps2,:,:,1)
+                        NCDatasets.load!(ds2["U10"].var,us2,:,:,1)
+                        NCDatasets.load!(ds2["V10"].var,vs2,:,:,1)
                     end
-                    ds2 = NCDataset(fnc2)
 
-                    for it = 1 : 24
+                    Threads.@threads for idx in 1 : (nlvl * nlat * nlon)
+                        ilvl = div(idx - 1, (nlat) * (nlon)) + 1
+                        ilat = div(mod(idx - 1, (nlat * nlon)), nlon) + 1
+                        ilon = mod(idx - 1, nlon) + 1
 
-                        NCDatasets.load!(ds1["$(iso)QVAPOR"].var,q1,lon1:lon2,lat1:lat2,:,it)
-                        NCDatasets.load!(ds1["P"].var,p1,lon1:lon2,lat1:lat2,:,it)
-                        NCDatasets.load!(ds1["U"].var,utmp1,lon1:lon2+1,lat1:lat2,:,it)
-                        NCDatasets.load!(ds1["V"].var,vtmp1,lon1:lon2,lat1:lat2+1,:,it)
-                        NCDatasets.load!(ds1["PSFC"].var,ps1,lon1:lon2,lat1:lat2,it)
-                        NCDatasets.load!(ds1["U10"].var,us1,lon1:lon2,lat1:lat2,it)
-                        NCDatasets.load!(ds1["V10"].var,vs1,lon1:lon2,lat1:lat2,it)
+                        u1[ilon,ilat,ilvl] = (utmp1[ilon,ilat,ilvl] + utmp1[ilon+1,ilat,ilvl]) / 2
+                        u2[ilon,ilat,ilvl] = (utmp2[ilon,ilat,ilvl] + utmp2[ilon+1,ilat,ilvl]) / 2
+                        v1[ilon,ilat,ilvl] = (vtmp1[ilon,ilat,ilvl] + vtmp1[ilon,ilat+1,ilvl]) / 2
+                        v2[ilon,ilat,ilvl] = (vtmp2[ilon,ilat,ilvl] + vtmp2[ilon,ilat+1,ilvl]) / 2
+                    end
 
-                        if it < 24
-                            NCDatasets.load!(ds1["$(iso)QVAPOR"].var,q2,lon1:lon2,lat1:lat2,:,it+1)
-                            NCDatasets.load!(ds1["P"].var,p2,lon1:lon2,lat1:lat2,:,it+1)
-                            NCDatasets.load!(ds1["U"].var,utmp2,lon1:lon2+1,lat1:lat2,:,it+1)
-                            NCDatasets.load!(ds1["V"].var,vtmp2,lon1:lon2,lat1:lat2+1,:,it+1)
+                    for igeo in 1 : ngeo
 
-                            NCDatasets.load!(ds1["PSFC"].var,ps2,lon1:lon2,lat1:lat2,it+1)
-                            NCDatasets.load!(ds1["U10"].var,us2,lon1:lon2,lat1:lat2,it+1)
-                            NCDatasets.load!(ds1["V10"].var,vs2,lon1:lon2,lat1:lat2,it+1)
-                        else
-                            NCDatasets.load!(ds2["$(iso)QVAPOR"].var,q2,lon1:lon2,lat1:lat2,:,1)
-                            NCDatasets.load!(ds2["P"].var,p2,lon1:lon2,lat1:lat2,:,1)
-                            NCDatasets.load!(ds2["U"].var,utmp2,lon1:lon2+1,lat1:lat2,:,1)
-                            NCDatasets.load!(ds2["V"].var,vtmp2,lon1:lon2,lat1:lat2+1,:,1)
-                            
-                            NCDatasets.load!(ds2["PSFC"].var,ps2,lon1:lon2,lat1:lat2,1)
-                            NCDatasets.load!(ds2["U10"].var,us2,lon1:lon2,lat1:lat2,1)
-                            NCDatasets.load!(ds2["V10"].var,vs2,lon1:lon2,lat1:lat2,1)
-                        end
+                        lon1 = lon1vec[igeo]; lon2 = lon2vec[igeo]; lonr = lon1 : lon2
+                        lat1 = lat1vec[igeo]; lat2 = lat2vec[igeo]; latr = lat1 : lat2
 
-                        Threads.@threads for idx in 1 : (nlvl * nlat * nlon)
-                            ilvl = div(idx - 1, (nlat) * (nlon)) + 1
-                            ilat = div(mod(idx - 1, (nlat * nlon)), nlon) + 1
-                            ilon = mod(idx - 1, nlon) + 1
+                        nglon = lon2 - lon1 + 1
+                        nglat = lat2 - lat1 + 1
 
-                            u1[ilon,ilat,ilvl] = (utmp1[ilon,ilat,ilvl] + utmp1[ilon+1,ilat,ilvl]) / 2
-                            u2[ilon,ilat,ilvl] = (utmp2[ilon,ilat,ilvl] + utmp2[ilon+1,ilat,ilvl]) / 2
-                            v1[ilon,ilat,ilvl] = (vtmp1[ilon,ilat,ilvl] + vtmp1[ilon,ilat+1,ilvl]) / 2
-                            v2[ilon,ilat,ilvl] = (vtmp2[ilon,ilat,ilvl] + vtmp2[ilon,ilat+1,ilvl]) / 2
-                        end
+                        wgts = ones(nglon,nglat)
+                        wgts[1,:] *= 0.5; wgts[end,:] *= 0.5
+                        wgts[:,1] *= 0.5; wgts[:,end] *= 0.5
+                        wgtv  = weights(wgts)
+                        lon1w = weights(wgts[1,:]); lon2w = weights(wgts[end,:])
+                        lat1w = weights(wgts[:,1]); lat2w = weights(wgts[:,end])
+
+                        arc1 = haversine((lon[lon1,lat1],lat[lon1,lat1]),(lon[lon1,lat2],lat[lon1,lat2]))
+                        arc2 = haversine((lon[lon2,lat1],lat[lon2,lat1]),(lon[lon2,lat2],lat[lon2,lat2]))
+                        arc3 = haversine((lon[lon1,lat1],lat[lon1,lat1]),(lon[lon2,lat1],lat[lon2,lat1]))
+                        arc4 = haversine((lon[lon1,lat2],lat[lon1,lat2]),(lon[lon2,lat2],lat[lon2,lat2]))
 
                         for ilvl = 1 : nlvl
 
-                            μq[ilvl+1] = (mean(q1[:,:,ilvl],wgtv) + mean(q2[:,:,ilvl],wgtv)) / 2
-                            μu[ilvl+1] = (mean(u1[:,:,ilvl],wgtv) + mean(u2[:,:,ilvl],wgtv)) / 2
-                            μv[ilvl+1] = (mean(v1[:,:,ilvl],wgtv) + mean(v2[:,:,ilvl],wgtv)) / 2
-                            μp[ilvl+1] = (mean(p1[:,:,ilvl],wgtv) + mean(p2[:,:,ilvl],wgtv)) / 2 .+ 
-                                        mean(pb[:,:,ilvl],wgtv)
+                            μq[ilvl+1] = (mean(view(q1,lonr,latr,ilvl),wgtv) +
+                                          mean(view(q2,lonr,latr,ilvl),wgtv)) / 2
+                            μu[ilvl+1] = (mean(view(u1,lonr,latr,ilvl),wgtv) +
+                                          mean(view(u2,lonr,latr,ilvl),wgtv)) / 2
+                            μv[ilvl+1] = (mean(view(v1,lonr,latr,ilvl),wgtv) +
+                                          mean(view(v2,lonr,latr,ilvl),wgtv)) / 2
+                            μp[ilvl+1] = (mean(view(p1,lonr,latr,ilvl),wgtv) +
+                                          mean(view(p2,lonr,latr,ilvl),wgtv)) / 2 .+ 
+                                          mean(view(pb,lonr,latr,ilvl),wgtv)
                             
-                            Δqu[ilvl+1] = ((mean(q1[end,:,ilvl],lon2w) + 
-                                            mean(q2[end,:,ilvl],lon2w)) * arc2 -
-                                        (mean(q1[1,:,ilvl],lon1w) + 
-                                            mean(q2[1,:,ilvl],lon1w))   * arc1) / 2
-                            Δqv[ilvl+1] = ((mean(q1[:,end,ilvl],lat2w) + 
-                                            mean(q2[:,end,ilvl],lat2w)) * arc4 -
-                                        (mean(q1[:,1,ilvl],lat1w) + 
-                                            mean(q2[:,1,ilvl],lat1w))   * arc3) / 2
-                            Δu[ilvl+1] = ((mean(u1[end,:,ilvl],lon2w) + 
-                                        mean(u2[end,:,ilvl],lon2w)) * arc2 -
-                                        (mean(u1[1,:,ilvl],lon1w) + 
-                                        mean(u2[1,:,ilvl],lon1w))   * arc1) / 2
-                            Δv[ilvl+1] = ((mean(v1[:,end,ilvl],lat2w) + 
-                                        mean(v2[:,end,ilvl],lat2w)) * arc4 -
-                                        (mean(v1[:,1,ilvl],lat1w) + 
-                                        mean(v2[:,1,ilvl],lat1w))   * arc3) / 2
+                            Δqu[ilvl+1] = ((mean(view(q1,lon2,latr,ilvl),lon2w) + 
+                                            mean(view(q2,lon2,latr,ilvl),lon2w)) * arc2 -
+                                           (mean(view(q1,lon1,latr,ilvl),lon1w) + 
+                                            mean(view(q2,lon1,latr,ilvl),lon1w)) * arc1) / 2
+                            Δqv[ilvl+1] = ((mean(view(q1,lonr,lat2,ilvl),lat2w) + 
+                                            mean(view(q2,lonr,lat2,ilvl),lat2w)) * arc4 -
+                                           (mean(view(q1,lonr,lat1,ilvl),lat1w) + 
+                                            mean(view(q2,lonr,lat1,ilvl),lat1w)) * arc3) / 2
+                            Δu[ilvl+1] = ((mean(view(u1,lon2,latr,ilvl),lon2w) + 
+                                           mean(view(u2,lon2,latr,ilvl),lon2w)) * arc2 -
+                                          (mean(view(u1,lon1,latr,ilvl),lon1w) + 
+                                           mean(view(u2,lon1,latr,ilvl),lon1w)) * arc1) / 2
+                            Δv[ilvl+1] = ((mean(view(v1,lonr,lat2,ilvl),lat2w) + 
+                                           mean(view(v2,lonr,lat2,ilvl),lat2w)) * arc4 -
+                                          (mean(view(v1,lonr,lat1,ilvl),lat1w) + 
+                                           mean(view(v2,lonr,lat1,ilvl),lat1w)) * arc3) / 2
                             
                         end
 
-                        μp[1] = (mean(ps1,wgtv) + mean(ps2,wgtv)) / 2
-                        μu[1] = (mean(us1,wgtv) + mean(us2,wgtv)) / 2
-                        μv[1] = (mean(vs1,wgtv) + mean(vs2,wgtv)) / 2
+                        μp[1] = (mean(view(ps1,lonr,latr),wgtv) + 
+                                 mean(view(ps2,lonr,latr),wgtv)) / 2
+                        μu[1] = (mean(view(us1,lonr,latr),wgtv) + 
+                                 mean(view(us2,lonr,latr),wgtv)) / 2
+                        μv[1] = (mean(view(vs1,lonr,latr),wgtv) + 
+                                 mean(view(vs2,lonr,latr),wgtv)) / 2
                         μq[1] = μq[2]
 
                         Δqu[1] = Δqu[2]
                         Δqv[1] = Δqv[2]
 
-                        qadv[it,idt] = trapz(reverse(μp),reverse(Δqu.*μu)) .+ 
-                                    trapz(reverse(μp),reverse(Δqv.*μv))
-                        qdiv[it,idt] = trapz(reverse(μp),reverse(Δu .*μq)) .+ 
-                                    trapz(reverse(μp),reverse(Δv .*μq))
-                    
+                        qadv[it,idt,igeo] = trapz(reverse(μp),reverse(Δqu.*μu)) .+ 
+                                            trapz(reverse(μp),reverse(Δqv.*μv)) * 4 / ((arc2+arc4)*(arc1+arc3)) / 9.81
+                        qdiv[it,idt,igeo] = trapz(reverse(μp),reverse(Δu .*μq)) .+ 
+                                            trapz(reverse(μp),reverse(Δv .*μq)) * 4 / ((arc2+arc4)*(arc1+arc3)) / 9.81
+
                     end
-                    close(ds2)
-
+                
                 end
-
-                close(ds1)
+                close(ds2)
 
             end
 
+            close(ds1)
+
         end
 
+    end
+
+
+    dtbegstr = Dates.format(start,dateformat"yyyymmdd")
+    dtbegend = Dates.format(stop,dateformat"yyyymmdd")
+    for igeo = 1 : ngeo
+        fnc = datadir("wrf3","processed","$(gvec[igeo].ID)-$(iso)∇decompose-$(dtbegstr)_$(dtbegend).nc")
+        if !isfile(fnc) || overwrite
+            rm(fnc,force=true)
+        end
         mkpath(datadir("wrf3","processed"))
 
         ds = NCDataset(fnc,"c")
@@ -622,13 +646,10 @@ function wrfqdivdecompose(
         ))
 
         nctime.var[:] = collect(0 : (ndt*24 -1)) .+ 0.5
-        ncqdiv[:] = qdiv[:] * 4 / ((arc2+arc4)*(arc1+arc3)) / 9.81
-        ncqadv[:] = qadv[:] * 4 / ((arc2+arc4)*(arc1+arc3)) / 9.81
+        ncqdiv[:] = qdiv[:,:,igeo][:]
+        ncqadv[:] = qadv[:,:,igeo][:]
 
         close(ds)
-
-    else
-        @warn "$(now()) - ConvectionIsotopes - Skipping $(iso)QVAPOR calculation for $(geo.name)" 
     end
 
 end
