@@ -8,8 +8,8 @@ function gpmrain(
     geo  :: GeoRegion;
 )
 
-    dtbegstr = Dates.format(start,dateformat"yyyymmdd")
-    dtbegend = Dates.format(stop,dateformat"yyyymmdd")
+    dtbegstr = Dates.format(npd.start,dateformat"yyyymmdd")
+    dtbegend = Dates.format(npd.stop,dateformat"yyyymmdd")
     timestr = "$(dtbegstr)_$(dtbegend)"
     
     olsd = getLandSea(npd,GeoRegion("OTREC",path=srcdir()))
@@ -47,7 +47,7 @@ function gpmrain(
     ds.dim["date"]   = ndt * 24
 
     nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
-        "units"     => "hours since $(start) 00:00:00.0",
+        "units"     => "hours since $(npd.start) 00:00:00.0",
         "long_name" => "time",
         "calendar"  => "gregorian"
     ))
