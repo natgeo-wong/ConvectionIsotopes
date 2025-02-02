@@ -40,6 +40,7 @@ function wrfqbudget(
     wgt4 = sum(wgts[:,end])
     wgtv = weights(wgts)
 
+    if iso == "H2O"; iso = "" end
     if iso != ""; iso = "$(iso)_" end
 
     tmp1      = zeros(Float32,nlon,nlat,24)
@@ -223,6 +224,7 @@ function wrfqdiv(
     nlvl = 50
     ndt  = length(dtvec)
 
+    if iso == "H2O"; iso = "" end
     if iso != ""; iso = "$(iso)_" end
 
     utmp1 = zeros(Float32,nlon+1,nlat  ,nlvl); utmp2 = zeros(Float32,nlon+1,nlat  ,nlvl)
@@ -425,6 +427,7 @@ function wrfqdivdecompose(
     overwrite :: Bool = true
 )
 
+    if iso == "H2O"; iso = "" end
     if iso != ""; iso = "$(iso)_" end
     dtbegstr = Dates.format(start,dateformat"yyyymmdd")
 	dtbegend = Dates.format(stop,dateformat"yyyymmdd")
