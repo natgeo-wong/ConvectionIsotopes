@@ -437,13 +437,12 @@ function wrfqdivdecompose(
     nlvl = 50
 
     ngeo = length(gvec)
-    ggrdvec = Vector{GeneralizedGrid}(undef,ngeo)
     lon1vec = zeros(Int64,ngeo)
     lat1vec = zeros(Int64,ngeo)
     lon2vec = zeros(Int64,ngeo)
     lat2vec = zeros(Int64,ngeo)
     for igeo = 1 : ngeo
-        ggrdvec[igeo] = RegionGrid(gvec[igeo],Point2.(lon,lat))
+        ggrd = RegionGrid(gvec[igeo],Point2.(lon,lat))
         lonvec1[igeo] = minimum(ggrd.ilon); lon2vec[igeo] = maximum(ggrd.ilon)
         latvec1[igeo] = minimum(ggrd.ilat); lat2vec[igeo] = maximum(ggrd.ilat)
     end
