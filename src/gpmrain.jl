@@ -4,7 +4,7 @@ using Printf
 using Statistics
 
 function gpmrain(
-    npd  :: IMERGDataset,
+    npd  :: IMERGFinalHH,
     geo  :: GeoRegion;
 )
 
