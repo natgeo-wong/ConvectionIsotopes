@@ -27,7 +27,7 @@ function gpmrain(
 		NCDatasets.load!(ds["precipitation"].var,tmp1,:,:,:)
 		close(ds)
 
-        extract!(tmp2,tmp1,ggrd)
+        extractGrid!(tmp2,tmp1,ggrd)
 
         for ihr = 1 : 48
             ii += 1
