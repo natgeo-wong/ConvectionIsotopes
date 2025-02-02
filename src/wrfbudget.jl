@@ -476,7 +476,7 @@ function wrfqdivdecompose(
 
     for idt in 1 : ndt
 
-        @info "$(now()) - ConvectionIsotopes - Extracting $(iso)QVAPOR data during $(dtvec[idt]) for $(geo.name)"
+        @info "$(now()) - ConvectionIsotopes - Extracting $(iso)QVAPOR data during $(dtvec[idt])"
         flush(stderr)
 
         fnc1 = datadir("wrf3","raw","$(dtvec[idt]).nc")
@@ -496,6 +496,8 @@ function wrfqdivdecompose(
 
                 for it = 1 : 24
 
+                    @info "$(now()) - ConvectionIsotopes - Extracting $(iso)QVAPOR data during $(dtvec[idt]) for Hour $it"
+                    flush(stderr)
                     NCDatasets.load!(ds1["$(iso)QVAPOR"].var,q1,:,:,:,it)
                     NCDatasets.load!(ds1["P"].var,p1,:,:,:,it)
                     NCDatasets.load!(ds1["U"].var,utmp1,:,:,:,it)
@@ -524,6 +526,8 @@ function wrfqdivdecompose(
                         NCDatasets.load!(ds2["V10"].var,vs2,:,:,1)
                     end
 
+                    @info "$(now()) - ConvectionIsotopes - Standardizing the grid"
+                    flush(stderr)
                     Threads.@threads for idx in 1 : (nlvl * nlat * nlon)
                         ilvl = div(idx - 1, (nlat) * (nlon)) + 1
                         ilat = div(mod(idx - 1, (nlat * nlon)), nlon) + 1
@@ -536,6 +540,8 @@ function wrfqdivdecompose(
                     end
 
                     for igeo in 1 : ngeo
+
+                        @info "$(now()) - ConvectionIsotopes - Calculating breakdown of divergence for $(gvec[igeo].name)"
 
                         lon1 = lon1vec[igeo]; lon2 = lon2vec[igeo]; lonr = lon1 : lon2
                         lat1 = lat1vec[igeo]; lat2 = lat2vec[igeo]; latr = lat1 : lat2
