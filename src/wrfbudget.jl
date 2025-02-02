@@ -443,8 +443,8 @@ function wrfqdivdecompose(
     lat2vec = zeros(Int64,ngeo)
     for igeo = 1 : ngeo
         ggrd = RegionGrid(gvec[igeo],Point2.(lon,lat))
-        lonvec1[igeo] = minimum(ggrd.ilon); lon2vec[igeo] = maximum(ggrd.ilon)
-        latvec1[igeo] = minimum(ggrd.ilat); lat2vec[igeo] = maximum(ggrd.ilat)
+        lon1vec[igeo] = minimum(ggrd.ilon); lon2vec[igeo] = maximum(ggrd.ilon)
+        lat1vec[igeo] = minimum(ggrd.ilat); lat2vec[igeo] = maximum(ggrd.ilat)
     end
 
     dtvec = start : Day(1) : stop
