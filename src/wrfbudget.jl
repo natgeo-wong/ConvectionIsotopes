@@ -1,3 +1,4 @@
+using Base.Threads
 using Distances
 using GeoRegions
 using RegionGrids
@@ -303,14 +304,22 @@ function wrfqdiv(
                         NCDatasets.load!(ds2["V10"].var,vs2,lon1:lon2,lat1:lat2,1)
                     end
 
-                    for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
+                    Threads.@threads for idx in 1 : (nlvl * nlat * nlon)
+                        ilvl = div(idx - 1, (nlat) * (nlon)) + 1
+                        ilat = div(mod(idx - 1, (nlat * nlon)), nlon) + 1
+					    ilon = mod(idx - 1, nlon) + 1
+                
                         u1[ilon,ilat,ilvl] = (utmp1[ilon,ilat,ilvl] + utmp1[ilon+1,ilat,ilvl]) / 2
                         u2[ilon,ilat,ilvl] = (utmp2[ilon,ilat,ilvl] + utmp2[ilon+1,ilat,ilvl]) / 2
                         v1[ilon,ilat,ilvl] = (vtmp1[ilon,ilat,ilvl] + vtmp1[ilon,ilat+1,ilvl]) / 2
                         v2[ilon,ilat,ilvl] = (vtmp2[ilon,ilat,ilvl] + vtmp2[ilon,ilat+1,ilvl]) / 2
                     end
 
-                    for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
+                    Threads.@threads for idx in 1 : (nlvl * nlat * nlon)
+                        ilvl = div(idx - 1, (nlat) * (nlon)) + 1
+                        ilat = div(mod(idx - 1, (nlat * nlon)), nlon) + 1
+					    ilon = mod(idx - 1, nlon) + 1
+
                         u[ilon,ilat,ilvl+1] = (u1[ilon,ilat,ilvl] + u2[ilon,ilat,ilvl]) / 2
                         v[ilon,ilat,ilvl+1] = (v1[ilon,ilat,ilvl] + v2[ilon,ilat,ilvl]) / 2
                         q[ilon,ilat,ilvl+1] = (q1[ilon,ilat,ilvl] + q2[ilon,ilat,ilvl]) / 2
@@ -526,7 +535,11 @@ function wrfqdivdecompose(
                             NCDatasets.load!(ds2["V10"].var,vs2,lon1:lon2,lat1:lat2,1)
                         end
 
-                        for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
+                        Threads.@threads for idx in 1 : (nlvl * nlat * nlon)
+                            ilvl = div(idx - 1, (nlat) * (nlon)) + 1
+                            ilat = div(mod(idx - 1, (nlat * nlon)), nlon) + 1
+                            ilon = mod(idx - 1, nlon) + 1
+
                             u1[ilon,ilat,ilvl] = (utmp1[ilon,ilat,ilvl] + utmp1[ilon+1,ilat,ilvl]) / 2
                             u2[ilon,ilat,ilvl] = (utmp2[ilon,ilat,ilvl] + utmp2[ilon+1,ilat,ilvl]) / 2
                             v1[ilon,ilat,ilvl] = (vtmp1[ilon,ilat,ilvl] + vtmp1[ilon,ilat+1,ilvl]) / 2
