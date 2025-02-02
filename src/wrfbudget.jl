@@ -211,9 +211,9 @@ function wrfqdiv(
     lat  = ds["latitude"][:,:]
     close(ds)
 
-    ggrd = RegionGrid(geo,lon,lat)
-    lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findlast(ggrd.mask .== 1)[1]
-    lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findlast(ggrd.mask .== 1)[2]
+    ggrd = RegionGrid(geo,Point2.(lon,lat))
+    lon1 = minimum(ggrd.ilon); lon2 = maximum(ggrd.ilon)
+    lat1 = minimum(ggrd.ilat); lat2 = maximum(ggrd.ilat)
 
     dtvec = start : Day(1) : stop
 
@@ -257,121 +257,134 @@ function wrfqdiv(
         @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
         flush(stderr)
 
-        ds1 = NCDataset(datadir("wrf3","raw","$(dtvec[idt]).nc"))
-        fncii = datadir("wrf3","raw","$(dtvec[idt]+Day(1))-e.nc")
-        if isfile(fncii)
-            @info "$(now()) - ConvectionIsotopes - Tail end"
-            ds2 = NCDataset(fncii)
-        else
-            ds2 = NCDataset(datadir("wrf3","raw","$(dtvec[idt]+Day(1)).nc"))
-        end
+        fnc1 = datadir("wrf3","raw","$(dtvec[idt]).nc")
+        if isfile(fnc1)
 
-        for it = 1 : 24
+            ds1 = NCDataset(fnc1)
 
-            NCDatasets.load!(ds1["$(iso)QVAPOR"].var,q1,lon1:lon2,lat1:lat2,:,it)
-            NCDatasets.load!(ds1["P"].var,p1,lon1:lon2,lat1:lat2,:,it)
-            NCDatasets.load!(ds1["U"].var,utmp1,lon1:lon2+1,lat1:lat2,:,it)
-            NCDatasets.load!(ds1["V"].var,vtmp1,lon1:lon2,lat1:lat2+1,:,it)
-
-            NCDatasets.load!(ds1["PSFC"].var,ps1,lon1:lon2,lat1:lat2,it)
-            NCDatasets.load!(ds1["U10"].var,us1,lon1:lon2,lat1:lat2,it)
-            NCDatasets.load!(ds1["V10"].var,vs1,lon1:lon2,lat1:lat2,it)
-
-            if it < 24
-                NCDatasets.load!(ds1["$(iso)QVAPOR"].var,q2,lon1:lon2,lat1:lat2,:,it+1)
-                NCDatasets.load!(ds1["P"].var,p2,lon1:lon2,lat1:lat2,:,it+1)
-                NCDatasets.load!(ds1["U"].var,utmp2,lon1:lon2+1,lat1:lat2,:,it+1)
-                NCDatasets.load!(ds1["V"].var,vtmp2,lon1:lon2,lat1:lat2+1,:,it+1)
-
-                NCDatasets.load!(ds1["PSFC"].var,ps2,lon1:lon2,lat1:lat2,it+1)
-                NCDatasets.load!(ds1["U10"].var,us2,lon1:lon2,lat1:lat2,it+1)
-                NCDatasets.load!(ds1["V10"].var,vs2,lon1:lon2,lat1:lat2,it+1)
-            else
-                NCDatasets.load!(ds2["$(iso)QVAPOR"].var,q2,lon1:lon2,lat1:lat2,:,1)
-                NCDatasets.load!(ds2["P"].var,p2,lon1:lon2,lat1:lat2,:,1)
-                NCDatasets.load!(ds2["U"].var,utmp2,lon1:lon2+1,lat1:lat2,:,1)
-                NCDatasets.load!(ds2["V"].var,vtmp2,lon1:lon2,lat1:lat2+1,:,1)
+            if ds1.dim["Time"] == 24
                 
-                NCDatasets.load!(ds2["PSFC"].var,ps2,lon1:lon2,lat1:lat2,1)
-                NCDatasets.load!(ds2["U10"].var,us2,lon1:lon2,lat1:lat2,1)
-                NCDatasets.load!(ds2["V10"].var,vs2,lon1:lon2,lat1:lat2,1)
-            end
+                fnc2 = datadir("wrf3","raw","$(dtvec[idt]+Day(1))-e.nc")
+                if !isfile(fnc2)
+                    fnc2 = datadir("wrf3","raw","$(dtvec[idt]+Day(1)).nc")
+                else
+                    @info "$(now()) - ConvectionIsotopes - Tail end"
+                end
+                ds2 = NCDataset(fnc2)
 
-            for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
-                u1[ilon,ilat,ilvl] = (utmp1[ilon,ilat,ilvl] + utmp1[ilon+1,ilat,ilvl]) / 2
-                u2[ilon,ilat,ilvl] = (utmp2[ilon,ilat,ilvl] + utmp2[ilon+1,ilat,ilvl]) / 2
-                v1[ilon,ilat,ilvl] = (vtmp1[ilon,ilat,ilvl] + vtmp1[ilon,ilat+1,ilvl]) / 2
-                v2[ilon,ilat,ilvl] = (vtmp2[ilon,ilat,ilvl] + vtmp2[ilon,ilat+1,ilvl]) / 2
-            end
+                for it = 1 : 24
 
-            for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
-                u[ilon,ilat,ilvl+1] = (u1[ilon,ilat,ilvl] + u2[ilon,ilat,ilvl]) / 2
-                v[ilon,ilat,ilvl+1] = (v1[ilon,ilat,ilvl] + v2[ilon,ilat,ilvl]) / 2
-                q[ilon,ilat,ilvl+1] = (q1[ilon,ilat,ilvl] + q2[ilon,ilat,ilvl]) / 2
-                p[ilon,ilat,ilvl+1] = (p1[ilon,ilat,ilvl] + p2[ilon,ilat,ilvl]) / 2 + 
-                                       pb[ilon,ilat,ilvl]
-            end
+                    NCDatasets.load!(ds1["$(iso)QVAPOR"].var,q1,lon1:lon2,lat1:lat2,:,it)
+                    NCDatasets.load!(ds1["P"].var,p1,lon1:lon2,lat1:lat2,:,it)
+                    NCDatasets.load!(ds1["U"].var,utmp1,lon1:lon2+1,lat1:lat2,:,it)
+                    NCDatasets.load!(ds1["V"].var,vtmp1,lon1:lon2,lat1:lat2+1,:,it)
 
-            for ilat = 1 : nlat, ilon = 1 : nlon
-                u[ilon,ilat,1] = (us1[ilon,ilat,1] + us2[ilon,ilat,1]) / 2
-                v[ilon,ilat,1] = (vs1[ilon,ilat,1] + vs2[ilon,ilat,1]) / 2
-                p[ilon,ilat,1] = (ps1[ilon,ilat,1] + ps2[ilon,ilat,1]) / 2
-                q[ilon,ilat,1] = q[ilon,ilat,2]
-            end
+                    NCDatasets.load!(ds1["PSFC"].var,ps1,lon1:lon2,lat1:lat2,it)
+                    NCDatasets.load!(ds1["U10"].var,us1,lon1:lon2,lat1:lat2,it)
+                    NCDatasets.load!(ds1["V10"].var,vs1,lon1:lon2,lat1:lat2,it)
 
-            for ilat = 2 : (nlat-1)
-                ∇[it,idt] -= trapz(
-                    reverse(p[1,ilat,:]),
-                    reverse(q[1,ilat,:] .* u[1,ilat,:])
-                ) / (nlat-1) * arc1
-                ∇[it,idt] += trapz(
-                    reverse(p[end,ilat,:]),
-                    reverse(q[end,ilat,:] .* u[end,ilat,:])
-                ) / (nlat-1) * arc2
-            end
+                    if it < 24
+                        NCDatasets.load!(ds1["$(iso)QVAPOR"].var,q2,lon1:lon2,lat1:lat2,:,it+1)
+                        NCDatasets.load!(ds1["P"].var,p2,lon1:lon2,lat1:lat2,:,it+1)
+                        NCDatasets.load!(ds1["U"].var,utmp2,lon1:lon2+1,lat1:lat2,:,it+1)
+                        NCDatasets.load!(ds1["V"].var,vtmp2,lon1:lon2,lat1:lat2+1,:,it+1)
 
-            for ilon = 2 : (nlon-1)
-                ∇[it,idt] -= trapz(
-                    reverse(p[ilon,1,:]),
-                    reverse(q[ilon,1,:] .* v[ilon,1,:])
-                ) / (nlon-1) * arc3
-                ∇[it,idt] += trapz(
-                    reverse(p[ilon,end,:]),
-                    reverse(q[ilon,end,:] .* v[ilon,end,:])
-                ) / (nlon-1) * arc4
-            end
+                        NCDatasets.load!(ds1["PSFC"].var,ps2,lon1:lon2,lat1:lat2,it+1)
+                        NCDatasets.load!(ds1["U10"].var,us2,lon1:lon2,lat1:lat2,it+1)
+                        NCDatasets.load!(ds1["V10"].var,vs2,lon1:lon2,lat1:lat2,it+1)
+                    else
+                        NCDatasets.load!(ds2["$(iso)QVAPOR"].var,q2,lon1:lon2,lat1:lat2,:,1)
+                        NCDatasets.load!(ds2["P"].var,p2,lon1:lon2,lat1:lat2,:,1)
+                        NCDatasets.load!(ds2["U"].var,utmp2,lon1:lon2+1,lat1:lat2,:,1)
+                        NCDatasets.load!(ds2["V"].var,vtmp2,lon1:lon2,lat1:lat2+1,:,1)
+                        
+                        NCDatasets.load!(ds2["PSFC"].var,ps2,lon1:lon2,lat1:lat2,1)
+                        NCDatasets.load!(ds2["U10"].var,us2,lon1:lon2,lat1:lat2,1)
+                        NCDatasets.load!(ds2["V10"].var,vs2,lon1:lon2,lat1:lat2,1)
+                    end
 
-            for ilat in [1, nlat]
-                ∇[it,idt] -= trapz(
-                    reverse(p[1,ilat,:]),
-                    reverse(q[1,ilat,:] .* u[1,ilat,:])
-                ) / (nlat-1) * arc1 / 2
-                ∇[it,idt] += trapz(
-                    reverse(p[end,ilat,:]),
-                    reverse(q[end,ilat,:] .* u[end,ilat,:])
-                ) / (nlat-1) * arc2 / 2
-            end
+                    for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
+                        u1[ilon,ilat,ilvl] = (utmp1[ilon,ilat,ilvl] + utmp1[ilon+1,ilat,ilvl]) / 2
+                        u2[ilon,ilat,ilvl] = (utmp2[ilon,ilat,ilvl] + utmp2[ilon+1,ilat,ilvl]) / 2
+                        v1[ilon,ilat,ilvl] = (vtmp1[ilon,ilat,ilvl] + vtmp1[ilon,ilat+1,ilvl]) / 2
+                        v2[ilon,ilat,ilvl] = (vtmp2[ilon,ilat,ilvl] + vtmp2[ilon,ilat+1,ilvl]) / 2
+                    end
 
-            for ilon in [1, nlon]
-                ∇[it,idt] -= trapz(
-                    reverse(p[ilon,1,:]),
-                    reverse(q[ilon,1,:] .* v[ilon,1,:])
-                ) / (nlon-1) * arc3 / 2
-                ∇[it,idt] += trapz(
-                    reverse(p[ilon,end,:]),
-                    reverse(q[ilon,end,:] .* v[ilon,end,:])
-                ) / (nlon-1) * arc4 / 2
+                    for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
+                        u[ilon,ilat,ilvl+1] = (u1[ilon,ilat,ilvl] + u2[ilon,ilat,ilvl]) / 2
+                        v[ilon,ilat,ilvl+1] = (v1[ilon,ilat,ilvl] + v2[ilon,ilat,ilvl]) / 2
+                        q[ilon,ilat,ilvl+1] = (q1[ilon,ilat,ilvl] + q2[ilon,ilat,ilvl]) / 2
+                        p[ilon,ilat,ilvl+1] = (p1[ilon,ilat,ilvl] + p2[ilon,ilat,ilvl]) / 2 + 
+                                            pb[ilon,ilat,ilvl]
+                    end
+
+                    for ilat = 1 : nlat, ilon = 1 : nlon
+                        u[ilon,ilat,1] = (us1[ilon,ilat,1] + us2[ilon,ilat,1]) / 2
+                        v[ilon,ilat,1] = (vs1[ilon,ilat,1] + vs2[ilon,ilat,1]) / 2
+                        p[ilon,ilat,1] = (ps1[ilon,ilat,1] + ps2[ilon,ilat,1]) / 2
+                        q[ilon,ilat,1] = q[ilon,ilat,2]
+                    end
+
+                    for ilat = 2 : (nlat-1)
+                        ∇[it,idt] -= trapz(
+                            reverse(p[1,ilat,:]),
+                            reverse(q[1,ilat,:] .* u[1,ilat,:])
+                        ) / (nlat-1) * arc1
+                        ∇[it,idt] += trapz(
+                            reverse(p[end,ilat,:]),
+                            reverse(q[end,ilat,:] .* u[end,ilat,:])
+                        ) / (nlat-1) * arc2
+                    end
+
+                    for ilon = 2 : (nlon-1)
+                        ∇[it,idt] -= trapz(
+                            reverse(p[ilon,1,:]),
+                            reverse(q[ilon,1,:] .* v[ilon,1,:])
+                        ) / (nlon-1) * arc3
+                        ∇[it,idt] += trapz(
+                            reverse(p[ilon,end,:]),
+                            reverse(q[ilon,end,:] .* v[ilon,end,:])
+                        ) / (nlon-1) * arc4
+                    end
+
+                    for ilat in [1, nlat]
+                        ∇[it,idt] -= trapz(
+                            reverse(p[1,ilat,:]),
+                            reverse(q[1,ilat,:] .* u[1,ilat,:])
+                        ) / (nlat-1) * arc1 / 2
+                        ∇[it,idt] += trapz(
+                            reverse(p[end,ilat,:]),
+                            reverse(q[end,ilat,:] .* u[end,ilat,:])
+                        ) / (nlat-1) * arc2 / 2
+                    end
+
+                    for ilon in [1, nlon]
+                        ∇[it,idt] -= trapz(
+                            reverse(p[ilon,1,:]),
+                            reverse(q[ilon,1,:] .* v[ilon,1,:])
+                        ) / (nlon-1) * arc3 / 2
+                        ∇[it,idt] += trapz(
+                            reverse(p[ilon,end,:]),
+                            reverse(q[ilon,end,:] .* v[ilon,end,:])
+                        ) / (nlon-1) * arc4 / 2
+                    end
+                
+                end
+
+                close(ds2)
+
             end
-        
+            
+            close(ds1)
+
         end
-
-        close(ds1_2D); close(ds1_3D)
-        close(ds2_2D); close(ds2_3D)
 
     end
 
+    dtbegstr = Dates.format(start,dateformat"yyyymmdd")
+	dtbegend = Dates.format(stop,dateformat"yyyymmdd")
     mkpath(datadir("wrf3","processed"))
-    fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)∇.nc")
+    fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)∇-$(dtbegstr)_$(dtbegend).nc")
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")
@@ -404,7 +417,9 @@ function wrfqdivdecompose(
 )
 
     if iso != ""; iso = "$(iso)_" end
-    fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)∇decompose.nc")
+    dtbegstr = Dates.format(start,dateformat"yyyymmdd")
+	dtbegend = Dates.format(stop,dateformat"yyyymmdd")
+    fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)∇decompose-$(dtbegstr)_$(dtbegend).nc")
     if !isfile(fnc) || overwrite
 
         rm(fnc,force=true)
@@ -414,9 +429,9 @@ function wrfqdivdecompose(
         lat  = ds["latitude"][:,:]
         close(ds)
 
-        ggrd = RegionGrid(geo,lon,lat)
-        lon1 = findfirst(ggrd.mask .== 1)[1]; lon2 = findlast(ggrd.mask .== 1)[1]
-        lat1 = findfirst(ggrd.mask .== 1)[2]; lat2 = findlast(ggrd.mask .== 1)[2]
+        ggrd = RegionGrid(geo,Point2.(lon,lat))
+        lon1 = minimum(ggrd.ilon); lon2 = maximum(ggrd.ilon)
+        lat1 = minimum(ggrd.ilat); lat2 = maximum(ggrd.ilat)
 
         dtvec = start : Day(1) : stop
 
@@ -466,96 +481,106 @@ function wrfqdivdecompose(
             @info "$(now()) - ConvectionIsotopes - Extracting $(iso)QVAPOR data during $(dtvec[idt]) for $(geo.name)"
             flush(stderr)
 
-            ds1 = NCDataset(datadir("wrf3","raw","$(dtvec[idt]).nc"))
-            fncii = datadir("wrf3","raw","$(dtvec[idt]+Day(1))-e.nc")
-            if isfile(fncii)
-                @info "$(now()) - ConvectionIsotopes - Tail end"
-                ds2 = NCDataset(datadir("wrf3","raw","$(dtvec[idt]+Day(1))-e.nc"))
-            else
-                ds2 = NCDataset(datadir("wrf3","raw","$(dtvec[idt]+Day(1)).nc"))
+            fnc1 = datadir("wrf3","raw","$(dtvec[idt]).nc")
+            if isfile(fnc1)
+
+                ds1 = NCDataset(fnc1)
+
+                if ds1.dim["Time"] == 24
+                    
+                    fnc2 = datadir("wrf3","raw","$(dtvec[idt]+Day(1))-e.nc")
+                    if !isfile(fnc2)
+                        fnc2 = datadir("wrf3","raw","$(dtvec[idt]+Day(1)).nc")
+                    else
+                        @info "$(now()) - ConvectionIsotopes - Tail end"
+                    end
+                    ds2 = NCDataset(fnc2)
+
+                    for it = 1 : 24
+
+                        NCDatasets.load!(ds1["$(iso)QVAPOR"].var,q1,lon1:lon2,lat1:lat2,:,it)
+                        NCDatasets.load!(ds1["P"].var,p1,lon1:lon2,lat1:lat2,:,it)
+                        NCDatasets.load!(ds1["U"].var,utmp1,lon1:lon2+1,lat1:lat2,:,it)
+                        NCDatasets.load!(ds1["V"].var,vtmp1,lon1:lon2,lat1:lat2+1,:,it)
+                        NCDatasets.load!(ds1["PSFC"].var,ps1,lon1:lon2,lat1:lat2,it)
+                        NCDatasets.load!(ds1["U10"].var,us1,lon1:lon2,lat1:lat2,it)
+                        NCDatasets.load!(ds1["V10"].var,vs1,lon1:lon2,lat1:lat2,it)
+
+                        if it < 24
+                            NCDatasets.load!(ds1["$(iso)QVAPOR"].var,q2,lon1:lon2,lat1:lat2,:,it+1)
+                            NCDatasets.load!(ds1["P"].var,p2,lon1:lon2,lat1:lat2,:,it+1)
+                            NCDatasets.load!(ds1["U"].var,utmp2,lon1:lon2+1,lat1:lat2,:,it+1)
+                            NCDatasets.load!(ds1["V"].var,vtmp2,lon1:lon2,lat1:lat2+1,:,it+1)
+
+                            NCDatasets.load!(ds1["PSFC"].var,ps2,lon1:lon2,lat1:lat2,it+1)
+                            NCDatasets.load!(ds1["U10"].var,us2,lon1:lon2,lat1:lat2,it+1)
+                            NCDatasets.load!(ds1["V10"].var,vs2,lon1:lon2,lat1:lat2,it+1)
+                        else
+                            NCDatasets.load!(ds2["$(iso)QVAPOR"].var,q2,lon1:lon2,lat1:lat2,:,1)
+                            NCDatasets.load!(ds2["P"].var,p2,lon1:lon2,lat1:lat2,:,1)
+                            NCDatasets.load!(ds2["U"].var,utmp2,lon1:lon2+1,lat1:lat2,:,1)
+                            NCDatasets.load!(ds2["V"].var,vtmp2,lon1:lon2,lat1:lat2+1,:,1)
+                            
+                            NCDatasets.load!(ds2["PSFC"].var,ps2,lon1:lon2,lat1:lat2,1)
+                            NCDatasets.load!(ds2["U10"].var,us2,lon1:lon2,lat1:lat2,1)
+                            NCDatasets.load!(ds2["V10"].var,vs2,lon1:lon2,lat1:lat2,1)
+                        end
+
+                        for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
+                            u1[ilon,ilat,ilvl] = (utmp1[ilon,ilat,ilvl] + utmp1[ilon+1,ilat,ilvl]) / 2
+                            u2[ilon,ilat,ilvl] = (utmp2[ilon,ilat,ilvl] + utmp2[ilon+1,ilat,ilvl]) / 2
+                            v1[ilon,ilat,ilvl] = (vtmp1[ilon,ilat,ilvl] + vtmp1[ilon,ilat+1,ilvl]) / 2
+                            v2[ilon,ilat,ilvl] = (vtmp2[ilon,ilat,ilvl] + vtmp2[ilon,ilat+1,ilvl]) / 2
+                        end
+
+                        for ilvl = 1 : nlvl
+
+                            μq[ilvl+1] = (mean(q1[:,:,ilvl],wgtv) + mean(q2[:,:,ilvl],wgtv)) / 2
+                            μu[ilvl+1] = (mean(u1[:,:,ilvl],wgtv) + mean(u2[:,:,ilvl],wgtv)) / 2
+                            μv[ilvl+1] = (mean(v1[:,:,ilvl],wgtv) + mean(v2[:,:,ilvl],wgtv)) / 2
+                            μp[ilvl+1] = (mean(p1[:,:,ilvl],wgtv) + mean(p2[:,:,ilvl],wgtv)) / 2 .+ 
+                                        mean(pb[:,:,ilvl],wgtv)
+                            
+                            Δqu[ilvl+1] = ((mean(q1[end,:,ilvl],lon2w) + 
+                                            mean(q2[end,:,ilvl],lon2w)) * arc2 -
+                                        (mean(q1[1,:,ilvl],lon1w) + 
+                                            mean(q2[1,:,ilvl],lon1w))   * arc1) / 2
+                            Δqv[ilvl+1] = ((mean(q1[:,end,ilvl],lat2w) + 
+                                            mean(q2[:,end,ilvl],lat2w)) * arc4 -
+                                        (mean(q1[:,1,ilvl],lat1w) + 
+                                            mean(q2[:,1,ilvl],lat1w))   * arc3) / 2
+                            Δu[ilvl+1] = ((mean(u1[end,:,ilvl],lon2w) + 
+                                        mean(u2[end,:,ilvl],lon2w)) * arc2 -
+                                        (mean(u1[1,:,ilvl],lon1w) + 
+                                        mean(u2[1,:,ilvl],lon1w))   * arc1) / 2
+                            Δv[ilvl+1] = ((mean(v1[:,end,ilvl],lat2w) + 
+                                        mean(v2[:,end,ilvl],lat2w)) * arc4 -
+                                        (mean(v1[:,1,ilvl],lat1w) + 
+                                        mean(v2[:,1,ilvl],lat1w))   * arc3) / 2
+                            
+                        end
+
+                        μp[1] = (mean(ps1,wgtv) + mean(ps2,wgtv)) / 2
+                        μu[1] = (mean(us1,wgtv) + mean(us2,wgtv)) / 2
+                        μv[1] = (mean(vs1,wgtv) + mean(vs2,wgtv)) / 2
+                        μq[1] = μq[2]
+
+                        Δqu[1] = Δqu[2]
+                        Δqv[1] = Δqv[2]
+
+                        qadv[it,idt] = trapz(reverse(μp),reverse(Δqu.*μu)) .+ 
+                                    trapz(reverse(μp),reverse(Δqv.*μv))
+                        qdiv[it,idt] = trapz(reverse(μp),reverse(Δu .*μq)) .+ 
+                                    trapz(reverse(μp),reverse(Δv .*μq))
+                    
+                    end
+                    close(ds2)
+
+                end
+
+                close(ds1)
+
             end
-
-            for it = 1 : 24
-
-                NCDatasets.load!(ds1["$(iso)QVAPOR"].var,q1,lon1:lon2,lat1:lat2,:,it)
-                NCDatasets.load!(ds1["P"].var,p1,lon1:lon2,lat1:lat2,:,it)
-                NCDatasets.load!(ds1["U"].var,utmp1,lon1:lon2+1,lat1:lat2,:,it)
-                NCDatasets.load!(ds1["V"].var,vtmp1,lon1:lon2,lat1:lat2+1,:,it)
-                NCDatasets.load!(ds1["PSFC"].var,ps1,lon1:lon2,lat1:lat2,it)
-                NCDatasets.load!(ds1["U10"].var,us1,lon1:lon2,lat1:lat2,it)
-                NCDatasets.load!(ds1["V10"].var,vs1,lon1:lon2,lat1:lat2,it)
-
-                if it < 24
-                    NCDatasets.load!(ds1["$(iso)QVAPOR"].var,q2,lon1:lon2,lat1:lat2,:,it+1)
-                    NCDatasets.load!(ds1["P"].var,p2,lon1:lon2,lat1:lat2,:,it+1)
-                    NCDatasets.load!(ds1["U"].var,utmp2,lon1:lon2+1,lat1:lat2,:,it+1)
-                    NCDatasets.load!(ds1["V"].var,vtmp2,lon1:lon2,lat1:lat2+1,:,it+1)
-
-                    NCDatasets.load!(ds1["PSFC"].var,ps2,lon1:lon2,lat1:lat2,it+1)
-                    NCDatasets.load!(ds1["U10"].var,us2,lon1:lon2,lat1:lat2,it+1)
-                    NCDatasets.load!(ds1["V10"].var,vs2,lon1:lon2,lat1:lat2,it+1)
-                else
-                    NCDatasets.load!(ds2["$(iso)QVAPOR"].var,q2,lon1:lon2,lat1:lat2,:,1)
-                    NCDatasets.load!(ds2["P"].var,p2,lon1:lon2,lat1:lat2,:,1)
-                    NCDatasets.load!(ds2["U"].var,utmp2,lon1:lon2+1,lat1:lat2,:,1)
-                    NCDatasets.load!(ds2["V"].var,vtmp2,lon1:lon2,lat1:lat2+1,:,1)
-                    
-                    NCDatasets.load!(ds2["PSFC"].var,ps2,lon1:lon2,lat1:lat2,1)
-                    NCDatasets.load!(ds2["U10"].var,us2,lon1:lon2,lat1:lat2,1)
-                    NCDatasets.load!(ds2["V10"].var,vs2,lon1:lon2,lat1:lat2,1)
-                end
-
-                for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
-                    u1[ilon,ilat,ilvl] = (utmp1[ilon,ilat,ilvl] + utmp1[ilon+1,ilat,ilvl]) / 2
-                    u2[ilon,ilat,ilvl] = (utmp2[ilon,ilat,ilvl] + utmp2[ilon+1,ilat,ilvl]) / 2
-                    v1[ilon,ilat,ilvl] = (vtmp1[ilon,ilat,ilvl] + vtmp1[ilon,ilat+1,ilvl]) / 2
-                    v2[ilon,ilat,ilvl] = (vtmp2[ilon,ilat,ilvl] + vtmp2[ilon,ilat+1,ilvl]) / 2
-                end
-
-                for ilvl = 1 : nlvl
-
-                    μq[ilvl+1] = (mean(q1[:,:,ilvl],wgtv) + mean(q2[:,:,ilvl],wgtv)) / 2
-                    μu[ilvl+1] = (mean(u1[:,:,ilvl],wgtv) + mean(u2[:,:,ilvl],wgtv)) / 2
-                    μv[ilvl+1] = (mean(v1[:,:,ilvl],wgtv) + mean(v2[:,:,ilvl],wgtv)) / 2
-                    μp[ilvl+1] = (mean(p1[:,:,ilvl],wgtv) + mean(p2[:,:,ilvl],wgtv)) / 2 .+ 
-                                mean(pb[:,:,ilvl],wgtv)
-                    
-                    Δqu[ilvl+1] = ((mean(q1[end,:,ilvl],lon2w) + 
-                                    mean(q2[end,:,ilvl],lon2w)) * arc2 -
-                                (mean(q1[1,:,ilvl],lon1w) + 
-                                    mean(q2[1,:,ilvl],lon1w))   * arc1) / 2
-                    Δqv[ilvl+1] = ((mean(q1[:,end,ilvl],lat2w) + 
-                                    mean(q2[:,end,ilvl],lat2w)) * arc4 -
-                                (mean(q1[:,1,ilvl],lat1w) + 
-                                    mean(q2[:,1,ilvl],lat1w))   * arc3) / 2
-                    Δu[ilvl+1] = ((mean(u1[end,:,ilvl],lon2w) + 
-                                mean(u2[end,:,ilvl],lon2w)) * arc2 -
-                                (mean(u1[1,:,ilvl],lon1w) + 
-                                mean(u2[1,:,ilvl],lon1w))   * arc1) / 2
-                    Δv[ilvl+1] = ((mean(v1[:,end,ilvl],lat2w) + 
-                                mean(v2[:,end,ilvl],lat2w)) * arc4 -
-                                (mean(v1[:,1,ilvl],lat1w) + 
-                                mean(v2[:,1,ilvl],lat1w))   * arc3) / 2
-                    
-                end
-
-                μp[1] = (mean(ps1,wgtv) + mean(ps2,wgtv)) / 2
-                μu[1] = (mean(us1,wgtv) + mean(us2,wgtv)) / 2
-                μv[1] = (mean(vs1,wgtv) + mean(vs2,wgtv)) / 2
-                μq[1] = μq[2]
-
-                Δqu[1] = Δqu[2]
-                Δqv[1] = Δqv[2]
-
-                qadv[it,idt] = trapz(reverse(μp),reverse(Δqu.*μu)) .+ 
-                            trapz(reverse(μp),reverse(Δqv.*μv))
-                qdiv[it,idt] = trapz(reverse(μp),reverse(Δu .*μq)) .+ 
-                            trapz(reverse(μp),reverse(Δv .*μq))
-            
-            end
-
-            close(ds1)
-            close(ds2)
 
         end
 
