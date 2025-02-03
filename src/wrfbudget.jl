@@ -654,7 +654,7 @@ function wrfqdivdecompose(
 end
 
 function wrfqdivdecomposecompile(
-    gvec  :: GeoRegion;
+    geo   :: GeoRegion;
     iso   :: AbstractString = "",
     start :: Date,
     stop  :: Date,
@@ -676,7 +676,7 @@ function wrfqdivdecomposecompile(
         ndy = daysinmonth(iyr,imo)
         iidtbegstr = Dates.format(Date(iyr,imo,1),dateformat"yyyymmdd")
         iidtbegend = Dates.format(Date(iyr,imo,ndy),dateformat"yyyymmdd")
-        fnc = datadir("wrf3","processed","$(gvec[igeo].ID)-$(iso)∇decompose-$(iidtbegstr)_$(iidtbegend).nc")
+        fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)∇decompose-$(iidtbegstr)_$(iidtbegend).nc")
         ds = NCDataset(fnc)
         DIV = vcat(∇,ds["$(iso)DIV"])
         ADV = vcat(∇,ds["$(iso)ADV"])
@@ -684,7 +684,7 @@ function wrfqdivdecomposecompile(
 
     end
 
-    fnc = datadir("wrf3","processed","$(gvec[igeo].ID)-$(iso)∇decompose-$(dtbegstr)_$(dtbegend).nc")
+    fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)∇decompose-$(dtbegstr)_$(dtbegend).nc")
     if !isfile(fnc) || overwrite
         rm(fnc,force=true)
     end
