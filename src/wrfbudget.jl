@@ -678,8 +678,8 @@ function wrfqdivdecomposecompile(
         iidtbegend = Dates.format(Date(iyr,imo,ndy),dateformat"yyyymmdd")
         fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)∇decompose-$(iidtbegstr)_$(iidtbegend).nc")
         ds = NCDataset(fnc)
-        DIV = vcat(∇,ds["$(iso)DIV"])
-        ADV = vcat(∇,ds["$(iso)ADV"])
+        DIV = vcat(DIV,ds["$(iso)DIV"])
+        ADV = vcat(ADV,ds["$(iso)ADV"])
         close(ds)
 
     end
