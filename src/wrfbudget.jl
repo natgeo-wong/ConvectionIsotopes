@@ -597,10 +597,12 @@ function wrfqdivdecompose(
                         Δqu[1] = Δqu[2]
                         Δqv[1] = Δqv[2]
 
-                        qadv[it,idt,igeo] = trapz(reverse(μp),reverse(Δqu.*μu)) .+ 
-                                            trapz(reverse(μp),reverse(Δqv.*μv)) * 4 / ((arc2+arc4)*(arc1+arc3)) / 9.81
-                        qdiv[it,idt,igeo] = trapz(reverse(μp),reverse(Δu .*μq)) .+ 
-                                            trapz(reverse(μp),reverse(Δv .*μq)) * 4 / ((arc2+arc4)*(arc1+arc3)) / 9.81
+                        qadv[it,idt,igeo] = (trapz(reverse(μp),reverse(Δqu.*μu)) .+ 
+                                             trapz(reverse(μp),reverse(Δqv.*μv))) * 4 /
+                                            ((arc2+arc4)*(arc1+arc3)) / 9.81
+                        qdiv[it,idt,igeo] = (trapz(reverse(μp),reverse(Δu .*μq)) .+ 
+                                             trapz(reverse(μp),reverse(Δv .*μq))) * 4 /
+                                            ((arc2+arc4)*(arc1+arc3)) / 9.81
 
                     end
                 
