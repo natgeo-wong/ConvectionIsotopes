@@ -496,8 +496,6 @@ function wrfqdivdecompose(
 
                 for it = 1 : 24
 
-                    @info "$(now()) - ConvectionIsotopes - Extracting $(iso)QVAPOR data during $(dtvec[idt]) for Hour $it"
-                    flush(stderr)
                     NCDatasets.load!(ds1["$(iso)QVAPOR"].var,q1,:,:,:,it)
                     NCDatasets.load!(ds1["P"].var,p1,:,:,:,it)
                     NCDatasets.load!(ds1["U"].var,utmp1,:,:,:,it)
@@ -526,8 +524,6 @@ function wrfqdivdecompose(
                         NCDatasets.load!(ds2["V10"].var,vs2,:,:,1)
                     end
 
-                    @info "$(now()) - ConvectionIsotopes - Standardizing the grid"
-                    flush(stderr)
                     Threads.@threads for idx in 1 : (nlvl * nlat * nlon)
                         ilvl = div(idx - 1, (nlat) * (nlon)) + 1
                         ilat = div(mod(idx - 1, (nlat * nlon)), nlon) + 1
@@ -540,8 +536,6 @@ function wrfqdivdecompose(
                     end
 
                     for igeo in 1 : ngeo
-
-                        @info "$(now()) - ConvectionIsotopes - Calculating breakdown of divergence for $(gvec[igeo].name)"
 
                         lon1 = lon1vec[igeo]; lon2 = lon2vec[igeo]; lonr = lon1 : lon2
                         lat1 = lat1vec[igeo]; lat2 = lat2vec[igeo]; latr = lat1 : lat2
@@ -655,6 +649,73 @@ function wrfqdivdecompose(
         ncqadv[:] = qadv[:,:,igeo][:]
 
         close(ds)
+    end
+
+end
+
+function wrfqdivdecomposecompile(
+    gvec  :: Vector{GeoRegion};
+    iso   :: AbstractString = "",
+    start :: Date,
+    stop  :: Date,
+    overwrite :: Bool = true
+)
+
+    if iso == "H2O"; iso = "" end
+    if iso != ""; iso = "$(iso)_" end
+
+    dtbegstr = Dates.format(start,dateformat"yyyymmdd")
+    dtbegend = Dates.format(stop,dateformat"yyyymmdd")
+    dtvec = start : Day(1) : stop; ndt = dtvec * 24
+    for igeo = 1 : ngeo
+
+        DIV = []
+        ADV = []
+        for idt = start : Month(1) : stop
+            iyr = year(idt)
+            imo = month(idt)
+            ndy = daysinmonth(iyr,imo)
+            iidtbegstr = Dates.format(Date(iyr,imo,1),dateformat"yyyymmdd")
+            iidtbegend = Dates.format(Date(iyr,imo,ndy),dateformat"yyyymmdd")
+            fnc = datadir("wrf3","processed","$(gvec[igeo].ID)-$(iso)∇decompose-$(iidtbegstr)_$(iidtbegend).nc")
+            ds = NCDataset(fnc)
+            DIV = vcat(∇,ds["$(iso)DIV"])
+            ADV = vcat(∇,ds["$(iso)ADV"])
+            close(ds)
+
+        end
+
+        fnc = datadir("wrf3","processed","$(gvec[igeo].ID)-$(iso)∇decompose-$(dtbegstr)_$(dtbegend).nc")
+        if !isfile(fnc) || overwrite
+            rm(fnc,force=true)
+        end
+        mkpath(datadir("wrf3","processed"))
+
+        ds = NCDataset(fnc,"c")
+        ds.dim["date"] = ndt
+
+        nctime = defVar(ds,"time",Float32,("date",),attrib=Dict(
+            "units"     => "hours since $(start) 00:00:00.0",
+            "long_name" => "time",
+            "calendar"  => "gregorian"
+        ))
+
+        ncqdiv = defVar(ds,"$(iso)DIV",Float32,("date",),attrib=Dict(
+            "units" => "kg m**-2 s**-1",
+            "long_name" => "Divergence component of ∇"
+        ))
+
+        ncqadv = defVar(ds,"$(iso)ADV",Float32,("date",),attrib=Dict(
+            "units" => "kg m**-2 s**-1",
+            "long_name" => "Advection component of ∇"
+        ))
+
+        nctime.var[:] = collect(0 : (ndt-1)) .+ 0.5
+        ncqdiv[:] = DIV
+        ncqadv[:] = ADV
+
+        close(ds)
+
     end
 
 end
