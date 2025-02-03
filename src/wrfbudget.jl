@@ -666,7 +666,7 @@ function wrfqdivdecomposecompile(
 
     dtbegstr = Dates.format(start,dateformat"yyyymmdd")
     dtbegend = Dates.format(stop,dateformat"yyyymmdd")
-    dtvec = start : Day(1) : stop; ndt = dtvec * 24
+    dtvec = start : Day(1) : stop; ndt = length(dtvec) * 24
 
     DIV = []
     ADV = []
