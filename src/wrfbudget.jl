@@ -201,7 +201,7 @@ function wrfqbudget(
 
 end
 
-function wrfqdivdecompose(
+function wrfqdiv(
     gvec  :: Vector{GeoRegion};
     iso   :: AbstractString = "",
     start :: Date,
