@@ -305,27 +305,20 @@ function wrfqdiv(
                         NCDatasets.load!(ds2["V10"].var,vs2,:,:,1)
                     end
 
-                    for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
-                        u1[ilon,ilat,ilvl] = (utmp1[ilon,ilat,ilvl] + utmp1[ilon+1,ilat,ilvl]) / 2
-                        u2[ilon,ilat,ilvl] = (utmp2[ilon,ilat,ilvl] + utmp2[ilon+1,ilat,ilvl]) / 2
-                        v1[ilon,ilat,ilvl] = (vtmp1[ilon,ilat,ilvl] + vtmp1[ilon,ilat+1,ilvl]) / 2
-                        v2[ilon,ilat,ilvl] = (vtmp2[ilon,ilat,ilvl] + vtmp2[ilon,ilat+1,ilvl]) / 2
-                    end
+                    @views @. u1 = (utmp1[1:(end-1),:,:] + utmp1[2:end,:,:]) / 2
+                    @views @. u2 = (utmp2[1:(end-1),:,:] + utmp2[2:end,:,:]) / 2
+                    @views @. v1 = (vtmp1[:,1:(end-1),:] + vtmp1[:,2:end,:]) / 2
+                    @views @. v2 = (vtmp2[:,1:(end-1),:] + vtmp2[:,2:end,:]) / 2
 
-                    for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
-                        u[ilon,ilat,ilvl+1] = (u1[ilon,ilat,ilvl]+u2[ilon,ilat,ilvl])/2
-                        v[ilon,ilat,ilvl+1] = (v1[ilon,ilat,ilvl]+v2[ilon,ilat,ilvl])/2
-                        q[ilon,ilat,ilvl+1] = (q1[ilon,ilat,ilvl]+q2[ilon,ilat,ilvl])/2
-                        p[ilon,ilat,ilvl+1] = (p1[ilon,ilat,ilvl]+p2[ilon,ilat,ilvl])/2 + 
-                                               pb[ilon,ilat,ilvl]
-                    end
+                    @views @. u[:,:,2:(nlvl+1)] = (u1 + u2) / 2
+                    @views @. v[:,:,2:(nlvl+1)] = (v1 + u2) / 2
+                    @views @. q[:,:,2:(nlvl+1)] = (q1 + u2) / 2
+                    @views @. p[:,:,2:(nlvl+1)] = (p1 + p2) / 2 + pb
 
-                    for ilat = 1 : nlat, ilon = 1 : nlon
-                        u[ilon,ilat,1] = (us1[ilon,ilat,1] + us2[ilon,ilat,1]) / 2
-                        v[ilon,ilat,1] = (vs1[ilon,ilat,1] + vs2[ilon,ilat,1]) / 2
-                        p[ilon,ilat,1] = (ps1[ilon,ilat,1] + ps2[ilon,ilat,1]) / 2
-                        q[ilon,ilat,1] =    q[ilon,ilat,2]
-                    end
+                    @views @. u[:,:,1] = (us1 + us2) / 2
+                    @views @. v[:,:,1] = (vs1 + us2) / 2
+                    @views @. p[:,:,1] = (ps1 + ps2) / 2
+                    @views @. q[:,:,1] = q[:,:,2]
 
                     for igeo in 1 : ngeo
 
