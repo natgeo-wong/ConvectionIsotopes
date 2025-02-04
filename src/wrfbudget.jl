@@ -425,7 +425,7 @@ function wrfqdiv(
             "calendar"  => "gregorian"
         ))
 
-        ncqdiv = defVar(ds,"$(iso)∇",Float32,("date",),attrib=Dict(
+        ncqdiv = defVar(ds,"$(iso)∇",Float64,("date",),attrib=Dict(
             "units" => "kg m**-2 s**-1",
             "long_name" => "Divergence component of ∇"
         ))
