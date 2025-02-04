@@ -393,6 +393,8 @@ function wrfqdiv(
                             ) / (nlon-1) * arc4 / 2
                         end
 
+                        ∇[it,idt,igeo] *= (4 / ((arc2+arc4)*(arc1+arc3)) / 9.81)
+
                     end
                 
                 end
