@@ -1,4 +1,3 @@
-using Base.Threads
 using Distances
 using GeoRegions
 using RegionGrids
@@ -538,16 +537,10 @@ function wrfqdivdecompose(
                         NCDatasets.load!(ds2["V10"].var,vs2,:,:,1)
                     end
 
-                    @threads for idx in 1 : (nlvl * nlat * nlon)
-                        ilvl = div(idx - 1, (nlat) * (nlon)) + 1
-                        ilat = div(mod(idx - 1, (nlat * nlon)), nlon) + 1
-                        ilon = mod(idx - 1, nlon) + 1
-
-                        u1[ilon,ilat,ilvl] = (utmp1[ilon,ilat,ilvl] + utmp1[ilon+1,ilat,ilvl]) / 2
-                        u2[ilon,ilat,ilvl] = (utmp2[ilon,ilat,ilvl] + utmp2[ilon+1,ilat,ilvl]) / 2
-                        v1[ilon,ilat,ilvl] = (vtmp1[ilon,ilat,ilvl] + vtmp1[ilon,ilat+1,ilvl]) / 2
-                        v2[ilon,ilat,ilvl] = (vtmp2[ilon,ilat,ilvl] + vtmp2[ilon,ilat+1,ilvl]) / 2
-                    end
+                    @views @. u1 = (utmp1[1:(end-1),:,:] + utmp1[2:end,:,:]) / 2
+                    @views @. u2 = (utmp2[1:(end-1),:,:] + utmp2[2:end,:,:]) / 2
+                    @views @. v1 = (vtmp1[:,1:(end-1),:] + vtmp1[:,2:end,:]) / 2
+                    @views @. v2 = (vtmp2[:,1:(end-1),:] + vtmp2[:,2:end,:]) / 2
 
                     for igeo in 1 : ngeo
 
