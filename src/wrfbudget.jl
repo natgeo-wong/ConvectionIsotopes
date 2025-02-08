@@ -243,15 +243,15 @@ function wrfqdiv(
     vs1 = zeros(Float32,nlon,nlat); vs2 = zeros(Float32,nlon,nlat)
     ps1 = zeros(Float32,nlon,nlat); ps2 = zeros(Float32,nlon,nlat)
 
-    u = zeros(nlon,nlat,nlvl+2)
-    v = zeros(nlon,nlat,nlvl+2)
-    q = zeros(nlon,nlat,nlvl+2)
-    p = zeros(nlon,nlat,nlvl+2)
+    u = zeros(Float32,nlon,nlat,nlvl+2)
+    v = zeros(Float32,nlon,nlat,nlvl+2)
+    q = zeros(Float32,nlon,nlat,nlvl+2)
+    p = zeros(Float32,nlon,nlat,nlvl+2)
 
-    ∇ = zeros(24,ndt,ngeo)
+    ∇ = zeros(Float32,24,ndt,ngeo)
 
     pds = NCDataset(datadir("wrf3","raw","$(dtvec[1]).nc"))
-    pb = pds["PB"][:,:,:,1]
+    pb = Float32.(pds["PB"][:,:,:,1])
     close(pds)
 
     for idt in 1 : ndt
@@ -385,7 +385,7 @@ function wrfqdiv(
                             ) / (nlon-1) * arc4 / 2
                         end
 
-                        ∇[it,idt,igeo] *= (4 / ((arc2+arc4)*(arc1+arc3)) / 9.81)
+                        ∇[it,idt,igeo] *= (4 / ((arc1+arc2)*(arc3+arc4)) / 9.81)
 
                     end
                 
@@ -419,7 +419,7 @@ function wrfqdiv(
             "calendar"  => "gregorian"
         ))
 
-        ncqdiv = defVar(ds,"$(iso)∇",Float64,("date",),attrib=Dict(
+        ncqdiv = defVar(ds,"$(iso)∇",Float32,("date",),attrib=Dict(
             "units" => "kg m**-2 s**-1",
             "long_name" => "Divergence component of ∇"
         ))
@@ -475,16 +475,16 @@ function wrfqdivdecompose(
     vs1 = zeros(Float32,nlon,nlat); vs2 = zeros(Float32,nlon,nlat)
     ps1 = zeros(Float32,nlon,nlat); ps2 = zeros(Float32,nlon,nlat)
 
-    μq = zeros(nlvl+2); Δxq = zeros(nlvl+2); Δyq = zeros(nlvl+2)
-    μu = zeros(nlvl+2); Δxu = zeros(nlvl+2)
-    μv = zeros(nlvl+2); Δyv = zeros(nlvl+2)
-    μp = zeros(nlvl+2);
+    μq = zeros(Float32,nlvl+2); Δxq = zeros(Float32,nlvl+2); Δyq = zeros(Float32,nlvl+2)
+    μu = zeros(Float32,nlvl+2); Δxu = zeros(Float32,nlvl+2)
+    μv = zeros(Float32,nlvl+2); Δyv = zeros(Float32,nlvl+2)
+    μp = zeros(Float32,nlvl+2);
     
     qadv = zeros(Float32,24,ndt,ngeo) * NaN
     qdiv = zeros(Float32,24,ndt,ngeo) * NaN
 
     pds = NCDataset(datadir("wrf3","raw","$(dtvec[1]).nc"))
-    pb = pds["PB"][:,:,:,1]
+    pb = Float32.(pds["PB"][:,:,:,1])
     close(pds)
 
     for idt in 1 : ndt
@@ -606,10 +606,10 @@ function wrfqdivdecompose(
 
                         qadv[it,idt,igeo] = (trapz(reverse(μp),reverse(Δxq.*μu)) .+ 
                                              trapz(reverse(μp),reverse(Δyq.*μv))) * 4 /
-                                            ((arc2+arc4)*(arc1+arc3)) / 9.81
+                                            ((arc1+arc2)*(arc3+arc4)) / 9.81
                         qdiv[it,idt,igeo] = (trapz(reverse(μp),reverse(Δxu.*μq)) .+ 
                                              trapz(reverse(μp),reverse(Δyv.*μq))) * 4 /
-                                            ((arc2+arc4)*(arc1+arc3)) / 9.81
+                                            ((arc1+arc2)*(arc3+arc4)) / 9.81
 
                     end
                 
