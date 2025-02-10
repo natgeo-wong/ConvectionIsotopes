@@ -123,9 +123,10 @@ function wrfdhqdp(
 	days  :: Int = 0
 )
     
-    ds   = NCDataset(datadir("wrf3","grid.nc"))
-    lon  = ds["longitude"][:,:]
-    lat  = ds["latitude"][:,:]
+    ds  = NCDataset(datadir("wrf3","grid.nc"))
+    lon = ds["longitude"][:,:]
+    lat = ds["latitude"][:,:]
+    pbs = ds["pressure_base"][:,:]
     close(ds)
 
     ggrd = RegionGrid(geo,Point2.(lon,lat))
@@ -150,20 +151,15 @@ function wrfdhqdp(
     timestr = "$(dtbegstr)_$(dtbegend)"
     smthstr = "smooth_$(@sprintf("%02d",days))days"
 
-    tmpq = zeros(Float32,nlon,nlat,nlvl,100)
-    tmph = zeros(Float32,nlon,nlat,nlvl,100)
-    tmpp = zeros(Float32,nlon,nlat,nlvl,100)
-
-    nloop = floor(ndt)/100 + 1
+    tmpq = zeros(Float32,nlon,nlat,nlvl)
+    tmph = zeros(Float32,nlon,nlat,nlvl)
+    tmpp = zeros(Float32,nlon,nlat,nlvl)
     
     pvec  = zeros(Float32,nlvl,ndt)
     hq    = zeros(Float32,nlvl,ndt)
     dhqdp = zeros(Float32,nlvl,ndt)
 
-    dsp = NCDataset(datadir("wrf3","3D","PB-daily.nc"))
-    pbs = dsp["PB"][lon1:lon2,lat1:lat2,:,1]
-    close(dsp)
-    pbs = dropdims(sum(pbs .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
+    pbs = dropdims(sum(pbs[lon1:lon2,lat1:lat2] .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
 
     if iszero(days)
         dsh = NCDataset(datadir("wrf3","3D","$(iso)QVAPOR-daily-$timestr.nc"))
@@ -175,53 +171,36 @@ function wrfdhqdp(
         dsp = NCDataset(datadir("wrf3","3D","P-daily-$timestr-$smthstr.nc"))
     end
 
-    idt = 0
+    NCDatasets.load!(dsh["$(iso)QVAPOR"].var,tmph,lon1:lon2,lat1:lat2,:,:)
+    NCDatasets.load!(dsq["QVAPOR"].var,tmpq,lon1:lon2,lat1:lat2,:,:)
+    NCDatasets.load!(dsp["P"].var,tmpp,lon1:lon2,lat1:lat2,:,:)
 
-    for iloop = 1 : nloop
+	close(dsh)
+	close(dsq)
+	close(dsp)
 
-        ibeg = Int(1 + iloop * 100 - 1)
-        iend = Int(min(iloop * 100,ndt))
+    for idt in 1 : ndt
 
-        nii = iend - ibeg + 1
+        @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
+        flush(stderr)
+        
+        iiq = @view tmpq[:,:,:,idt]
+        iih = @view tmph[:,:,:,idt]
+        iip = @view tmpp[:,:,:,idt]
 
-        itmph = @view tmph[:,:,:,1:nii]
-        itmpq = @view tmpq[:,:,:,1:nii]
-        itmpp = @view tmpp[:,:,:,1:nii]
+		q            = dropdims(sum(iiq .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
+		h            = dropdims(sum(iih .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
+		pvec[:,idt] .= dropdims(sum(iip .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm .+ pbs
 
-        NCDatasets.load!(dsh["$(iso)QVAPOR"].var,itmph,lon1:lon2,lat1:lat2,:,ibeg:iend)
-        NCDatasets.load!(dsq["QVAPOR"].var,      itmpq,lon1:lon2,lat1:lat2,:,ibeg:iend)
-        NCDatasets.load!(dsp["P"].var,           itmpp,lon1:lon2,lat1:lat2,:,ibeg:iend)
+        hq[:,idt] .= h ./ q
 
-        for ii in 1 : nii
+		for ilvl = 2 : (nlvl-1)
+			dhqdp[ilvl,idt] = (hq[ilvl+1,idt]-hq[ilvl-1,idt]) ./ (pvec[ilvl+1,idt]-pvec[ilvl-1,idt])
+		end
+		dhqdp[1,idt] = (hq[2,idt]-hq[1,idt]) / (pvec[2,idt]-pvec[1,idt])
+		dhqdp[end,idt] = (hq[end,idt]-hq[end-1,idt]) / (pvec[end,idt]-pvec[end-1,idt])
 
-            idt += 1
-
-            @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
-            flush(stderr)
-            
-            iiq = @view tmpq[:,:,:,ii]
-            iih = @view tmph[:,:,:,ii]
-            iip = @view tmpp[:,:,:,ii]
-
-            q            = dropdims(sum(iiq .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
-            h            = dropdims(sum(iih .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
-            pvec[:,idt] .= dropdims(sum(iip .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm .+ pbs
-
-            hq[:,idt] .= h ./ q
-
-            for ilvl = 2 : (nlvl-1)
-                dhqdp[ilvl,idt] = (hq[ilvl+1,idt]-hq[ilvl-1,idt]) ./ 
-                                  (pvec[ilvl+1,idt]-pvec[ilvl-1,idt])
-            end
-            dhqdp[1,idt] = (hq[2,idt]-hq[1,idt]) / (pvec[2,idt]-pvec[1,idt])
-            dhqdp[end,idt] = (hq[end,idt]-hq[end-1,idt]) / (pvec[end,idt]-pvec[end-1,idt])
-
-        end
     end
-
-    close(dsh)
-    close(dsq)
-    close(dsp)
 
     mkpath(datadir("wrf3","processed"))
     if iszero(days)
