@@ -160,7 +160,7 @@ function wrfdhqdp(
     hq    = zeros(Float32,nlvl,ndt)
     dhqdp = zeros(Float32,nlvl,ndt)
 
-    dsp = NCDataset(datadir("wrf","3D","PB-daily.nc"))
+    dsp = NCDataset(datadir("wrf3","3D","PB-daily.nc"))
     pbs = dsp["PB"][lon1:lon2,lat1:lat2,:,1]
     close(dsp)
     pbs = dropdims(sum(pbs .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
