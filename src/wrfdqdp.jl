@@ -159,7 +159,7 @@ function wrfdhqdp(
     hq    = zeros(Float32,nlvl,ndt)
     dhqdp = zeros(Float32,nlvl,ndt)
 
-    pbs = dropdims(sum(pbs[lon1:lon2,lat1:lat2] .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
+    pbs = dropdims(sum(pbs[lon1:lon2,lat1:lat2,:] .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
 
     if iszero(days)
         dsh = NCDataset(datadir("wrf3","3D","$(iso)QVAPOR-daily-$timestr.nc"))
