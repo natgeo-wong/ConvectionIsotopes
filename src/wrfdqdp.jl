@@ -126,7 +126,7 @@ function wrfdhqdp(
     ds  = NCDataset(datadir("wrf3","grid.nc"))
     lon = ds["longitude"][:,:]
     lat = ds["latitude"][:,:]
-    pbs = ds["pressure_base"][:,:,;]
+    pbs = ds["pressure_base"][:,:,:]
     close(ds)
 
     ggrd = RegionGrid(geo,Point2.(lon,lat))
