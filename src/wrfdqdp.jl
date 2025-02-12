@@ -151,9 +151,9 @@ function wrfdhqdp(
     timestr = "$(dtbegstr)_$(dtbegend)"
     smthstr = "smooth_$(@sprintf("%02d",days))days"
 
-    tmpq = zeros(Float32,nlon,nlat,nlvl)
-    tmph = zeros(Float32,nlon,nlat,nlvl)
-    tmpp = zeros(Float32,nlon,nlat,nlvl)
+    tmpq = zeros(Float32,nlon,nlat,nlvl,ndt)
+    tmph = zeros(Float32,nlon,nlat,nlvl,ndt)
+    tmpp = zeros(Float32,nlon,nlat,nlvl,ndt)
     
     pvec  = zeros(Float32,nlvl,ndt)
     hq    = zeros(Float32,nlvl,ndt)
