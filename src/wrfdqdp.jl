@@ -171,9 +171,9 @@ function wrfdhqdp(
         dsp = NCDataset(datadir("wrf3","3D","P-daily-$timestr-$smthstr.nc"))
     end
 
-    tmpq = dsh["$(iso)QVAPOR"].var[lon1:lon2,lat1:lat2,:,:]
-    tmph = dsq["QVAPOR"].var[lon1:lon2,lat1:lat2,:,:]
-    tmpp = dsp["P"].var[lon1:lon2,lat1:lat2,:,:]
+    NCDatasets.load!(dsh["$(iso)QVAPOR"].var,tmph,lon1:lon2,lat1:lat2,:,:)
+    NCDatasets.load!(dsq["QVAPOR"].var,tmpq,lon1:lon2,lat1:lat2,:,:)
+    NCDatasets.load!(dsp["P"].var,tmpp,lon1:lon2,lat1:lat2,:,:)
 
 	close(dsh)
 	close(dsq)
