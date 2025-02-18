@@ -243,3 +243,119 @@ function wrfdhqdp(
     close(ds)
 
 end
+
+function wrfdhdq(
+    geo   :: GeoRegion;
+    iso   :: AbstractString,
+    start :: Date,
+    stop  :: Date,
+	days  :: Int = 0
+)
+    
+    ds  = NCDataset(datadir("wrf3","grid.nc"))
+    lon = ds["longitude"][:,:]
+    lat = ds["latitude"][:,:]
+    pbs = ds["pressure_base"][:,:,:]
+    close(ds)
+
+    ggrd = RegionGrid(geo,Point2.(lon,lat))
+    lon1 = minimum(ggrd.ilon); lon2 = maximum(ggrd.ilon)
+    lat1 = minimum(ggrd.ilat); lat2 = maximum(ggrd.ilat)
+
+    dtvec = start : Day(1) : stop
+
+    nlon = lon2 - lon1 + 1
+    nlat = lat2 - lat1 + 1
+    nlvl = 50
+    ndt  = length(dtvec)
+
+    wgts = ones(nlon,nlat)
+    wgts[1,:] *= 0.5; wgts[end,:] *= 0.5
+    wgts[:,1] *= 0.5; wgts[:,end] *= 0.5
+    wgtm = sum(wgts)
+
+    if iso != ""; iso = "$(iso)_" end
+    dtbegstr = Dates.format(start,dateformat"yyyymmdd")
+    dtbegend = Dates.format(stop,dateformat"yyyymmdd")
+    timestr = "$(dtbegstr)_$(dtbegend)"
+    smthstr = "smooth_$(@sprintf("%02d",days))days"
+
+    tmpq = zeros(Float32,nlon,nlat,nlvl,ndt)
+    tmph = zeros(Float32,nlon,nlat,nlvl,ndt)
+    tmpp = zeros(Float32,nlon,nlat,nlvl,ndt)
+    
+    pvec  = zeros(Float32,nlvl-1,ndt)
+    dhdq  = zeros(Float32,nlvl-1,ndt)
+
+    pbs = dropdims(sum(pbs[lon1:lon2,lat1:lat2,:] .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
+
+    if iszero(days)
+        dsh = NCDataset(datadir("wrf3","3D","$(iso)QVAPOR-daily-$timestr.nc"))
+        dsq = NCDataset(datadir("wrf3","3D","QVAPOR-daily-$timestr.nc"))
+        dsp = NCDataset(datadir("wrf3","3D","P-daily-$timestr.nc"))
+    else
+        dsh = NCDataset(datadir("wrf3","3D","$(iso)QVAPOR-daily-$timestr-$smthstr.nc"))
+        dsq = NCDataset(datadir("wrf3","3D","QVAPOR-daily-$timestr-$smthstr.nc"))
+        dsp = NCDataset(datadir("wrf3","3D","P-daily-$timestr-$smthstr.nc"))
+    end
+
+    NCDatasets.load!(dsh["$(iso)QVAPOR"].var,tmph,lon1:lon2,lat1:lat2,:,:)
+    NCDatasets.load!(dsq["QVAPOR"].var,tmpq,lon1:lon2,lat1:lat2,:,:)
+    NCDatasets.load!(dsp["P"].var,tmpp,lon1:lon2,lat1:lat2,:,:)
+
+	close(dsh)
+	close(dsq)
+	close(dsp)
+
+    for idt in 1 : ndt
+
+        @info "$(now()) - ConvectionIsotopes - Extracting data for $(dtvec[idt])"
+        flush(stderr)
+        
+        iiq = @view tmpq[:,:,:,idt]
+        iih = @view tmph[:,:,:,idt]
+        iip = @view tmpp[:,:,:,idt]
+
+		q = dropdims(sum(iiq .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
+		h = dropdims(sum(iih .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
+		p = dropdims(sum(iip .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm .+ pbs
+
+        dhdq[:,idt] .= (h[1:(end-1)] .- h[2:end]) ./ (q[1:(end-1)] .- q[2:end])
+        pvec[:,idt] .= (p[1:(end-1)] .+ p[2:end]) / 2
+
+    end
+
+    mkpath(datadir("wrf3","processed"))
+    if iszero(days)
+        fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)dhdq-daily-$timestr.nc")
+    else
+        fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)dhdq-daily-$timestr-$smthstr.nc")
+    end
+    if isfile(fnc); rm(fnc,force=true) end
+
+    ds = NCDataset(fnc,"c")
+    ds.dim["level"] = nlvl
+    ds.dim["date"]  = ndt
+
+    nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
+        "units"     => "days since $(start) 00:00:00.0",
+        "long_name" => "time",
+        "calendar"  => "gregorian"
+    ))
+
+    ncpres = defVar(ds,"P",Float32,("level","date",),attrib=Dict(
+        "units" => "Pa",
+        "long_name" => "Pressure"
+    ))
+
+    ncdhdq = defVar(ds,"$(iso)dhdq",Float32,("level","date",),attrib=Dict(
+        "long_name" => "Gradient of $(iso)VAPOR/Gradient of QVAPOR (relative to SMOW) against pressure"
+    ))
+
+    nctime.var[:] = collect(0 : (ndt-1))
+    ncpres[:,:]   = pvec
+    ncdhdq[:,:]   = dhdq
+
+    close(ds)
+
+end
