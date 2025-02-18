@@ -246,7 +246,6 @@ end
 
 function wrfdhdq(
     geo   :: GeoRegion;
-    iso   :: AbstractString,
     start :: Date,
     stop  :: Date,
 	days  :: Int = 0
@@ -290,20 +289,24 @@ function wrfdhdq(
     pbs = dropdims(sum(pbs[lon1:lon2,lat1:lat2,:] .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
 
     if iszero(days)
-        dsh = NCDataset(datadir("wrf3","3D","$(iso)QVAPOR-daily-$timestr.nc"))
+        dsh = NCDataset(datadir("wrf3","3D","HDO_QVAPOR-daily-$timestr.nc"))
+        dso = NCDataset(datadir("wrf3","3D","O18_QVAPOR-daily-$timestr.nc"))
         dsq = NCDataset(datadir("wrf3","3D","QVAPOR-daily-$timestr.nc"))
         dsp = NCDataset(datadir("wrf3","3D","P-daily-$timestr.nc"))
     else
-        dsh = NCDataset(datadir("wrf3","3D","$(iso)QVAPOR-daily-$timestr-$smthstr.nc"))
+        dsh = NCDataset(datadir("wrf3","3D","HDO_QVAPOR-daily-$timestr-$smthstr.nc"))
+        dso = NCDataset(datadir("wrf3","3D","O18_QVAPOR-daily-$timestr-$smthstr.nc"))
         dsq = NCDataset(datadir("wrf3","3D","QVAPOR-daily-$timestr-$smthstr.nc"))
         dsp = NCDataset(datadir("wrf3","3D","P-daily-$timestr-$smthstr.nc"))
     end
 
-    NCDatasets.load!(dsh["$(iso)QVAPOR"].var,tmph,lon1:lon2,lat1:lat2,:,:)
+    NCDatasets.load!(dsh["HDO_QVAPOR"].var,tmph,lon1:lon2,lat1:lat2,:,:)
+    NCDatasets.load!(dso["O18_QVAPOR"].var,tmph,lon1:lon2,lat1:lat2,:,:)
     NCDatasets.load!(dsq["QVAPOR"].var,tmpq,lon1:lon2,lat1:lat2,:,:)
     NCDatasets.load!(dsp["P"].var,tmpp,lon1:lon2,lat1:lat2,:,:)
 
 	close(dsh)
+	close(dso)
 	close(dsq)
 	close(dsp)
 
@@ -314,22 +317,25 @@ function wrfdhdq(
         
         iiq = @view tmpq[:,:,:,idt]
         iih = @view tmph[:,:,:,idt]
+        iio = @view tmph[:,:,:,idt]
         iip = @view tmpp[:,:,:,idt]
 
 		q = dropdims(sum(iiq .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
 		h = dropdims(sum(iih .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
+	    o = dropdims(sum(iio .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
 		p = dropdims(sum(iip .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm .+ pbs
 
         dhdq[:,idt] .= (h[1:(end-1)] .- h[2:end]) ./ (q[1:(end-1)] .- q[2:end])
+        dodq[:,idt] .= (o[1:(end-1)] .- o[2:end]) ./ (q[1:(end-1)] .- q[2:end])
         pvec[:,idt] .= (p[1:(end-1)] .+ p[2:end]) / 2
 
     end
 
     mkpath(datadir("wrf3","processed"))
     if iszero(days)
-        fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)dhdq-daily-$timestr.nc")
+        fnc = datadir("wrf3","processed","$(geo.ID)-dhodq-daily-$timestr.nc")
     else
-        fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)dhdq-daily-$timestr-$smthstr.nc")
+        fnc = datadir("wrf3","processed","$(geo.ID)-dhodq-daily-$timestr-$smthstr.nc")
     end
     if isfile(fnc); rm(fnc,force=true) end
 
@@ -348,13 +354,18 @@ function wrfdhdq(
         "long_name" => "Pressure"
     ))
 
-    ncdhdq = defVar(ds,"$(iso)dhdq",Float32,("level","date",),attrib=Dict(
-        "long_name" => "Gradient of $(iso)VAPOR/Gradient of QVAPOR (relative to SMOW) against pressure"
+    ncdhdq = defVar(ds,"dHDOdH2O",Float32,("level","date",),attrib=Dict(
+        "long_name" => "Gradient of HDO_QVAPOR/Gradient of QVAPOR (relative to SMOW) against pressure"
+    ))
+
+    ncdodq = defVar(ds,"dO18dH2O",Float32,("level","date",),attrib=Dict(
+        "long_name" => "Gradient of O18_QVAPOR/Gradient of QVAPOR (relative to SMOW) against pressure"
     ))
 
     nctime.var[:] = collect(0 : (ndt-1))
     ncpres[:,:]   = pvec
     ncdhdq[:,:]   = dhdq
+    ncdodq[:,:]   = dodq
 
     close(ds)
 
