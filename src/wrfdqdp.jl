@@ -284,6 +284,7 @@ function wrfdhdq(
     
     pvec  = zeros(Float32,nlvl-1,ndt)
     dhdq  = zeros(Float32,nlvl-1,ndt)
+    dodq  = zeros(Float32,nlvl-1,ndt)
 
     pbs = dropdims(sum(pbs[lon1:lon2,lat1:lat2,:] .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
 
@@ -316,7 +317,7 @@ function wrfdhdq(
         
         iiq = @view tmpq[:,:,:,idt]
         iih = @view tmph[:,:,:,idt]
-        iio = @view tmph[:,:,:,idt]
+        iio = @view tmpo[:,:,:,idt]
         iip = @view tmpp[:,:,:,idt]
 
 		q = dropdims(sum(iiq .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm
