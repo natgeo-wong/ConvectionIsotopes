@@ -280,6 +280,7 @@ function wrfdhdq(
 
     tmpq = zeros(Float32,nlon,nlat,nlvl,ndt)
     tmph = zeros(Float32,nlon,nlat,nlvl,ndt)
+    tmpo = zeros(Float32,nlon,nlat,nlvl,ndt)
     tmpp = zeros(Float32,nlon,nlat,nlvl,ndt)
     
     pvec  = zeros(Float32,nlvl-1,ndt)
@@ -301,7 +302,7 @@ function wrfdhdq(
     end
 
     NCDatasets.load!(dsh["HDO_QVAPOR"].var,tmph,lon1:lon2,lat1:lat2,:,:)
-    NCDatasets.load!(dso["O18_QVAPOR"].var,tmph,lon1:lon2,lat1:lat2,:,:)
+    NCDatasets.load!(dso["O18_QVAPOR"].var,tmpo,lon1:lon2,lat1:lat2,:,:)
     NCDatasets.load!(dsq["QVAPOR"].var,tmpq,lon1:lon2,lat1:lat2,:,:)
     NCDatasets.load!(dsp["P"].var,tmpp,lon1:lon2,lat1:lat2,:,:)
 
