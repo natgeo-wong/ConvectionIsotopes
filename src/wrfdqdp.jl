@@ -334,7 +334,7 @@ function wrfdhdq(
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")
-    ds.dim["level"] = nlvl
+    ds.dim["level"] = nlvl - 1
     ds.dim["date"]  = ndt
 
     nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
