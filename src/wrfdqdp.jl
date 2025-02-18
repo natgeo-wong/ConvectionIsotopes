@@ -273,7 +273,6 @@ function wrfdhdq(
     wgts[:,1] *= 0.5; wgts[:,end] *= 0.5
     wgtm = sum(wgts)
 
-    if iso != ""; iso = "$(iso)_" end
     dtbegstr = Dates.format(start,dateformat"yyyymmdd")
     dtbegend = Dates.format(stop,dateformat"yyyymmdd")
     timestr = "$(dtbegstr)_$(dtbegend)"
