@@ -35,7 +35,7 @@ function wrfnewregridgpm2D(
 	ipnt_lon = zeros(Int,nx,ny)
 	ipnt_lat = zeros(Int,nx,ny)
 	for ilat = 1 : ny, ilon = 1 : nx
-		ipnt_lon[ilon,ilat] = argmin(abs.(wlon[ilon,ilat].-lsd.lon.+360))
+		ipnt_lon[ilon,ilat] = argmin(abs.(wlon[ilon,ilat].-lsd.lon))
 		ipnt_lat[ilon,ilat] = argmin(abs.(wlat[ilon,ilat].-lsd.lat))
 	end
 
