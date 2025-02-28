@@ -344,11 +344,11 @@ function wrfwwgtpre_compiled(;
     sds = NCDataset(datadir("wrf3","2D","PSFC-daily-$timestr.nc"))
     rds = NCDataset(datadir("wrf3","2D","RAINNC-daily-$timestr.nc"))
 
-    warr = dropdims(mean(wds["W"][:,:,:,:],dims=4),dims=4)
-    parr = dropdims(mean(pds["P"][:,:,:,:],dims=4),dims=4)
-    tarr = dropdims(mean(tds["T"][:,:,:,:],dims=4),dims=4)
-    psfc = dropdims(mean(sds["PSFC"][:,:,:],dims=3),dims=3)
-    rain = dropdims(mean(rds["RAINNC"][:,:,:],dims=3),dims=3)
+    warr = dropdims(mean(wds["W"][:,:,:,1:(end-1)],dims=4),dims=4)
+    parr = dropdims(mean(pds["P"][:,:,:,1:(end-1)],dims=4),dims=4)
+    tarr = dropdims(mean(tds["T"][:,:,:,1:(end-1)],dims=4),dims=4)
+    psfc = dropdims(mean(sds["PSFC"][:,:,1:(end-1)],dims=3),dims=3)
+    rain = dropdims(mean(rds["RAINNC"][:,:,1:(end-1)],dims=3),dims=3)
 
     close(wds)
     close(pds)
@@ -423,7 +423,6 @@ function wrfwwgtpre_compiled(;
         "units"     => "Pa",
     ))
 
-    ncdate[:] = collect(0:(ndt-1)) + 0.5
     ncpwgt[:,:] = pwgt
     ncσwgt[:,:] = σwgt
     ncrain[:,:] = rain
@@ -484,6 +483,7 @@ function wrfwwgtpre_monthly(;
         iyr = year(dtvec[it]); imo = month(dtvec[it]); ndy = daysinmonth(iyr,imo)
         ibeg = findfirst(tt .>= Date(iyr,imo,1))
         iend = findlast(tt .<= Date(iyr,imo,ndy))
+        if iend == length(tt); iend -= 1 end
 
         warr = dropdims(mean(wds["W"][:,:,:,ibeg:iend],dims=4),dims=4)
         parr = dropdims(mean(pds["P"][:,:,:,ibeg:iend],dims=4),dims=4)
@@ -564,7 +564,7 @@ function wrfwwgtpre_monthly(;
         "units"     => "Pa",
     ))
 
-    ncdate[:] = collect(0:(ndt-1)) + 0.5
+    ncdate[:] = collect(0:(ndt-1)) .+ 0.5
     ncpwgt[:,:,:] = pwgt
     ncσwgt[:,:,:] = σwgt
     ncrain[:,:,:] = rain
