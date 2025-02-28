@@ -45,7 +45,7 @@ function create_wp(
     @info "$(now()) - ConvectionIsotopes - Extracting the ERA5Variable Information for Surface Pressure, Vertical Winds and Vertical Wind Weighted Column Pressure ..."
 
     disable_logging(Logging.Warn)
-    evar_wp = SingleVariable("p_wwgt");
+    evar_wp = SingleVariable("p_wwgt",path=srcdir());
     evar_sp = SingleVariable("sp");
     evar_tp = SingleVariable("tp");
     evar_wa = Vector{PressureVariable}(undef,np)
@@ -190,7 +190,7 @@ function create_wp(
     @info "$(now()) - ConvectionIsotopes - Extracting the ERA5Variable Information for Surface Pressure, Vertical Winds and Vertical Wind Weighted Column Pressure ..."
 
     disable_logging(Logging.Warn)
-    evar_wp = SingleVariable("p_wwgt");
+    evar_wp = SingleVariable("p_wwgt",path=srcdir());
     evar_sp = SingleVariable("sp");
     evar_tp = SingleVariable("tp");
     evar_wa = Vector{PressureVariable}(undef,np)
