@@ -188,7 +188,7 @@ function wrfwwgtpre(;
     ds   = NCDataset(datadir("wrf3","grid.nc"))
     lon  = ds["longitude"][:,:]
     lat  = ds["latitude"][:,:]
-    pbse = pds["pressure_base"][:,:,:]
+    pbse = ds["pressure_base"][:,:,:]
     close(ds)
 
     dtvec = start : Day(1) : stop
