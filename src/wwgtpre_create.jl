@@ -21,7 +21,6 @@ function create_wp(
     lsd  = getLandSea(e5ds,ereg);
     nlon = length(lsd.lon)
     nlat = length(lsd.lat)
-    mask = lsd.mask
 
     plvl = sort(era5Pressures())
     plvl = plvl[plvl.>=10]; np = length(plvl)
@@ -106,7 +105,7 @@ function create_wp(
 
             for ilat = 1 : nlat, ilon = 1 : nlon
 
-                if isone(mask[ilon,ilat]) && (tp[ilon,ilat] > 0.005/24)
+                if !isnan(lsd.z[ilon,ilat]) && (tp[ilon,ilat] > 0.005/24)
                     spii = sp[ilon,ilat] / 100
                     plvl[end] = spii
                     for ip = 1 : np
@@ -166,7 +165,6 @@ function create_wp(
     lsd  = getLandSea(e5ds,ereg);
     nlon = length(lsd.lon)
     nlat = length(lsd.lat)
-    mask = lsd.mask
 
     plvl = sort(era5Pressures())
     plvl = plvl[plvl.>=10]; np = length(plvl)
@@ -249,7 +247,7 @@ function create_wp(
 
             for ilat = 1 : nlat, ilon = 1 : nlon
 
-                if isone(mask[ilon,ilat]) && (tp[ilon,ilat] > 0.005)
+                if !isnan(lsd.z[ilon,ilat]) && (tp[ilon,ilat] > 0.005)
                     spii = sp[ilon,ilat] / 100
                     plvl[end] = spii
                     for ip = 1 : np
@@ -306,7 +304,6 @@ function compiled_wp(
     lsd  = getLandSea(e5ds,ereg);
     nlon = length(lsd.lon)
     nlat = length(lsd.lat)
-    mask = lsd.mask
 
     plvl = sort(era5Pressures())
     plvl = plvl[plvl.>=10]; np = length(plvl)
@@ -402,7 +399,7 @@ function compiled_wp(
 
     for ilat = 1 : nlat, ilon = 1 : nlon
 
-        if isone(mask[ilon,ilat]) && (tp[ilon,ilat] > 0.005)
+        if !isnan(lsd.z[ilon,ilat]) && (tp[ilon,ilat] > 0.005)
             spii = sp[ilon,ilat] / 100
             plvl[end] = spii
             for ip = 1 : np
@@ -503,7 +500,6 @@ function climatology_wp(
     lsd  = getLandSea(e5ds,ereg);
     nlon = length(lsd.lon)
     nlat = length(lsd.lat)
-    mask = lsd.mask
 
     plvl = sort(era5Pressures())
     plvl = plvl[plvl.>=10]; np = length(plvl)
@@ -597,7 +593,7 @@ function climatology_wp(
 
     for ilat = 1 : nlat, ilon = 1 : nlon
 
-        if isone(mask[ilon,ilat]) && (tp[ilon,ilat] > 0.005)
+        if !isnan(lsd.z[ilon,ilat]) && (tp[ilon,ilat] > 0.005)
             spii = sp[ilon,ilat] / 100
             plvl[end] = spii
             for ip = 1 : np
