@@ -27,7 +27,7 @@ function wrfnewregridgpm2D(
     ndt  = length(dtvec)
 
 	npd  = IMERGDummy(path=datadir())
-    geo  = GeoRegion("OTREC",path=srcdir())
+    geo  = GeoRegion("OTREC_wrf_d02",path=srcdir())
 	lsd  = getLandSea(npd,geo)
 	nlon = length(lsd.lon)
 	nlat = length(lsd.lat)

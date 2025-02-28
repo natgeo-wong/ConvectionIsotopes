@@ -27,7 +27,7 @@ function wrfnewregridera2D(
     ndt  = length(dtvec)
 
 	e5ds = ERA5Dummy(path=datadir())
-    egeo = ERA5Region("OTREC",path=srcdir())
+    egeo = ERA5Region("OTREC_wrf_d02",path=srcdir())
 	elsd = getLandSea(e5ds,egeo)
 	nlon = length(elsd.lon)
 	nlat = length(elsd.lat)
