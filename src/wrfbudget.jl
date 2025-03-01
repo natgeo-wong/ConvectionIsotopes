@@ -289,7 +289,6 @@ function wrfqdiv(
                         NCDatasets.load!(ds1["P"].var,p2,:,:,:,it+1)
                         NCDatasets.load!(ds1["U"].var,utmp2,:,:,:,it+1)
                         NCDatasets.load!(ds1["V"].var,vtmp2,:,:,:,it+1)
-
                         NCDatasets.load!(ds1["PSFC"].var,ps2,:,:,it+1)
                         NCDatasets.load!(ds1["U10"].var,us2,:,:,it+1)
                         NCDatasets.load!(ds1["V10"].var,vs2,:,:,it+1)
@@ -298,7 +297,6 @@ function wrfqdiv(
                         NCDatasets.load!(ds2["P"].var,p2,:,:,:,1)
                         NCDatasets.load!(ds2["U"].var,utmp2,:,:,:,1)
                         NCDatasets.load!(ds2["V"].var,vtmp2,:,:,:,1)
-                        
                         NCDatasets.load!(ds2["PSFC"].var,ps2,:,:,1)
                         NCDatasets.load!(ds2["U10"].var,us2,:,:,1)
                         NCDatasets.load!(ds2["V10"].var,vs2,:,:,1)
@@ -311,7 +309,7 @@ function wrfqdiv(
 
                     @views @. u[:,:,2:(nlvl+1)] = (u1 + u2) / 2
                     @views @. v[:,:,2:(nlvl+1)] = (v1 + u2) / 2
-                    @views @. q[:,:,2:(nlvl+1)] = (q1 + u2) / 2
+                    @views @. q[:,:,2:(nlvl+1)] = (q1 + q2) / 2
                     @views @. p[:,:,2:(nlvl+1)] = (p1 + p2) / 2 + pb
 
                     @views @. u[:,:,1] = (us1 + us2) / 2
