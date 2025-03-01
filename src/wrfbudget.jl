@@ -581,6 +581,9 @@ function wrfqdivdecompose(
                             
                         end
 
+                        qadv[it,idt,igeo] = 0
+                        qdiv[it,idt,igeo] = 0
+
                         for ilat = (lat1+1) : (lat2-1)
                             qadv[it,idt,igeo] -= trapz(
                                 reverse(p[lon1,ilat,:]), reverse(q[lon1,ilat,:] .* μu)
