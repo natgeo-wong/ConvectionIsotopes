@@ -15,8 +15,8 @@ function erarain(
     evar = SingleVariable("tp")
     
     ogeo = GeoRegion("OTREC_wrf_d02",path=srcdir())
-    olsd = getLandSea(e5ds,egeo)
-    ggrd = RegionGrid(geo,olsd.lon,olsd.lat)
+    olsd = getLandSea(e5ds,ERA5Region(ogeo))
+    ggrd = RegionGrid(egeo,olsd.lon,olsd.lat)
 
     dtvec = e5ds.start : Month(1) : e5ds.stop; ndt = length(dtvec)
 
