@@ -24,7 +24,7 @@ function erarain(
     pvec = zeros(ndt*24)
     ii = 0
 	for idt = e5ds.start : Day(1) : e5ds.stop
-		ds = read(e5ds,evar,ogeo,idt)
+		ds = read(e5ds,evar,egeo,idt)
 		tprcp = nomissing(ds[evar.ID][:,:,:])
 		close(ds)
         nt = size(tprcp,3)
