@@ -1,45 +1,45 @@
 using Dates
-using NASAPrecipitation
+using ERA5Reanalysis
 using Printf
 using Statistics
 
-function gpmrain(
-    npd  :: NASAPrecipitation.IMERGHalfHourly,
+function erarain(
+    e5ds :: ERA5Reanalysis.ERA5Hourly,
     geo  :: GeoRegion;
 )
 
     dtbegstr = Dates.format(npd.start,dateformat"yyyymmdd")
     dtbegend = Dates.format(npd.stop,dateformat"yyyymmdd")
     timestr = "$(dtbegstr)_$(dtbegend)"
+
+    evar = SingleVariable("tp")
     
-    ogeo = GeoRegion("OTREC",path=srcdir())
-    olsd = getLandSea(npd,ogeo)
+    ogeo = GeoRegion("OTREC_wrf_d02",path=srcdir())
+    olsd = getLandSea(e5ds,ERA5Region(ogeo))
     ggrd = RegionGrid(geo,olsd.lon,olsd.lat)
 
-    dtvec = npd.start : Day(1) : npd.stop; ndt = length(dtvec)
+    dtvec = e5ds.start : Month(1) : e5ds.stop; ndt = length(dtvec)
 
-    tmp1 = zeros(Float32,length(olsd.lon),length(olsd.lat),48)
-    tmp2 = zeros(Float32,length(ggrd.lon),length(ggrd.lat),48)
-    pvec = zeros(ndt*48)
+    tmp  = zeros(Float32,length(ggrd.lon),length(ggrd.lat),24)
+    pvec = zeros(ndt*24)
     ii = 0
 	for idt = npd.start : Day(1) : npd.stop
-		ds = read(npd,ogeo,idt)
-		NCDatasets.load!(ds["precipitation"].var,tmp1,:,:,:)
+		ds = read(e5ds,evar,ogeo,idt)
+		tprcp = nomissing(ds[evar.ID][:,:,:])
 		close(ds)
+        nt = size(tprcp,3)
 
-        extract!(tmp2,tmp1,ggrd)
+        extract!(tmp,tprcp,ggrd)
 
-        for ihr = 1 : 48
+        for ihr = 1 : nt
             ii += 1
             iprcp = @views tmp2[:,:,ihr]
             pvec[ii] = mean(iprcp[.!isnan.(iprcp)])
         end
 	end
 
-    pvec = dropdims(mean(reshape(pvec,2,:),dims=1),dims=1)
-
     mkpath(datadir("wrf3","processed"))
-    fnc = datadir("wrf3","processed","$(geo.ID)-gpmrain-$timestr.nc")
+    fnc = datadir("wrf3","processed","$(geo.ID)-erarain-$timestr.nc")
 
     if isfile(fnc); rm(fnc,force=true) end
 
@@ -57,7 +57,7 @@ function gpmrain(
     ))
 
     nctime.var[:] = collect(0 : (ndt*24 -1)) .+ 0.5
-    ncrain[:] = pvec
+    ncrain[:] = pvec * 1000
 
     close(ds)
 
