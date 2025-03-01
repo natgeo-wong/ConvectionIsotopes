@@ -5,17 +5,17 @@ using Statistics
 
 function erarain(
     e5ds :: ERA5Reanalysis.ERA5Hourly,
-    geo  :: GeoRegion;
+    egeo :: ERA5Region;
 )
 
-    dtbegstr = Dates.format(npd.start,dateformat"yyyymmdd")
-    dtbegend = Dates.format(npd.stop,dateformat"yyyymmdd")
+    dtbegstr = Dates.format(e5ds.start,dateformat"yyyymmdd")
+    dtbegend = Dates.format(e5ds.stop,dateformat"yyyymmdd")
     timestr = "$(dtbegstr)_$(dtbegend)"
 
     evar = SingleVariable("tp")
     
     ogeo = GeoRegion("OTREC_wrf_d02",path=srcdir())
-    olsd = getLandSea(e5ds,ERA5Region(ogeo))
+    olsd = getLandSea(e5ds,egeo)
     ggrd = RegionGrid(geo,olsd.lon,olsd.lat)
 
     dtvec = e5ds.start : Month(1) : e5ds.stop; ndt = length(dtvec)
@@ -23,7 +23,7 @@ function erarain(
     tmp  = zeros(Float32,length(ggrd.lon),length(ggrd.lat),24)
     pvec = zeros(ndt*24)
     ii = 0
-	for idt = npd.start : Day(1) : npd.stop
+	for idt = e5ds.start : Day(1) : e5ds.stop
 		ds = read(e5ds,evar,ogeo,idt)
 		tprcp = nomissing(ds[evar.ID][:,:,:])
 		close(ds)
@@ -47,7 +47,7 @@ function erarain(
     ds.dim["date"]   = ndt * 24
 
     nctime = defVar(ds,"time",Float64,("date",),attrib=Dict(
-        "units"     => "hours since $(npd.start) 00:00:00.0",
+        "units"     => "hours since $(e5ds.start) 00:00:00.0",
         "long_name" => "time",
         "calendar"  => "gregorian"
     ))
