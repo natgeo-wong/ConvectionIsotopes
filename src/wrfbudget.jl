@@ -446,6 +446,7 @@ function wrfqdivdecompose(
     ds   = NCDataset(datadir("wrf3","grid.nc"))
     lon  = ds["longitude"][:,:]; nlon,nlat = size(lon)
     lat  = ds["latitude"][:,:]
+    pb   = ds["pressure_base"][:,:,:]
     close(ds)
     nlvl = 50
 
@@ -475,17 +476,18 @@ function wrfqdivdecompose(
     vs1 = zeros(Float32,nlon,nlat); vs2 = zeros(Float32,nlon,nlat)
     ps1 = zeros(Float32,nlon,nlat); ps2 = zeros(Float32,nlon,nlat)
 
-    μq = zeros(Float32,nlvl+2); Δxq = zeros(Float32,nlvl+2); Δyq = zeros(Float32,nlvl+2)
-    μu = zeros(Float32,nlvl+2); Δxu = zeros(Float32,nlvl+2)
-    μv = zeros(Float32,nlvl+2); Δyv = zeros(Float32,nlvl+2)
-    μp = zeros(Float32,nlvl+2);
+    u = zeros(Float32,nlon,nlat,nlvl+2)
+    v = zeros(Float32,nlon,nlat,nlvl+2)
+    q = zeros(Float32,nlon,nlat,nlvl+2)
+    p = zeros(Float32,nlon,nlat,nlvl+2)
+
+    μq = zeros(Float32,nlvl+2)
+    μu = zeros(Float32,nlvl+2)
+    μv = zeros(Float32,nlvl+2)
+    μp = zeros(Float32,nlvl+2)
     
     qadv = zeros(Float32,24,ndt,ngeo) * NaN
     qdiv = zeros(Float32,24,ndt,ngeo) * NaN
-
-    pds = NCDataset(datadir("wrf3","raw","$(dtvec[1]).nc"))
-    pb = Float32.(pds["PB"][:,:,:,1])
-    close(pds)
 
     for idt in 1 : ndt
 
@@ -542,6 +544,16 @@ function wrfqdivdecompose(
                     @views @. v1 = (vtmp1[:,1:(end-1),:] + vtmp1[:,2:end,:]) / 2
                     @views @. v2 = (vtmp2[:,1:(end-1),:] + vtmp2[:,2:end,:]) / 2
 
+                    @views @. u[:,:,2:(nlvl+1)] = (u1 + u2) / 2
+                    @views @. v[:,:,2:(nlvl+1)] = (v1 + u2) / 2
+                    @views @. q[:,:,2:(nlvl+1)] = (q1 + u2) / 2
+                    @views @. p[:,:,2:(nlvl+1)] = (p1 + p2) / 2 + pb
+
+                    @views @. u[:,:,1] = (us1 + us2) / 2
+                    @views @. v[:,:,1] = (vs1 + us2) / 2
+                    @views @. p[:,:,1] = (ps1 + ps2) / 2
+                    @views @. q[:,:,1] = q[:,:,2]
+
                     for igeo in 1 : ngeo
 
                         lon1 = lon1vec[igeo]; lon2 = lon2vec[igeo]; lonr = lon1 : lon2
@@ -554,62 +566,83 @@ function wrfqdivdecompose(
                         wgts[1,:] *= 0.5; wgts[end,:] *= 0.5
                         wgts[:,1] *= 0.5; wgts[:,end] *= 0.5
                         wgtv  = weights(wgts)
-                        lon1w = weights(wgts[1,:]); lon2w = weights(wgts[end,:])
-                        lat1w = weights(wgts[:,1]); lat2w = weights(wgts[:,end])
 
                         arc1 = haversine((lon[lon1,lat1],lat[lon1,lat1]),(lon[lon1,lat2],lat[lon1,lat2]))
                         arc2 = haversine((lon[lon2,lat1],lat[lon2,lat1]),(lon[lon2,lat2],lat[lon2,lat2]))
                         arc3 = haversine((lon[lon1,lat1],lat[lon1,lat1]),(lon[lon2,lat1],lat[lon2,lat1]))
                         arc4 = haversine((lon[lon1,lat2],lat[lon1,lat2]),(lon[lon2,lat2],lat[lon2,lat2]))
 
-                        for ilvl = 1 : nlvl
+                        for ilvl = 1 : (nlvl+1)
 
-                            μq[ilvl+1] = (mean(view(q1,lonr,latr,ilvl),wgtv) +
-                                          mean(view(q2,lonr,latr,ilvl),wgtv)) / 2
-                            μu[ilvl+1] = (mean(view(u1,lonr,latr,ilvl),wgtv) +
-                                          mean(view(u2,lonr,latr,ilvl),wgtv)) / 2
-                            μv[ilvl+1] = (mean(view(v1,lonr,latr,ilvl),wgtv) +
-                                          mean(view(v2,lonr,latr,ilvl),wgtv)) / 2
-                            μp[ilvl+1] = (mean(view(p1,lonr,latr,ilvl),wgtv) +
-                                          mean(view(p2,lonr,latr,ilvl),wgtv)) / 2 .+ 
-                                          mean(view(pb,lonr,latr,ilvl),wgtv)
-                            
-                            Δxq[ilvl+1] = ((mean(view(q1,lon2,latr,ilvl),lon2w) + 
-                                            mean(view(q2,lon2,latr,ilvl),lon2w)) * arc2 -
-                                           (mean(view(q1,lon1,latr,ilvl),lon1w) + 
-                                            mean(view(q2,lon1,latr,ilvl),lon1w)) * arc1) / 2
-                            Δyq[ilvl+1] = ((mean(view(q1,lonr,lat2,ilvl),lat2w) + 
-                                            mean(view(q2,lonr,lat2,ilvl),lat2w)) * arc4 -
-                                           (mean(view(q1,lonr,lat1,ilvl),lat1w) + 
-                                            mean(view(q2,lonr,lat1,ilvl),lat1w)) * arc3) / 2
-                            Δxu[ilvl+1] = ((mean(view(u1,lon2,latr,ilvl),lon2w) + 
-                                            mean(view(u2,lon2,latr,ilvl),lon2w)) * arc2 -
-                                           (mean(view(u1,lon1,latr,ilvl),lon1w) + 
-                                            mean(view(u2,lon1,latr,ilvl),lon1w)) * arc1) / 2
-                            Δyv[ilvl+1] = ((mean(view(v1,lonr,lat2,ilvl),lat2w) + 
-                                            mean(view(v2,lonr,lat2,ilvl),lat2w)) * arc4 -
-                                           (mean(view(v1,lonr,lat1,ilvl),lat1w) + 
-                                            mean(view(v2,lonr,lat1,ilvl),lat1w)) * arc3) / 2
+                            μq[ilvl] = mean(view(q,lonr,latr,ilvl),wgtv)
+                            μu[ilvl] = mean(view(u,lonr,latr,ilvl),wgtv)
+                            μv[ilvl] = mean(view(v,lonr,latr,ilvl),wgtv)
+                            μp[ilvl] = mean(view(p,lonr,latr,ilvl),wgtv)
                             
                         end
 
-                        μp[1] = (mean(view(ps1,lonr,latr),wgtv) + 
-                                 mean(view(ps2,lonr,latr),wgtv)) / 2
-                        μu[1] = (mean(view(us1,lonr,latr),wgtv) + 
-                                 mean(view(us2,lonr,latr),wgtv)) / 2
-                        μv[1] = (mean(view(vs1,lonr,latr),wgtv) + 
-                                 mean(view(vs2,lonr,latr),wgtv)) / 2
-                        μq[1] = μq[2]
+                        for ilat = (lat1+1) : (lat2-1)
+                            qadv[it,idt,igeo] -= trapz(
+                                reverse(p[lon1,ilat,:]), reverse(q[lon1,ilat,:] .* μu)
+                            ) / (nlat-1) * arc1
+                            qadv[it,idt,igeo] += trapz(
+                                reverse(p[lon2,ilat,:]), reverse(q[lon2,ilat,:] .* μu)
+                            ) / (nlat-1) * arc2
+                            qdiv[it,idt,igeo] -= trapz(
+                                reverse(p[lon1,ilat,:]), reverse(u[lon1,ilat,:] .* μq)
+                            ) / (nlat-1) * arc1
+                            qdiv[it,idt,igeo] += trapz(
+                                reverse(p[lon2,ilat,:]), reverse(u[lon2,ilat,:] .* μq)
+                            ) / (nlat-1) * arc2
+                        end
+    
+                        for ilon = (lon1+1) : (lon2-1)
+                            qadv[it,idt,igeo] -= trapz(
+                                reverse(p[ilon,lat1,:]), reverse(q[ilon,lat1,:] .* μv)
+                            ) / (nlon-1) * arc3
+                            qadv[it,idt,igeo] += trapz(
+                                reverse(p[ilon,lat2,:]), reverse(q[ilon,lat2,:] .* μv)
+                            ) / (nlon-1) * arc4
+                            qdiv[it,idt,igeo] -= trapz(
+                                reverse(p[ilon,lat1,:]), reverse(v[ilon,lat1,:] .* μq)
+                            ) / (nlon-1) * arc3
+                            qdiv[it,idt,igeo] += trapz(
+                                reverse(p[ilon,lat2,:]), reverse(v[ilon,lat2,:] .* μq)
+                            ) / (nlon-1) * arc4
+                        end
+    
+                        for ilat in [lat1, lat2]
+                            qadv[it,idt,igeo] -= trapz(
+                                reverse(p[lon1,ilat,:]), reverse(q[lon1,ilat,:] .* μu)
+                            ) / (nlat-1) * arc1 / 2
+                            qadv[it,idt,igeo] += trapz(
+                                reverse(p[lon2,ilat,:]), reverse(q[lon2,ilat,:] .* μu)
+                            ) / (nlat-1) * arc2 / 2
+                            qdiv[it,idt,igeo] -= trapz(
+                                reverse(p[lon1,ilat,:]), reverse(u[lon1,ilat,:] .* μq)
+                            ) / (nlat-1) * arc1 / 2
+                            qdiv[it,idt,igeo] += trapz(
+                                reverse(p[lon2,ilat,:]), reverse(u[lon2,ilat,:] .* μq)
+                            ) / (nlat-1) * arc2 / 2
+                        end
+    
+                        for ilon in [lon1, lon2]
+                            qadv[it,idt,igeo] -= trapz(
+                                reverse(p[ilon,lat1,:]), reverse(q[ilon,lat1,:] .* μv)
+                            ) / (nlon-1) * arc3 / 2
+                            qadv[it,idt,igeo] += trapz(
+                                reverse(p[ilon,lat2,:]), reverse(q[ilon,lat2,:] .* μv)
+                            ) / (nlon-1) * arc4 / 2
+                            qdiv[it,idt,igeo] -= trapz(
+                                reverse(p[ilon,lat1,:]), reverse(v[ilon,lat1,:] .* μq)
+                            ) / (nlon-1) * arc3 / 2
+                            qdiv[it,idt,igeo] += trapz(
+                                reverse(p[ilon,lat2,:]), reverse(v[ilon,lat2,:] .* μq)
+                            ) / (nlon-1) * arc4 / 2
+                        end
 
-                        Δxq[1] = Δxq[2]
-                        Δyq[1] = Δyq[2]
-
-                        qadv[it,idt,igeo] = (trapz(reverse(μp),reverse(Δxq.*μu)) .+ 
-                                             trapz(reverse(μp),reverse(Δyq.*μv))) * 4 /
-                                            ((arc1+arc2)*(arc3+arc4)) / 9.81
-                        qdiv[it,idt,igeo] = (trapz(reverse(μp),reverse(Δxu.*μq)) .+ 
-                                             trapz(reverse(μp),reverse(Δyv.*μq))) * 4 /
-                                            ((arc1+arc2)*(arc3+arc4)) / 9.81
+                        qadv[it,idt,igeo] *= (4 / ((arc1+arc2)*(arc3+arc4)) / 9.81)
+                        qdiv[it,idt,igeo] *= (4 / ((arc1+arc2)*(arc3+arc4)) / 9.81)
 
                     end
                 
