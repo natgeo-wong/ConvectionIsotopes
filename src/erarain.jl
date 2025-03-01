@@ -21,7 +21,7 @@ function erarain(
 
     dtvec = e5ds.start : Month(1) : e5ds.stop; ndt = length(dtvec)
 
-    tmp  = zeros(Float32,length(ggrd.lon),length(ggrd.lat),24)
+    tmp  = zeros(Float32,length(ggrd.lon),length(ggrd.lat),31*24)
     pvec = zeros(ndt*24)
     ii = 0
 	for idt = e5ds.start : Day(1) : e5ds.stop
@@ -29,12 +29,13 @@ function erarain(
 		tprcp = nomissing(ds[evar.ID][:,:,:])
 		close(ds)
         nt = size(tprcp,3)
+        itmp = @views tmp[:,:,1:nt]
 
-        extract!(tmp,tprcp,ggrd)
+        extract!(itmp,tprcp,ggrd)
 
         for ihr = 1 : nt
             ii += 1
-            iprcp = @views tmp2[:,:,ihr]
+            iprcp = @views itmp[:,:,ihr]
             pvec[ii] = mean(iprcp[.!isnan.(iprcp)])
         end
 	end
