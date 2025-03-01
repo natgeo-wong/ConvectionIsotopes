@@ -580,61 +580,61 @@ function wrfqdivdecompose(
                         for ilat = (lat1+1) : (lat2-1)
                             qadv[it,idt,igeo] -= trapz(
                                 reverse(p[lon1,ilat,:]), reverse(q[lon1,ilat,:] .* μu)
-                            ) / (nlat-1) * arc1
+                            ) / (nglat-1) * arc1
                             qadv[it,idt,igeo] += trapz(
                                 reverse(p[lon2,ilat,:]), reverse(q[lon2,ilat,:] .* μu)
-                            ) / (nlat-1) * arc2
+                            ) / (nglat-1) * arc2
                             qdiv[it,idt,igeo] -= trapz(
                                 reverse(p[lon1,ilat,:]), reverse(u[lon1,ilat,:] .* μq)
-                            ) / (nlat-1) * arc1
+                            ) / (nglat-1) * arc1
                             qdiv[it,idt,igeo] += trapz(
                                 reverse(p[lon2,ilat,:]), reverse(u[lon2,ilat,:] .* μq)
-                            ) / (nlat-1) * arc2
+                            ) / (nglat-1) * arc2
                         end
     
                         for ilon = (lon1+1) : (lon2-1)
                             qadv[it,idt,igeo] -= trapz(
                                 reverse(p[ilon,lat1,:]), reverse(q[ilon,lat1,:] .* μv)
-                            ) / (nlon-1) * arc3
+                            ) / (nglon-1) * arc3
                             qadv[it,idt,igeo] += trapz(
                                 reverse(p[ilon,lat2,:]), reverse(q[ilon,lat2,:] .* μv)
-                            ) / (nlon-1) * arc4
+                            ) / (nglon-1) * arc4
                             qdiv[it,idt,igeo] -= trapz(
                                 reverse(p[ilon,lat1,:]), reverse(v[ilon,lat1,:] .* μq)
-                            ) / (nlon-1) * arc3
+                            ) / (nglon-1) * arc3
                             qdiv[it,idt,igeo] += trapz(
                                 reverse(p[ilon,lat2,:]), reverse(v[ilon,lat2,:] .* μq)
-                            ) / (nlon-1) * arc4
+                            ) / (nglon-1) * arc4
                         end
     
                         for ilat in [lat1, lat2]
                             qadv[it,idt,igeo] -= trapz(
                                 reverse(p[lon1,ilat,:]), reverse(q[lon1,ilat,:] .* μu)
-                            ) / (nlat-1) * arc1 / 2
+                            ) / (nglat-1) * arc1 / 2
                             qadv[it,idt,igeo] += trapz(
                                 reverse(p[lon2,ilat,:]), reverse(q[lon2,ilat,:] .* μu)
-                            ) / (nlat-1) * arc2 / 2
+                            ) / (nglat-1) * arc2 / 2
                             qdiv[it,idt,igeo] -= trapz(
                                 reverse(p[lon1,ilat,:]), reverse(u[lon1,ilat,:] .* μq)
-                            ) / (nlat-1) * arc1 / 2
+                            ) / (nglat-1) * arc1 / 2
                             qdiv[it,idt,igeo] += trapz(
                                 reverse(p[lon2,ilat,:]), reverse(u[lon2,ilat,:] .* μq)
-                            ) / (nlat-1) * arc2 / 2
+                            ) / (nglat-1) * arc2 / 2
                         end
     
                         for ilon in [lon1, lon2]
                             qadv[it,idt,igeo] -= trapz(
                                 reverse(p[ilon,lat1,:]), reverse(q[ilon,lat1,:] .* μv)
-                            ) / (nlon-1) * arc3 / 2
+                            ) / (nglon-1) * arc3 / 2
                             qadv[it,idt,igeo] += trapz(
                                 reverse(p[ilon,lat2,:]), reverse(q[ilon,lat2,:] .* μv)
-                            ) / (nlon-1) * arc4 / 2
+                            ) / (nglon-1) * arc4 / 2
                             qdiv[it,idt,igeo] -= trapz(
                                 reverse(p[ilon,lat1,:]), reverse(v[ilon,lat1,:] .* μq)
-                            ) / (nlon-1) * arc3 / 2
+                            ) / (nglon-1) * arc3 / 2
                             qdiv[it,idt,igeo] += trapz(
                                 reverse(p[ilon,lat2,:]), reverse(v[ilon,lat2,:] .* μq)
-                            ) / (nlon-1) * arc4 / 2
+                            ) / (nglon-1) * arc4 / 2
                         end
 
                         qadv[it,idt,igeo] *= (4 / ((arc1+arc2)*(arc3+arc4)) / 9.81)
