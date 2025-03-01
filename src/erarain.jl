@@ -5,7 +5,7 @@ using Statistics
 
 function erarain(
     e5ds :: ERA5Reanalysis.ERA5Hourly,
-    egeo :: ERA5Region;
+    ngeo :: ERA5Region;
 )
 
     dtbegstr = Dates.format(e5ds.start,dateformat"yyyymmdd")
@@ -15,8 +15,9 @@ function erarain(
     evar = SingleVariable("tp")
     
     ogeo = GeoRegion("OTREC_wrf_d02",path=srcdir())
-    olsd = getLandSea(e5ds,ERA5Region(ogeo))
-    ggrd = RegionGrid(egeo,olsd.lon,olsd.lat)
+    egeo = ERA5Region(ogeo)
+    olsd = getLandSea(e5ds,egeo)
+    ggrd = RegionGrid(ngeo,olsd.lon,olsd.lat)
 
     dtvec = e5ds.start : Month(1) : e5ds.stop; ndt = length(dtvec)
 
@@ -39,7 +40,7 @@ function erarain(
 	end
 
     mkpath(datadir("wrf3","processed"))
-    fnc = datadir("wrf3","processed","$(geo.ID)-erarain-$timestr.nc")
+    fnc = datadir("wrf3","processed","$(ngeo.geo.ID)-erarain-$timestr.nc")
 
     if isfile(fnc); rm(fnc,force=true) end
 
