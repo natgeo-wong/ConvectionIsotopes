@@ -214,6 +214,7 @@ function wrfqdiv(
     ds   = NCDataset(datadir("wrf3","grid.nc"))
     lon  = ds["longitude"][:,:]; nlon,nlat = size(lon)
     lat  = ds["latitude"][:,:]
+    pb   = ds["pressure_base"][:,:,:]
     close(ds)
     nlvl = 50
 
@@ -249,10 +250,6 @@ function wrfqdiv(
     p = zeros(Float32,nlon,nlat,nlvl+2)
 
     ∇ = zeros(Float32,24,ndt,ngeo)
-
-    pds = NCDataset(datadir("wrf3","raw","$(dtvec[1]).nc"))
-    pb = Float32.(pds["PB"][:,:,:,1])
-    close(pds)
 
     for idt in 1 : ndt
 
@@ -308,19 +305,19 @@ function wrfqdiv(
                     @views @. v2 = (vtmp2[:,1:(end-1),:] + vtmp2[:,2:end,:]) / 2
 
                     @views @. u[:,:,2:(nlvl+1)] = (u1 + u2) / 2
-                    @views @. v[:,:,2:(nlvl+1)] = (v1 + u2) / 2
+                    @views @. v[:,:,2:(nlvl+1)] = (v1 + v2) / 2
                     @views @. q[:,:,2:(nlvl+1)] = (q1 + q2) / 2
                     @views @. p[:,:,2:(nlvl+1)] = (p1 + p2) / 2 + pb
 
                     @views @. u[:,:,1] = (us1 + us2) / 2
-                    @views @. v[:,:,1] = (vs1 + us2) / 2
+                    @views @. v[:,:,1] = (vs1 + vs2) / 2
                     @views @. p[:,:,1] = (ps1 + ps2) / 2
                     @views @. q[:,:,1] = q[:,:,2]
 
                     for igeo in 1 : ngeo
 
-                        lon1 = lon1vec[igeo]; lon2 = lon2vec[igeo]; nlon = lon2 - lon1 + 1
-                        lat1 = lat1vec[igeo]; lat2 = lat2vec[igeo]; nlat = lat2 - lat1 + 1
+                        lon1 = lon1vec[igeo]; lon2 = lon2vec[igeo]; nilon = lon2 - lon1 + 1
+                        lat1 = lat1vec[igeo]; lat2 = lat2vec[igeo]; nilat = lat2 - lat1 + 1
 
                         arc1 = haversine(
                             (lon[lon1,lat1],lat[lon1,lat1]),
@@ -343,44 +340,44 @@ function wrfqdiv(
                             ∇[it,idt,igeo] -= trapz(
                                 reverse(p[lon1,ilat,:]),
                                 reverse(q[lon1,ilat,:] .* u[lon1,ilat,:])
-                            ) / (nlat-1) * arc1
+                            ) / (nilat-1) * arc1
                             ∇[it,idt,igeo] += trapz(
                                 reverse(p[lon2,ilat,:]),
                                 reverse(q[lon2,ilat,:] .* u[lon2,ilat,:])
-                            ) / (nlat-1) * arc2
+                            ) / (nilat-1) * arc2
                         end
     
                         for ilon = (lon1+1) : (lon2-1)
                             ∇[it,idt,igeo] -= trapz(
                                 reverse(p[ilon,lat1,:]),
                                 reverse(q[ilon,lat1,:] .* v[ilon,lat1,:])
-                            ) / (nlon-1) * arc3
+                            ) / (nilon-1) * arc3
                             ∇[it,idt,igeo] += trapz(
                                 reverse(p[ilon,lat2,:]),
                                 reverse(q[ilon,lat2,:] .* v[ilon,lat2,:])
-                            ) / (nlon-1) * arc4
+                            ) / (nilon-1) * arc4
                         end
     
                         for ilat in [lat1, lat2]
                             ∇[it,idt,igeo] -= trapz(
                                 reverse(p[lon1,ilat,:]),
                                 reverse(q[lon1,ilat,:] .* u[lon1,ilat,:])
-                            ) / (nlat-1) * arc1 / 2
+                            ) / (nilat-1) * arc1 / 2
                             ∇[it,idt,igeo] += trapz(
                                 reverse(p[lon2,ilat,:]),
                                 reverse(q[lon2,ilat,:] .* u[lon2,ilat,:])
-                            ) / (nlat-1) * arc2 / 2
+                            ) / (nilat-1) * arc2 / 2
                         end
     
                         for ilon in [lon1, lon2]
                             ∇[it,idt,igeo] -= trapz(
                                 reverse(p[ilon,lat1,:]),
                                 reverse(q[ilon,lat1,:] .* v[ilon,lat1,:])
-                            ) / (nlon-1) * arc3 / 2
+                            ) / (nilon-1) * arc3 / 2
                             ∇[it,idt,igeo] += trapz(
                                 reverse(p[ilon,lat2,:]),
                                 reverse(q[ilon,lat2,:] .* v[ilon,lat2,:])
-                            ) / (nlon-1) * arc4 / 2
+                            ) / (nilon-1) * arc4 / 2
                         end
 
                         ∇[it,idt,igeo] *= (4 / ((arc1+arc2)*(arc3+arc4)) / 9.81)
@@ -541,12 +538,12 @@ function wrfqdivdecompose(
                     @views @. v2 = (vtmp2[:,1:(end-1),:] + vtmp2[:,2:end,:]) / 2
 
                     @views @. u[:,:,2:(nlvl+1)] = (u1 + u2) / 2
-                    @views @. v[:,:,2:(nlvl+1)] = (v1 + u2) / 2
+                    @views @. v[:,:,2:(nlvl+1)] = (v1 + v2) / 2
                     @views @. q[:,:,2:(nlvl+1)] = (q1 + q2) / 2
                     @views @. p[:,:,2:(nlvl+1)] = (p1 + p2) / 2 + pb
 
                     @views @. u[:,:,1] = (us1 + us2) / 2
-                    @views @. v[:,:,1] = (vs1 + us2) / 2
+                    @views @. v[:,:,1] = (vs1 + vs2) / 2
                     @views @. p[:,:,1] = (ps1 + ps2) / 2
                     @views @. q[:,:,1] = q[:,:,2]
 
