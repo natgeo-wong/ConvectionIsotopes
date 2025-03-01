@@ -20,12 +20,11 @@ function erarain(
     olsd = getLandSea(e5ds,egeo)
     ggrd = RegionGrid(ngeo,olsd.lon,olsd.lat)
 
-    dtvec = e5ds.start : Month(1) : e5ds.stop; ndt = length(dtvec)
-
     tmp  = zeros(Float32,length(ggrd.lon),length(ggrd.lat),31*24)
+    ndt  = length(e5ds.start : Day(1) : e5ds.stop)
     pvec = zeros(ndt*24)
     ii = 0
-	for idt = e5ds.start : Day(1) : e5ds.stop
+	for idt = e5ds.start : Month(1) : e5ds.stop
 		ds = read(e5ds,evar,egeo,idt)
 		tprcp = nomissing(ds[evar.ID][:,:,:])
 		close(ds)
