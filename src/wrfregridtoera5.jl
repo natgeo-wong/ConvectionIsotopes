@@ -148,7 +148,8 @@ function wrfregriddaily2D(
         vds = NCDataset(datadir("wrf3","2D","$wvar-daily-$timestr-$smthstr.nc"))
     end
 
-	odata = vds[wvar][:,:,:]
+	odata  = vds[wvar][:,:,:]
+	attrib = Dict(vds[wvar].attrib)
 	close(vds)
 
     dtvec = start : Day(1) : stop
