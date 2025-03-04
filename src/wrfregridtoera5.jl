@@ -194,7 +194,7 @@ function wrfregriddaily2D(
 
 	ds.dim["longitude"] = nlon
 	ds.dim["latitude"]  = nlat
-	ds.dim["date"]      = ndt * 24
+	ds.dim["date"]      = ndt
 
 	nclon = defVar(ds,"longitude",Float32,("longitude",),attrib=Dict(
 		"units"     => "degrees_east",
@@ -216,7 +216,7 @@ function wrfregriddaily2D(
 
 	nclon[:] = elsd.lon
 	nclat[:] = elsd.lat
-	nctime.var[:] = collect(0 : (ndt*24 -1)) .+ 0.5
+	nctime.var[:] = collect(0 : (ndt-1)) .+ 0.5
 	ncvar[:,:,:] = ndata
 
 	close(ds)
