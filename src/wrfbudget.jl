@@ -719,7 +719,6 @@ function wrfqdivdecomposecompile(
         DIV = vcat(DIV,ds["$(iso)DIV"])
         ADV = vcat(ADV,ds["$(iso)ADV"])
         close(ds)
-
     end
 
     fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)∇decompose-$(dtbegstr)_$(dtbegend).nc")
@@ -752,6 +751,17 @@ function wrfqdivdecomposecompile(
     ncqadv[:] = ADV
 
     close(ds)
+
+
+    for idt = start : Month(1) : stop
+        iyr = year(idt)
+        imo = month(idt)
+        ndy = daysinmonth(iyr,imo)
+        iidtbegstr = Dates.format(Date(iyr,imo,1),dateformat"yyyymmdd")
+        iidtbegend = Dates.format(Date(iyr,imo,ndy),dateformat"yyyymmdd")
+        fnc = datadir("wrf3","processed","$(geo.ID)-$(iso)∇decompose-$(iidtbegstr)_$(iidtbegend).nc")
+        isfile(fnc) ? rm(fnc,force=true) : nothing
+    end
 
 end
 
