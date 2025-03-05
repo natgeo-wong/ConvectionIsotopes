@@ -64,9 +64,9 @@ function wrfwwgtpre(
     end
 
     warr = wds["W"].var[lon1:lon2,lat1:lat2,:,:]
-    parr = wds["P"].var[lon1:lon2,lat1:lat2,:,:] .+ pbse
-    tarr = wds["T"].var[lon1:lon2,lat1:lat2,:,:] .+ 290
-    psfc = wds["PSFC"].var[lon1:lon2,lat1:lat2,:]
+    parr = pds["P"].var[lon1:lon2,lat1:lat2,:,:] .+ pbse
+    tarr = tds["T"].var[lon1:lon2,lat1:lat2,:,:] .+ 290
+    psfc = sds["PSFC"].var[lon1:lon2,lat1:lat2,:]
 
     @views @. tarr *= (100000 / parr) ^ (287/1004)
 
