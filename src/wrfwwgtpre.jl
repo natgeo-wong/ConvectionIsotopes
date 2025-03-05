@@ -235,7 +235,7 @@ function wrfwwgtpre(
 
         tmp_wmat = zeros(Float32,nilon,nilat,nlvl+2)
         tmp_pmat = zeros(Float32,nilon,nilat,nlvl+2)
-        tmp_ρmat = zeros(Float32,nilon,nilat,nlvl+2)
+        tmp_ρmat = zeros(Float32,nilon,nilat,nlvl)
 
         for it in 1 : ndt
 
@@ -245,7 +245,7 @@ function wrfwwgtpre(
             for ilvl = 1 : nlvl
                 @views @. tmp_wmat[:,:,ilvl+1] = (warr[lonv,latv,ilvl,it] + 
                                                   warr[lonv,latv,ilvl+1,it]) / 2
-                @views @. tmp_ρmat[:,:,ilvl+1] = parr[lonv,latv,ilvl,it] / Rd / 
+                @views @. tmp_ρmat[:,:,ilvl] = parr[lonv,latv,ilvl,it] / Rd / 
                                                  tarr[lonv,latv,ilvl,it]
             end
             @views @. tmp_wmat[:,:,2:(nlvl+1)] *= (tmp_ρmat[:,:,:,it] * -9.81)
