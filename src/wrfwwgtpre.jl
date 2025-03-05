@@ -63,6 +63,7 @@ function wrfwwgtpre(
         sds = NCDataset(datadir("wrf3","2D","PSFC-daily-$timestr-$smthstr.nc"))
     end
 
+    @info "$(now()) - Loading data in the GeoRegion ..."; flush(stderr)
     warr = wds["W"].var[lon1:lon2,lat1:lat2,:,:]
     parr = pds["P"].var[lon1:lon2,lat1:lat2,:,:] .+ pbse
     tarr = tds["T"].var[lon1:lon2,lat1:lat2,:,:] .+ 290
@@ -71,6 +72,8 @@ function wrfwwgtpre(
     @views @. tarr *= (100000 / parr) ^ (287/1004)
 
     for it in 1 : ndt
+
+        @info "$(now()) - Calculation for Day $it of $ndt ..."; flush(stderr)
 
         for ilat = 1 : nlat, ilon = 1 : nlon
             
@@ -87,7 +90,7 @@ function wrfwwgtpre(
 
         tmp_wvec = dropdims(mean(tmp_wmat,dims=(1,2)),dims=(1,2))
         tmp_pvec = dropdims(mean(tmp_pmat,dims=(1,2)),dims=(1,2))
-        tmp_psfc = mean(psfc[:,:,it])
+        tmp_psfc = mean(view(psfc,:,:,it))
 
         calc = trapz(tmp_pvec,tmp_wvec.*tmp_pvec) / trapz(tmp_pvec,tmp_wvec)
         if (calc > 0) & (calc < tmp_psfc)
@@ -213,6 +216,7 @@ function wrfwwgtpre(
         sds = NCDataset(datadir("wrf3","2D","PSFC-daily-$timestr-$smthstr.nc"))
     end
 
+    @info "$(now()) - Loading data in the GeoRegion ..."; flush(stderr)
     warr = wds["W"].var[:,:,:,:]
     parr = pds["P"].var[:,:,:,:]
     tarr = tds["T"].var[:,:,:,:]
@@ -223,6 +227,7 @@ function wrfwwgtpre(
     close(tds)
     close(sds)
 
+    @info "$(now()) - Doing some data adjustment ..."; flush(stderr)
     @views @. parr += pbse
     @views @. tarr += 290
     @views @. tarr *= (100000 / parr) ^ (287/1004)
@@ -237,6 +242,8 @@ function wrfwwgtpre(
         tmp_ρmat = zeros(Float32,nilon,nilat,nlvl+2)
 
         for it in 1 : ndt
+
+            @info "$(now()) - Calculation for Day $it of $ndt for $(geov[igeo].ID) ..."; flush(stderr)
 
             @views @. tmp_pmat[:,:,1] = psfc[lonv,latv,it]
             for ilvl = 1 : nlvl
