@@ -79,7 +79,7 @@ function wrfwwgtpre(
             for ilvl = 1 : nlvl
                 tmp_wmat[ilon,ilat,ilvl+1]  = (warr[ilon,ilat,ilvl,it] + warr[ilon,ilat,ilvl+1,it]) / 2
                 tmp_ρmat[ilon,ilat,ilvl+1]  =  parr[ilon,ilat,ilvl,it] / Rd / tarr[ilon,ilat,ilvl,it]
-                tmp_wmat[ilon,ilat,ilvl+1] *= (tmp_ρmat[ilon,ilat,ilvl+1,it] * -9.81)
+                tmp_wmat[ilon,ilat,ilvl+1] *= (tmp_ρmat[ilon,ilat,ilvl+1] * -9.81)
                 tmp_pmat[ilon,ilat,ilvl+1]  = parr[ilon,ilat,ilvl,it]
             end
 
