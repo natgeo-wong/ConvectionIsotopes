@@ -38,11 +38,6 @@ function wrfwwgtpre(
     nlvl = 50
     ndt  = length(dtvec)
 
-    warr = zeros(Float32,nlon,nlat,nlvl+1)
-    parr = zeros(Float32,nlon,nlat,nlvl)
-    tarr = zeros(Float32,nlon,nlat,nlvl)
-    psfc = zeros(Float32,nlon,nlat)
-
     tmp_wmat = zeros(Float32,nlon,nlat,52)
     tmp_pmat = zeros(Float32,nlon,nlat,52)
     tmp_ρmat = zeros(Float32,nlon,nlat,52)
@@ -68,31 +63,24 @@ function wrfwwgtpre(
         sds = NCDataset(datadir("wrf3","2D","PSFC-daily-$timestr-$smthstr.nc"))
     end
 
+    warr = wds["W"].var[lon1:lon2,lat1:lat2,:,:]
+    parr = wds["P"].var[lon1:lon2,lat1:lat2,:,:] .+ pbse
+    tarr = wds["T"].var[lon1:lon2,lat1:lat2,:,:] .+ 290
+    psfc = wds["PSFC"].var[lon1:lon2,lat1:lat2,:]
+
+    @views @. tarr *= (100000 / parr) ^ (287/1004)
+
     for ii in 1 : ndt
-
-        @info "$(now()) - ConvectionIsotopes - Extracting data for Day $ii of $ndt"
-        flush(stderr)
-
-        NCDatasets.load!(wds["W"].var,warr,lon1:lon2,lat1:lat2,:,ii)
-        NCDatasets.load!(pds["P"].var,parr,lon1:lon2,lat1:lat2,:,ii)
-        NCDatasets.load!(tds["T"].var,tarr,lon1:lon2,lat1:lat2,:,ii)
-        NCDatasets.load!(sds["PSFC"].var,psfc,lon1:lon2,lat1:lat2,ii)
-
-        for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
-            parr[ilon,ilat,ilvl] += pbse[ilon,ilat,ilvl]
-            tarr[ilon,ilat,ilvl] += 290
-            tarr[ilon,ilat,ilvl]  = tarr[ilon,ilat,ilvl] * (100000 / parr[ilon,ilat,ilvl]) ^ (287/1004)
-        end
 
         for ilat = 1 : nlat, ilon = 1 : nlon
             
-            tmp_pmat[ilon,ilat,1] = psfc[ilon,ilat]
+            tmp_pmat[ilon,ilat,1] = psfc[ilon,ilat,it]
 
             for ilvl = 1 : nlvl
-                tmp_wmat[ilon,ilat,ilvl+1]  = (warr[ilon,ilat,ilvl] + warr[ilon,ilat,ilvl+1]) / 2
-                tmp_ρmat[ilon,ilat,ilvl+1]  =  parr[ilon,ilat,ilvl] / Rd / tarr[ilon,ilat,ilvl]
-                tmp_wmat[ilon,ilat,ilvl+1] *= (tmp_ρmat[ilon,ilat,ilvl+1] * -9.81)
-                tmp_pmat[ilon,ilat,ilvl+1]  = parr[ilon,ilat,ilvl]
+                tmp_wmat[ilon,ilat,ilvl+1]  = (warr[ilon,ilat,ilvl,it] + warr[ilon,ilat,ilvl+1,it]) / 2
+                tmp_ρmat[ilon,ilat,ilvl+1]  =  parr[ilon,ilat,ilvl,it] / Rd / tarr[ilon,ilat,ilvl,it]
+                tmp_wmat[ilon,ilat,ilvl+1] *= (tmp_ρmat[ilon,ilat,ilvl+1,it] * -9.81)
+                tmp_pmat[ilon,ilat,ilvl+1]  = parr[ilon,ilat,ilvl,it]
             end
 
         end

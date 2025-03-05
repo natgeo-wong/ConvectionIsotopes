@@ -186,7 +186,7 @@ function wrfregriddaily2D(
 	if iszero(days)
 		fnc = datadir("wrf3","regridded","era-$(wvar)-$timestr.nc")
     else
-        fnc = datadir("wrf3","processed","era-$(wvar)-$timestr-$smthstr.nc")
+        fnc = datadir("wrf3","regridded","era-$(wvar)-$timestr-$smthstr.nc")
     end
 	if isfile(fnc); rm(fnc,force=true) end
 
