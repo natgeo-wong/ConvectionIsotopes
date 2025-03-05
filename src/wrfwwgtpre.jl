@@ -87,11 +87,12 @@ function wrfwwgtpre(
 
         tmp_wvec = dropdims(mean(tmp_wmat,dims=(1,2)),dims=(1,2))
         tmp_pvec = dropdims(mean(tmp_pmat,dims=(1,2)),dims=(1,2))
+        tmp_psfc = mean(psfc[:,:,it])
 
         calc = trapz(tmp_pvec,tmp_wvec.*tmp_pvec) / trapz(tmp_pvec,tmp_wvec)
-        if (calc > 0) & (calc < mean(psfc))
+        if (calc > 0) & (calc < tmp_psfc)
             pwgt[it] = calc
-            σwgt[it] = calc / mean(psfc)
+            σwgt[it] = calc / tmp_psfc
         else
             pwgt[it] = NaN32
             σwgt[it] = NaN32
@@ -249,11 +250,12 @@ function wrfwwgtpre(
 
             tmp_wvec = dropdims(mean(tmp_wmat,dims=(1,2)),dims=(1,2))
             tmp_pvec = dropdims(mean(tmp_pmat,dims=(1,2)),dims=(1,2))
+            tmp_psfc = mean(view(psfc,lonv,latv,it))
 
             calc = trapz(tmp_pvec,tmp_wvec.*tmp_pvec) / trapz(tmp_pvec,tmp_wvec)
-            if (calc > 0) & (calc < mean(psfc))
+            if (calc > 0) & (calc < mean(tmp_psfc))
                 pwgt[it,igeo] = calc
-                σwgt[it,igeo] = calc / mean(psfc)
+                σwgt[it,igeo] = calc / mean(tmp_psfc)
             else
                 pwgt[it,igeo] = NaN32
                 σwgt[it,igeo] = NaN32
