@@ -177,7 +177,7 @@ function wrfwwgtpre(
     ds   = NCDataset(datadir("wrf3","grid.nc"))
     lon  = ds["longitude"][:,:]; nlon,nlat = size(lon)
     lat  = ds["latitude"][:,:]
-    pbse = ds["pressure_base"][:,:,:]
+    pbse = ds["pressure_base"][:,:,:]; nlvl = size(pbse,3)
     close(ds)
     
     ngeo  = length(geov)
@@ -189,12 +189,7 @@ function wrfwwgtpre(
         lat1v[igeo] = minimum(ggrd.ilat); lat2v[igeo] = maximum(ggrd.ilat)
     end
 
-    dtvec = start : Day(1) : stop
-
-    nlon = lon2 - lon1 + 1
-    nlat = lat2 - lat1 + 1
-    nlvl = 50
-    ndt  = length(dtvec)
+    dtvec = start : Day(1) : stop; ndt = length(dtvec)
 
     tmp_wmat = zeros(Float32,nlon,nlat,nlvl+2)
     tmp_pmat = zeros(Float32,nlon,nlat,nlvl+2)
