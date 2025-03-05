@@ -213,8 +213,8 @@ function wrfwwgtpre(
     end
 
     warr = wds["W"].var[:,:,:,:]
-    parr = pds["P"].var[:,:,:,:] .+ pbse
-    tarr = tds["T"].var[:,:,:,:] .+ 290
+    parr = pds["P"].var[:,:,:,:]
+    tarr = tds["T"].var[:,:,:,:]
     psfc = sds["PSFC"].var[:,:,:]
 
     close(wds)
@@ -222,6 +222,8 @@ function wrfwwgtpre(
     close(tds)
     close(sds)
 
+    @views @. parr += pbse
+    @views @. tarr += 290
     @views @. tarr *= (100000 / parr) ^ (287/1004)
 
     for igeo = 1 : ngeo
