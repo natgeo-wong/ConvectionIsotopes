@@ -70,7 +70,7 @@ function wrfwwgtpre(
 
     @views @. tarr *= (100000 / parr) ^ (287/1004)
 
-    for ii in 1 : ndt
+    for it in 1 : ndt
 
         for ilat = 1 : nlat, ilon = 1 : nlon
             
@@ -90,14 +90,14 @@ function wrfwwgtpre(
 
         calc = trapz(tmp_pvec,tmp_wvec.*tmp_pvec) / trapz(tmp_pvec,tmp_wvec)
         if (calc > 0) & (calc < mean(psfc))
-            pwgt[ii] = calc
-            σwgt[ii] = calc / mean(psfc)
+            pwgt[it] = calc
+            σwgt[it] = calc / mean(psfc)
         else
-            pwgt[ii] = NaN32
-            σwgt[ii] = NaN32
+            pwgt[it] = NaN32
+            σwgt[it] = NaN32
         end
-        wvec[:,ii] = reverse(tmp_wvec)
-        pvec[:,ii] = reverse(tmp_pvec)
+        wvec[:,it] = reverse(tmp_wvec)
+        pvec[:,it] = reverse(tmp_pvec)
 
     end
 
