@@ -195,10 +195,6 @@ function wrfwwgtpre(
 
     dtvec = start : Day(1) : stop; ndt = length(dtvec)
 
-    tmp_wmat = zeros(Float32,nlon,nlat,nlvl+2)
-    tmp_pmat = zeros(Float32,nlon,nlat,nlvl+2)
-    tmp_ρmat = zeros(Float32,nlon,nlat,nlvl+2)
-
     pwgt = zeros(Float32,ndt,ngeo)
     σwgt = zeros(Float32,ndt,ngeo)
     pvec = zeros(Float32,nlvl+2,ndt,ngeo)
