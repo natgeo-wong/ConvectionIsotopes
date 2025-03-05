@@ -248,8 +248,8 @@ function wrfwwgtpre(
                 @views @. tmp_ρmat[:,:,ilvl+1] = parr[lonv,latv,ilvl,it] / Rd / 
                                                  tarr[lonv,latv,ilvl,it]
             end
-            @views @. tmp_wmat[:,:,2:(nlvl+1)] *= (tmp_ρmat[lonv,latv,:,it] * -9.81)
-            @views @. tmp_pmat[:,:,2:(nlvl+1)]  =      parr[lonv,latv,:,it]
+            @views @. tmp_wmat[:,:,2:(nlvl+1)] *= (tmp_ρmat[:,:,:,it] * -9.81)
+            @views @. tmp_pmat[:,:,2:(nlvl+1)]  = parr[lonv,latv,:,it]
 
             tmp_wvec = dropdims(mean(tmp_wmat,dims=(1,2)),dims=(1,2))
             tmp_pvec = dropdims(mean(tmp_pmat,dims=(1,2)),dims=(1,2))
