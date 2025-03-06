@@ -38,8 +38,8 @@ function wrfwwgtpre2(
     pw = ds["p_wwgt"][lon1:lon2,lat1:lat2,:]; ndt = size(pw,3)
     σw = ds["σ_wwgt"][lon1:lon2,lat1:lat2,:]
 
-    pw2 = zeros(ndt)
-    σw2 = zeros(ndt)
+    pw2 = zeros(Float32,ndt)
+    σw2 = zeros(Float32,ndt)
 
     for it = 1 : ndt
         ipw = @views pw[:,:,it]
