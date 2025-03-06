@@ -171,9 +171,8 @@ function create_wp(
 
     @info "$(now()) - ConvectionIsotopes - Preallocating arrays ..."
 
-    wp = Array{Float64,3}(undef,nlon,nlat,12)
+    wp = Array{Float32,3}(undef,nlon,nlat,12)
     sp = Array{Float64,2}(undef,nlon,nlat);    sptmp = Array{Int16,2}(undef,nlon,nlat)
-    tp = Array{Float64,2}(undef,nlon,nlat);    tptmp = Array{Int16,2}(undef,nlon,nlat)
     wa = Array{Float64,3}(undef,nlon,nlat,np); watmp = Array{Int16,2}(undef,nlon,nlat)
 
     wpii = Vector{Float64}(undef,np+2)
@@ -190,7 +189,6 @@ function create_wp(
     disable_logging(Logging.Warn)
     evar_wp = SingleVariable("p_wwgt",path=srcdir());
     evar_sp = SingleVariable("sp");
-    evar_tp = SingleVariable("tp");
     evar_wa = Vector{PressureVariable}(undef,np)
     for ip = 1 : np
         evar_wa[ip] = PressureVariable("w",hPa=plvl[ip]);
@@ -210,12 +208,6 @@ function create_wp(
         sp_mv = sp_ds[evar_sp.ID].attrib["missing_value"]
         sp_fv = sp_ds[evar_sp.ID].attrib["_FillValue"]
 
-        tp_ds = read(e5ds,evar_tp,ereg,dtii)
-        tp_sc = tp_ds[evar_tp.ID].attrib["scale_factor"]
-        tp_of = tp_ds[evar_tp.ID].attrib["add_offset"]
-        tp_mv = tp_ds[evar_tp.ID].attrib["missing_value"]
-        tp_fv = tp_ds[evar_tp.ID].attrib["_FillValue"]
-
         for ip = 1 : np
             wa_ds[ip] = read(e5ds,evar_wa[ip],ereg,dtii)
             wa_sc[ip] = wa_ds[ip][evar_wa[ip].ID].attrib["scale_factor"]
@@ -232,9 +224,6 @@ function create_wp(
             NCDatasets.load!(sp_ds[evar_sp.ID].var,sptmp,:,:,it)
             int2real!(sp,sptmp,scale=sp_sc,offset=sp_of,mvalue=sp_mv,fvalue=sp_fv)
 
-            NCDatasets.load!(tp_ds[evar_tp.ID].var,tptmp,:,:,it)
-            int2real!(tp,tptmp,scale=tp_sc,offset=tp_of,mvalue=tp_mv,fvalue=tp_fv)
-
             for ip = 1 : np
                 waip = @view wa[:,:,ip]
                 NCDatasets.load!(wa_ds[ip][evar_wa[ip].ID].var,watmp,:,:,it)
@@ -247,7 +236,7 @@ function create_wp(
 
             for ilat = 1 : nlat, ilon = 1 : nlon
 
-                if !isnan(lsd.z[ilon,ilat]) && (tp[ilon,ilat] > 0.005)
+                if !isnan(lsd.z[ilon,ilat])
                     spii = sp[ilon,ilat] / 100
                     plvl[end] = spii
                     for ip = 1 : np
