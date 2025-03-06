@@ -44,8 +44,8 @@ function wrfwwgtpre2(
     for it = 1 : ndt
         ipw = @views pw[:,:,it]
         iσw = @views σw[:,:,it]
-        pw2[it] = mean(.!isnan.(ipw))
-        σw2[it] = mean(.!isnan.(iσw))
+        pw2[it] = mean(ipw[.!isnan.(ipw)])
+        σw2[it] = mean(iσw[.!isnan.(iσw)])
     end
 
     mkpath(datadir("wrf3","processed"))
