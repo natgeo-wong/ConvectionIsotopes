@@ -30,9 +30,9 @@ function wrfwwgtpre2(
     lat1 = minimum(ggrd.ilat); lat2 = maximum(ggrd.ilat)
 
     if iszero(days)
-        ds = NCDataset(datadir("wrf3","2D","p_wwgt-$timestr.nc"))
+        ds = NCDataset(datadir("wrf3","2D","p_wwgt-daily-$timestr.nc"))
     else
-        ds = NCDataset(datadir("wrf3","2D","p_wwgt-$timestr-$smthstr.nc"))
+        ds = NCDataset(datadir("wrf3","2D","p_wwgt-daily-$timestr-$smthstr.nc"))
     end
 
     pw = ds["p_wwgt"][lon1:lon2,lat1:lat2,:]; ndt = size(pw,3)
