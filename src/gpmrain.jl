@@ -12,7 +12,7 @@ function gpmrain(
     dtbegend = Dates.format(npd.stop,dateformat"yyyymmdd")
     timestr = "$(dtbegstr)_$(dtbegend)"
     
-    ogeo = GeoRegion("OTREC",path=srcdir())
+    ogeo = GeoRegion("OTREC_wrf_d02",path=srcdir())
     olsd = getLandSea(npd,ogeo)
     ggrd = RegionGrid(geo,olsd.lon,olsd.lat)
 
