@@ -1,6 +1,7 @@
 using Dates
 using NASAPrecipitation
 using Printf
+using RegionGrids
 using Statistics
 
 function gpmrain(
