@@ -109,7 +109,7 @@ function wrfnewregridera2D(
 	))
 
 	nctime = defVar(ds,"time",Float64,("date",),attrib=Dict(
-		"units"     => "days since $(start) 00:00:00.0",
+		"units"     => "hours since $(start) 00:00:00.0",
         "long_name" => "time",
         "calendar"  => "gregorian"
 	))
