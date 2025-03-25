@@ -74,10 +74,10 @@ function wrfdqdp(
         pvec = dropdims(sum(iip .* wgts,dims=(1,2)),dims=(1,2)) ./ wgtm .+ pbs
 
         for ilvl = 2 : (nlvl-1)
-            dqdp[ilvl,idt] = (q[ilvl+1] - q[ilvl-1]) / (p[ilvl+1] - p[ilvl-1])
+            dqdp[ilvl,idt] = (q[ilvl+1] - q[ilvl-1]) / (pvec[ilvl+1] - pvec[ilvl-1])
         end
-        dqdp[1,idt] = (q[2] - q[1]) / (p[2] - p[1])
-        dqdp[nlvl,idt] = q[nlvl-1] / p[nlvl-1]
+        dqdp[1,idt] = (q[2] - q[1]) / (pvec[2] - pvec[1])
+        dqdp[nlvl,idt] = q[nlvl-1] / pvec[nlvl-1]
 
     end
 
