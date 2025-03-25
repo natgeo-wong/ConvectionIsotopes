@@ -98,7 +98,7 @@ function wrfwwgtpre2(
 
         end
 
-        tmp_dqdp = vcat(0,@views dqdp[:,it],0)
+        tmp_dqdp = vcat(0,dqdp[:,it],0)
         tmp_wvec = dropdims(mean(tmp_wmat,dims=(1,2)),dims=(1,2)) .* tmp_dqdp
         tmp_pvec = dropdims(mean(tmp_pmat,dims=(1,2)),dims=(1,2))
         tmp_psfc = mean(view(psfc,:,:,it))
@@ -266,7 +266,7 @@ function wrfwwgtpre2(
             @views @. tmp_wmat[:,:,2:(nlvl+1)] *= (tmp_ρmat * -9.81)
             @views @. tmp_pmat[:,:,2:(nlvl+1)]  = parr[lonv,latv,:,it]
 
-            tmp_dqdp = vcat(0,@views dqdp[:,it],0)
+            tmp_dqdp = vcat(0,dqdp[:,it],0)
             tmp_wvec = dropdims(mean(tmp_wmat,dims=(1,2)),dims=(1,2)) .* tmp_dqdp
             tmp_pvec = dropdims(mean(tmp_pmat,dims=(1,2)),dims=(1,2))
             tmp_psfc = mean(view(psfc,lonv,latv,it))
