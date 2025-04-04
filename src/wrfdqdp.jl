@@ -441,7 +441,7 @@ function wrfcdhdq(
         "long_name" => "Coefficient of Gradient of O18_QVAPOR/Gradient of QVAPOR (relative to SMOW) against pressure"
     ))
 
-    nctime.var[:] = collect(0 : (ndt-1))
+    nctime.var[:] = collect(0 : (nt-1))
     ncdhdq[:,:]   = cdhdq
     ncdodq[:,:]   = cdodq
 
