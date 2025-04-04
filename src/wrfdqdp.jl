@@ -406,13 +406,15 @@ function wrfcdhdq(
     for it = 1 : nt
 
         ip = pvec[:,it]; ii = ip .> 500e2
-        iip = ip[ii]
-        iidhdq = dhdq[ii,it]
-        iidodq = dodq[ii,it]
-        ix = @views x[ii,:]
-        ix[:,2] .= iip
-        cdhdq[:,it] = ix \ iidhdq
-        cdodq[:,it] = ix \ iidodq
+        if sum(ii) > 0
+            iip = ip[ii]
+            iidhdq = dhdq[ii,it]
+            iidodq = dodq[ii,it]
+            ix = @views x[ii,:]
+            ix[:,2] .= iip
+            cdhdq[:,it] = ix \ iidhdq
+            cdodq[:,it] = ix \ iidodq
+        end
 
     end
 
