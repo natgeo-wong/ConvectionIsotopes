@@ -400,8 +400,8 @@ function wrfcdhdq(
     close(ds)
 
     x = ones(np,2)
-    cdhdq = zeros(2,nt)
-    cdodq = zeros(2,nt)
+    cdhdq = zeros(2,nt) * NaN
+    cdodq = zeros(2,nt) * NaN
 
     for it = 1 : nt
 
