@@ -373,3 +373,78 @@ function wrfdhdq(
     close(ds)
 
 end
+
+function wrfc1pc2(
+    geo   :: GeoRegion;
+    start :: Date,
+    stop  :: Date,
+	days  :: Int = 0
+)
+
+    dtbegstr = Dates.format(start,dateformat"yyyymmdd")
+    dtbegend = Dates.format(stop,dateformat"yyyymmdd")
+    timestr = "$(dtbegstr)_$(dtbegend)"
+    smthstr = "smooth_$(@sprintf("%02d",days))days"
+
+    if iszero(days)
+        fnc = datadir("wrf3","processed","$(geo.ID)-dhodq-daily-$timestr.nc")
+    else
+        fnc = datadir("wrf3","processed","$(geo.ID)-dhodq-daily-$timestr-$smthstr.nc")
+    end
+
+    ds = NCDataset(fnc)
+    time = ds["time"][:]; nt = length(time)
+    pvec = ds["P"][:,:]; np = size(pvec,1)
+    dhdq = ds["dHDOdH2O"][:,:]
+    dodq = ds["dO18dH2O"][:,:]
+    close(ds)
+
+    x = ones(np,2)
+    cdhdq = zeros(2,nt)
+    cdodq = zeros(2,nt)
+
+    for it = 1 : nt
+
+        ip = pvec[:,it]; ii = ip .> 500e2
+        iip = ip[ii]
+        iidhdq = dhdq[ii,it]
+        iidodq = dodq[ii,it]
+        ix = @views x[ii,:]
+        ix[:,2] .= iip
+        cdhdq[:,it] = ix / iidhdq
+        cdodq[:,it] = ix / iidodq
+
+    end
+
+    if iszero(days)
+        fnc = datadir("wrf3","processed","$(geo.ID)-cdhodq-daily-$timestr.nc")
+    else
+        fnc = datadir("wrf3","processed","$(geo.ID)-cdhodq-daily-$timestr-$smthstr.nc")
+    end
+    if isfile(fnc); rm(fnc,force=true) end
+
+    ds = NCDataset(fnc,"c")
+    ds.dim["date"]  = ndt
+    ds.dim["coeff"] = 2
+
+    nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
+        "units"     => "days since $(start) 00:00:00.0",
+        "long_name" => "time",
+        "calendar"  => "gregorian"
+    ))
+
+    ncdhdq = defVar(ds,"cdHDOdH2O",Float32,("coeff","date",),attrib=Dict(
+        "long_name" => "Coefficient of Gradient of HDO_QVAPOR/Gradient of QVAPOR (relative to SMOW) against pressure"
+    ))
+
+    ncdodq = defVar(ds,"cdO18dH2O",Float32,("coeff","date",),attrib=Dict(
+        "long_name" => "Coefficient of Gradient of O18_QVAPOR/Gradient of QVAPOR (relative to SMOW) against pressure"
+    ))
+
+    nctime.var[:] = collect(0 : (ndt-1))
+    ncdhdq[:,:]   = cdhdq
+    ncdodq[:,:]   = cdodq
+
+    close(ds)
+
+end
