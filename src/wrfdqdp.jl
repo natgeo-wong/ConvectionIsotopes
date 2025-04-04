@@ -374,7 +374,7 @@ function wrfdhdq(
 
 end
 
-function wrfc1pc2(
+function wrfcdhdq(
     geo   :: GeoRegion;
     start :: Date,
     stop  :: Date,
