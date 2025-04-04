@@ -424,7 +424,7 @@ function wrfcdhdq(
     if isfile(fnc); rm(fnc,force=true) end
 
     ds = NCDataset(fnc,"c")
-    ds.dim["date"]  = ndt
+    ds.dim["date"]  = nt
     ds.dim["coeff"] = 2
 
     nctime = defVar(ds,"time",Int32,("date",),attrib=Dict(
