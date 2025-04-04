@@ -411,8 +411,8 @@ function wrfcdhdq(
         iidodq = dodq[ii,it]
         ix = @views x[ii,:]
         ix[:,2] .= iip
-        cdhdq[:,it] = ix / iidhdq
-        cdodq[:,it] = ix / iidodq
+        cdhdq[:,it] = ix \ iidhdq
+        cdodq[:,it] = ix \ iidodq
 
     end
 
