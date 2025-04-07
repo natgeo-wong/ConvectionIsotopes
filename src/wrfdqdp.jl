@@ -405,7 +405,7 @@ function wrfcdhdq(
 
     for it = 1 : nt
 
-        ip = pvec[:,it]; ii = ip .> 500e2
+        ip = pvec[:,it]; ii = (ip .>= 500e2) .& (ip .<= 800e2)
         if sum(ii) > 0
             iip = ip[ii]
             iidhdq = dhdq[ii,it]
