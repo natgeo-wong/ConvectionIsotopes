@@ -405,13 +405,13 @@ function wrfcdhdq(
 
     for it = 1 : nt
 
-        ip = pvec[:,it]; ii = (ip .>= 500e2) .& (ip .<= 850e2)
+        ip = pvec[:,it]; ii = (ip .>= 500e2) .& (ip .<= 800e2)
         if sum(ii) > 0
             iip = ip[ii]
             iidhdq = dhdq[ii,it]
             iidodq = dodq[ii,it]
             ix = @views x[ii,:]
-            ix[:,2] .= iip .- 850e2
+            ix[:,2] .= iip .- 800e2
             cdhdq[:,it] = ix \ iidhdq
             cdodq[:,it] = ix \ iidodq
         end
