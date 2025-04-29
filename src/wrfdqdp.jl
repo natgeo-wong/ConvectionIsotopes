@@ -387,6 +387,19 @@ function wrfcdhdq(
     smthstr = "smooth_$(@sprintf("%02d",days))days"
 
     if iszero(days)
+        fnc = datadir("wrf3","processed","$(geo.ID)-p_wwgt3-daily-$timestr.nc")
+    else
+        fnc = datadir("wrf3","processed","$(geo.ID)-p_wwgt3-daily-$timestr-$smthstr.nc")
+    end
+
+    ds = NCDataset(fnc)
+    psfc = ds["P"][end,:]
+    ptop = psfc * 0.5; ptop[ptop.>500e2] .= 500e2
+    pbl  = psfc * 0.8; pbl[pbl.>800e2] .= 800e2
+    close(ds)
+
+
+    if iszero(days)
         fnc = datadir("wrf3","processed","$(geo.ID)-dhodq-daily-$timestr.nc")
     else
         fnc = datadir("wrf3","processed","$(geo.ID)-dhodq-daily-$timestr-$smthstr.nc")
@@ -395,9 +408,6 @@ function wrfcdhdq(
     ds = NCDataset(fnc)
     time = ds["time"][:]; nt = length(time)
     pvec = ds["P"][:,:]; np = size(pvec,1)
-    psfc = pvec[end,:]
-    ptop = psfc * 0.5; ptop[ptop.>500e2] .= 500e2
-    pbl  = psfc * 0.8; pbl[pbl.>800e2] .= 800e2
     dhdq = ds["dHDOdH2O"][:,:]
     dodq = ds["dO18dH2O"][:,:]
     close(ds)
