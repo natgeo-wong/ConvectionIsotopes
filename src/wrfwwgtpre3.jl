@@ -109,9 +109,9 @@ function wrfwwgtpre3(
             tmp_pvec = dropdims(mean(tmp_pmat,dims=(1,2)),dims=(1,2))
             tmp_psfc = mean(view(psfc,lonv,latv,it))
 
-            ii = tmp_pvec .<= (0.85 * tmp_psfc)
+            ii = tmp_pvec .<= (0.8 * tmp_psfc)
 
-            calc = trapz(tmp_pvec[ii],tmp_wvec[ii].*tmp_pvec[ii]) / trapz(tmp_pvec,tmp_wvec)
+            calc = trapz(tmp_pvec[ii],tmp_wvec[ii].*(tmp_pvec[ii].-800e2)) / trapz(tmp_pvec,tmp_wvec)
             if (calc > 0) & (calc < mean(tmp_psfc))
                 pwgt[it,igeo] = calc
                 σwgt[it,igeo] = calc / mean(tmp_psfc)
