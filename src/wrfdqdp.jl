@@ -414,7 +414,7 @@ function wrfcdhdq(
             iidhdq = dhdq[ii,it]
             iidodq = dodq[ii,it]
             ix = @views x[ii,:]
-            ix[:,2] .= iip .- 800e2
+            ix[:,2] .= iip .- pbl
             cdhdq[:,it] = ix \ iidhdq
             cdodq[:,it] = ix \ iidodq
         end
