@@ -111,14 +111,14 @@ function wrfwwgtpre3(
 
             ii = tmp_pvec .<= (0.8 * tmp_psfc)
 
-            calc = trapz(tmp_pvec[ii],tmp_wvec[ii].*(tmp_pvec[ii].-800e2)) / trapz(tmp_pvec,tmp_wvec)
-            if (calc > 0) & (calc < mean(tmp_psfc))
+            calc = trapz(tmp_pvec[ii],tmp_wvec[ii].*(tmp_pvec[ii].-0.8*tmp_psfc)) / trapz(tmp_pvec,tmp_wvec)
+            # if (calc > 0) & (calc < mean(tmp_psfc))
                 pwgt[it,igeo] = calc
                 σwgt[it,igeo] = calc / mean(tmp_psfc)
-            else
-                pwgt[it,igeo] = NaN32
-                σwgt[it,igeo] = NaN32
-            end
+            # else
+            #     pwgt[it,igeo] = NaN32
+            #     σwgt[it,igeo] = NaN32
+            # end
             wvec[:,it,igeo] = reverse(tmp_wvec)
             pvec[:,it,igeo] = reverse(tmp_pvec)
 
