@@ -410,7 +410,7 @@ function wrfcdhdq(
 
         ptop = 0.5 * psfc[it]
 
-        ip = pvec[:,it]; ii = (ip .>= ptop) .& (ip .<= pbl)
+        ip = pvec[:,it]; ii = (ip .>= ptop[it]) .& (ip .<= pbl[it])
         if sum(ii) > 0
             iip = ip[ii]
             iidhdq = dhdq[ii,it]
