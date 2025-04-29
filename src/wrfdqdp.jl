@@ -395,6 +395,9 @@ function wrfcdhdq(
     ds = NCDataset(fnc)
     time = ds["time"][:]; nt = length(time)
     pvec = ds["P"][:,:]; np = size(pvec,1)
+    psfc = pvec[end,:]
+    ptop = psfc * 0.5; ptop[ptop.>500e2] .= 500e2
+    pbl  = psfc * 0.8; pbl[pbl.>800e2] .= 800e2
     dhdq = ds["dHDOdH2O"][:,:]
     dodq = ds["dO18dH2O"][:,:]
     close(ds)
@@ -405,7 +408,9 @@ function wrfcdhdq(
 
     for it = 1 : nt
 
-        ip = pvec[:,it]; ii = (ip .>= 500e2) .& (ip .<= 800e2)
+        ptop = 0.5 * psfc[it]
+
+        ip = pvec[:,it]; ii = (ip .>= ptop) .& (ip .<= pbl)
         if sum(ii) > 0
             iip = ip[ii]
             iidhdq = dhdq[ii,it]
