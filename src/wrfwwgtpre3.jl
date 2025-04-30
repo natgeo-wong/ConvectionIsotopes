@@ -69,7 +69,7 @@ function wrfwwgtpre3(
 
     @info "$(now()) - Doing some data adjustment ..."; flush(stderr)
     @views @. parr += pbse
-    @views @. tarr += 290
+    @views @. tarr += 300
     @views @. tarr *= (100000 / parr) ^ (287/1004)
 
     for igeo = 1 : ngeo

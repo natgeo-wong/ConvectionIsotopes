@@ -68,7 +68,7 @@ function wrfwwgtpre2(
     @info "$(now()) - Loading data in the GeoRegion ..."; flush(stderr)
     warr = wds["W"].var[lon1:lon2,lat1:lat2,:,:]
     parr = pds["P"].var[lon1:lon2,lat1:lat2,:,:] .+ pbse
-    tarr = tds["T"].var[lon1:lon2,lat1:lat2,:,:] .+ 290
+    tarr = tds["T"].var[lon1:lon2,lat1:lat2,:,:] .+ 300
     psfc = sds["PSFC"].var[lon1:lon2,lat1:lat2,:]
 
     dqdp = dqdpds["dqdp"][:,:]
@@ -231,7 +231,7 @@ function wrfwwgtpre2(
 
     @info "$(now()) - Doing some data adjustment ..."; flush(stderr)
     @views @. parr += pbse
-    @views @. tarr += 290
+    @views @. tarr += 300
     @views @. tarr *= (100000 / parr) ^ (287/1004)
 
     for igeo = 1 : ngeo

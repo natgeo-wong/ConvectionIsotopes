@@ -66,7 +66,7 @@ function wrfwwgtpre(
     @info "$(now()) - Loading data in the GeoRegion ..."; flush(stderr)
     warr = wds["W"].var[lon1:lon2,lat1:lat2,:,:]
     parr = pds["P"].var[lon1:lon2,lat1:lat2,:,:] .+ pbse
-    tarr = tds["T"].var[lon1:lon2,lat1:lat2,:,:] .+ 290
+    tarr = tds["T"].var[lon1:lon2,lat1:lat2,:,:] .+ 300
     psfc = sds["PSFC"].var[lon1:lon2,lat1:lat2,:]
 
     @views @. tarr *= (100000 / parr) ^ (287/1004)
@@ -225,7 +225,7 @@ function wrfwwgtpre(
 
     @info "$(now()) - Doing some data adjustment ..."; flush(stderr)
     @views @. parr += pbse
-    @views @. tarr += 290
+    @views @. tarr += 300
     @views @. tarr *= (100000 / parr) ^ (287/1004)
 
     for igeo = 1 : ngeo
@@ -389,7 +389,7 @@ function wrfwwgtpre(;
 
         for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
             parr[ilon,ilat,ilvl] += pbse[ilon,ilat,ilvl]
-            tarr[ilon,ilat,ilvl] += 290
+            tarr[ilon,ilat,ilvl] += 300
             tarr[ilon,ilat,ilvl]  = tarr[ilon,ilat,ilvl] * (100000 / parr[ilon,ilat,ilvl]) ^ (287/1004)
         end
 
@@ -512,7 +512,7 @@ function wrfwwgtpre_compiled(;
 
     for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
         parr[ilon,ilat,ilvl] += pbse[ilon,ilat,ilvl]
-        tarr[ilon,ilat,ilvl] += 290
+        tarr[ilon,ilat,ilvl] += 300
         tarr[ilon,ilat,ilvl]  = tarr[ilon,ilat,ilvl] * (100000 / parr[ilon,ilat,ilvl]) ^ (287/1004)
     end
 
@@ -647,7 +647,7 @@ function wrfwwgtpre_monthly(;
 
         for ilvl = 1 : nlvl, ilat = 1 : nlat, ilon = 1 : nlon
             parr[ilon,ilat,ilvl] += pbse[ilon,ilat,ilvl]
-            tarr[ilon,ilat,ilvl] += 290
+            tarr[ilon,ilat,ilvl] += 300
             tarr[ilon,ilat,ilvl]  = tarr[ilon,ilat,ilvl] * (100000 / parr[ilon,ilat,ilvl]) ^ (287/1004)
         end        
 
