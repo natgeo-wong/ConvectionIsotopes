@@ -156,7 +156,11 @@ function wrf2Ddaily(
 
 				if isaccum
 					for ilat = 1 : nlat, ilon = 1 : nlon
-						narr[ilon,ilat,ii] = aarr[ilon,ilat] - oarr[ilon,ilat,1]
+						if aarr[ilon,ilat] >= oarr[ilon,ilat,1]
+							narr[ilon,ilat,ii] = aarr[ilon,ilat] - oarr[ilon,ilat,1]
+						else
+							narr[ilon,ilat,ii] = oarr[ilon,ilat,end] - oarr[ilon,ilat,1]
+						end
 					end
 				else
 					for ilat = 1 : nlat, ilon = 1 : nlon
