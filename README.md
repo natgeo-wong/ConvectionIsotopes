@@ -19,7 +19,7 @@
 * Dr. Fayçal Lamraoui
 * Dr. Ana Maria Vesga-Güiza
 * Dr. Ricardo Sanchez-Murillo
-* Ana Duran-Quesada
+* Dr. Ana Duran-Quesada
 * Dr. Nelson Omar Vargas
 * Professor Kuang Zhiming
 
