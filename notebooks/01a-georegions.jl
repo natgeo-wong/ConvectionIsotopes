@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.45
+# v0.20.4
 
 using Markdown
 using InteractiveUtils
@@ -21,7 +21,7 @@ begin
 
 	using ImageShow, PNGFiles
 	using PyCall, LaTeXStrings
-	pplt = pyimport("proplot")
+	pplt = pyimport("ultraplot")
 
 	include(srcdir("common.jl"))
 
@@ -66,7 +66,7 @@ md"
 
 # ╔═╡ ab5bab9c-fc33-4a6a-aa20-b9b1a44c4da8
 begin
-	ds_d01  = NCDataset(datadir("wrf2","JAN_P01","wrfout_d01_2020-01-02_00:00:00"))
+	ds_d01  = NCDataset(datadir("wrf3","wrfout","2020","JAN_P01","wrfout3D_d01_2020-01-02_00:00:00"))
 	nlon_01 = ds_d01.dim["west_east"]
 	nlat_01 = ds_d01.dim["south_north"]
 	lon_d01 = vcat(
@@ -86,7 +86,7 @@ end
 
 # ╔═╡ d5bc84d7-6516-4fad-a245-703e14e22f77
 begin
-	ds_d02  = NCDataset(datadir("wrf2","JAN_P01","wrfout_d02_2020-01-02_00:00:00"))
+	ds_d02  = NCDataset(datadir("wrf3","wrfout","2020","JAN_P01","wrfout3D_d02_2020-01-02_00:00:00"))
 	nlon_02 = ds_d02.dim["west_east"]
 	nlat_02 = ds_d02.dim["south_north"]
 	lon_d02 = vcat(
@@ -118,20 +118,20 @@ begin
 end
 
 # ╔═╡ b2dc9507-7794-4445-b7f2-4351cba54af0
-if !isGeoRegion("OTREC_wrf_d01",path=srcdir(),throw=false)
-	geo_d01 = PolyRegion(
-		"OTREC_wrf_d01","GLB","WRF d01",
-		lon_d01,lat_d01,path=srcdir()
+if !isID("OTREC_wrf_d01",path=srcdir(),throw=false)
+	geo_d01 = GeoRegion(
+		lon_d01,lat_d01, save = true,
+		ID = "OTREC_wrf_d01", pID = "GLB", name = "WRF d01", path = srcdir()
 	)
 else
 	geo_d01 = GeoRegion("OTREC_wrf_d01",path=srcdir())
 end
 
 # ╔═╡ 12766ec3-8b45-49f5-908f-697322059df5
-if !isGeoRegion("OTREC_wrf_d02",path=srcdir(),throw=false)
-	geo_d02 = PolyRegion(
-		"OTREC_wrf_d02","GLB","New WRF d02",
-		lon_d02,lat_d02,path=srcdir()
+if !isID("OTREC_wrf_d02",path=srcdir(),throw=false)
+	geo_d02 = GeoRegion(
+		lon_d02,lat_d02, save = true,
+		ID = "OTREC_wrf_d02", pID = "GLB", name = "WRF d02", path = srcdir()
 	)
 else
 	geo_d02 = GeoRegion("OTREC_wrf_d02",path=srcdir())
@@ -143,10 +143,11 @@ md"
 "
 
 # ╔═╡ 29fa97df-30dc-4258-b1e7-22662151919f
-if !isGeoRegion("Fig2_small",path=srcdir(),throw=false)
-	geo_fig2sml = RectRegion(
-		"Fig2_small","GLB","Fig2 Small Domain",
-		[10.5,8,278,275],path=srcdir()
+if !isID("Fig2_small",path=srcdir(),throw=false)
+	geo_fig2sml = GeoRegion(
+		ID = "Fig2_small", pID = "GLB", name = "Fig2 Small Domain",
+		[275,275,278,278,275], [8,10.5,10.5,8,8],
+		path=srcdir(), save=true
 	)
 else
 	geo_fig2sml = GeoRegion("Fig2_small",path=srcdir())
@@ -154,10 +155,11 @@ end
 
 
 # ╔═╡ a8f2c79d-d79d-4163-ad98-68578937629b
-if !isGeoRegion("Fig2_big",path=srcdir(),throw=false)
-	geo_fig2big = RectRegion(
-		"Fig2_big","GLB","Fig2 Big Domain",
-		[35,-20,305,250],path=srcdir()
+if !isID("Fig2_big",path=srcdir(),throw=false)
+	geo_fig2big = GeoRegion(
+		ID = "Fig2_big", pID = "GLB", name = "Fig2 Big Domain",
+		[250,250,305,305,250], [-20,35,35,-20,-20],
+		path=srcdir(), save=true
 	)
 else
 	geo_fig2big = GeoRegion("Fig2_big",path=srcdir())
@@ -167,8 +169,8 @@ end
 begin
 	pplt.close(); f2,a2 = pplt.subplots(aspect=27/17,axwidth=5)
 
-	lon1,lat1 = coordGeoRegion(geo_d01)
-	lon2,lat2 = coordGeoRegion(geo_d02)
+	lon1,lat1 = coordinates(geo_d01)
+	lon2,lat2 = coordinates(geo_d02)
 	a2[1].plot(lon1.+360,lat1)
 	a2[1].plot(lon2.+360,lat2)
 	
@@ -200,15 +202,26 @@ md"
 "
 
 # ╔═╡ e6bf2538-b4d6-4e2c-b5f9-99464b6df643
+# ╠═╡ disabled = true
+#=╠═╡
 lsd = getLandSea(geo_d02,path=datadir(),returnlsd=true,savelsd=true)
+  ╠═╡ =#
 
 # ╔═╡ 7df3ca55-c981-473a-9edb-7e0f7f957caf
+# ╠═╡ disabled = true
+#=╠═╡
 lsd_sml = getLandSea(geo_fig2sml,path=datadir(),returnlsd=true,savelsd=true)
+  ╠═╡ =#
 
 # ╔═╡ c104d6ef-79ac-47dc-acc6-81242dc935af
+# ╠═╡ disabled = true
+#=╠═╡
 lsd_big = getLandSea(geo_fig2big,path=datadir(),returnlsd=true,savelsd=true)
+  ╠═╡ =#
 
 # ╔═╡ b93e089e-40d0-440f-8ac9-d5f1152272e1
+# ╠═╡ disabled = true
+#=╠═╡
 begin
 	pplt.close(); f3,a3 = pplt.subplots(aspect=27/17,axwidth=5)
 
@@ -247,6 +260,7 @@ begin
 	f3.savefig(plotsdir("01a-domain.png"),transparent=false,dpi=400)
 	load(plotsdir("01a-domain.png"))
 end
+  ╠═╡ =#
 
 # ╔═╡ Cell order:
 # ╟─fa2f8740-f813-11ec-00e1-112e2dfacda7
@@ -263,8 +277,8 @@ end
 # ╟─b2dc9507-7794-4445-b7f2-4351cba54af0
 # ╟─12766ec3-8b45-49f5-908f-697322059df5
 # ╟─9fba6b0f-5d17-4e3a-b9da-de815b12a6cf
-# ╠═29fa97df-30dc-4258-b1e7-22662151919f
-# ╟─a8f2c79d-d79d-4163-ad98-68578937629b
+# ╟─29fa97df-30dc-4258-b1e7-22662151919f
+# ╠═a8f2c79d-d79d-4163-ad98-68578937629b
 # ╠═dcc32199-77ac-4b8a-9fec-8d83cbf00cf2
 # ╟─7bb22689-ade3-4cc6-b0bf-a30d5a2fe9f7
 # ╟─e6bf2538-b4d6-4e2c-b5f9-99464b6df643

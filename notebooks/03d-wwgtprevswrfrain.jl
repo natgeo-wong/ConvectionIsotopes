@@ -22,7 +22,7 @@ begin
 	
 	using ImageShow, PNGFiles
 	using PyCall, LaTeXStrings
-	pplt = pyimport("proplot")
+	pplt = pyimport("ultraplot")
 
 	include(srcdir("common.jl"))
 	
@@ -101,7 +101,21 @@ function extract(geoname,iso,days)
 	wctpbt = wctpbt ./ wcabs
 	ii = wcconv .< 0
 
-	return wctpbt[ii],prcp[ii],hvyp[ii]
+	dsp = NCDataset(datadir(
+		"wrf3","processed",
+		"$geoname-p_wwgt-daily-20190801_20201231-smooth_$(dystr)days.nc"
+	))
+	pw = dsp["p_wwgt"][:] ./ 100
+	close(dsp)
+
+	dsp = NCDataset(datadir(
+		"wrf3","processed",
+		"$geoname-p_wwgt-daily-20190801_20201231-smooth_$(dystr)days.nc"
+	))
+	pw = dsp["σ_wwgt"][:]
+	close(dsp)
+
+	return pw[ii],prcp[ii],hvyp[ii]
 	
 end
 
@@ -118,7 +132,7 @@ function binning!(
 	if box
 		for ibox = 1 : bnum
 			boxstr = @sprintf("%d",ibox)
-			geoname = "OTREC_wrf_stn$(stnstr)_box$(boxstr)"
+			geoname = "OTREC_wrf_stn$(stnstr)b_box$(boxstr)"
 			pwgt,prcp,hvyp = extract(geoname,iso,days)
 			nt = length(prcp)
 		
@@ -133,7 +147,7 @@ function binning!(
 			end
 		end
 	else
-		geoname = "OTREC_wrf_stn$(stnstr)"
+		geoname = "OTREC_wrf_stn$(stnstr)b"
 		pwgt,prcp,hvyp = extract(geoname,iso,days)
 		nt = length(prcp)
 	
@@ -225,7 +239,7 @@ function axesformat!(axesnum)
 
 	for ax in axesnum
 		ax.format(
-			ylim=(1,-1),xlim=(0,60),xlocator=0:25:100,ylabel=L"$p_\omega$ / hPa",
+			ylim=(1,0),xlim=(0,60),xlocator=0:25:100,ylabel=L"$p_\omega$ / hPa",
 			xlabel=L"$P$ / kg m$^{-2}$ day$^{-1}$"
 		)
 	end
@@ -234,17 +248,17 @@ function axesformat!(axesnum)
 	axesnum[2].format(ultitle="(a) Colombia")
 	axesnum[4].format(ultitle="(b) San Andres")
 	axesnum[6].format(ultitle="(c) Buenaventura")
-	axesnum[6].text(22,-0.56,"Bahia Solano",fontsize=10)
+	axesnum[6].text(11,0.220,"Bahia Solano",fontsize=10)
 	axesnum[8].format(ultitle="(d) Quibdo")
 	axesnum[10].format(ultitle="(e) Costa Rica")
 	axesnum[12].format(ultitle="(f) EEFMB")
-	axesnum[12].text(18.5,-0.56,"ADMQ",fontsize=10)
-	axesnum[12].text(18.5,-0.4,"CGFI",fontsize=10)
+	axesnum[12].text(10,0.220,"ADMQ",fontsize=10)
+	axesnum[12].text(10,0.320,"CGFI",fontsize=10)
 	axesnum[14].format(ultitle="(g) Cahuita")
-	axesnum[14].text(22,-0.56,"Bataan",fontsize=10)
-	axesnum[14].text(22,-0.4,"Limon",fontsize=10)
+	axesnum[14].text(12,0.220,"Bataan",fontsize=10)
+	axesnum[14].text(12,0.320,"Limon",fontsize=10)
 	axesnum[16].format(ultitle="(h) Liberia")
-	axesnum[16].text(22,-0.56,"OSA",fontsize=10)
+	axesnum[16].text(10.5,0.220,"OSA",fontsize=10)
 
 	return
 
@@ -253,7 +267,7 @@ end
 # ╔═╡ 2fd946e2-bf3e-406f-9a19-5aa72b5d1640
 begin
 	rbin = 0 : 5 : 200; rpnt = (rbin[1:(end-1)] .+ rbin[2:end]) / 2
-	pbin = -1 : 0.1 : 1; ppnt = (pbin[1:(end-1)] .+ pbin[2:end]) / 2
+	pbin = 0 : 0.05 : 1; ppnt = (pbin[1:(end-1)] .+ pbin[2:end]) / 2
 	nr = length(rpnt); np = length(ppnt)
 	abin = zeros(nr,np); anum = zeros(nr,np); aprc = zeros(nr,np)
 	bbin = zeros(nr,np); bnum = zeros(nr,np); bprc = zeros(nr,np)
@@ -266,6 +280,9 @@ begin
 	ibin = zeros(nr,np); inum = zeros(nr,np); iprc = zeros(nr,np)
 	md"Preallocation of arrays ..."
 end
+
+# ╔═╡ d139bbdb-2e72-4259-a85d-ecb7addcdd45
+
 
 # ╔═╡ b6500812-fd5e-4842-8855-655822d170f4
 # ╠═╡ show_logs = false
@@ -281,22 +298,22 @@ begin
 	ibin .= 0; iprc .= 0; inum .= 0
 	
 	for istn = 1
-		binning!(bbin,bnum,bprc,rpnt,ppnt,ID=istn,box=true,bnum=4,days=7)
+		binning!(bbin,bnum,bprc,rpnt,ppnt,ID=istn,box=false,bnum=4,days=7)
 	end
 	for istn = [3,4]
-		binning!(cbin,cnum,cprc,rpnt,ppnt,ID=istn,box=true,bnum=4,days=7)
+		binning!(cbin,cnum,cprc,rpnt,ppnt,ID=istn,box=false,bnum=4,days=7)
 	end
 	for istn = 2
-		binning!(dbin,dnum,dprc,rpnt,ppnt,ID=istn,box=true,bnum=4,days=7)
+		binning!(dbin,dnum,dprc,rpnt,ppnt,ID=istn,box=false,bnum=4,days=7)
 	end
 	for istn = 5 : 7
-		binning!(ebin,enum,eprc,rpnt,ppnt,ID=istn,box=true,bnum=4,days=7)
+		binning!(ebin,enum,eprc,rpnt,ppnt,ID=istn,box=false,bnum=4,days=7)
 	end
 	for istn = 9 : 11
-		binning!(fbin,fnum,fprc,rpnt,ppnt,ID=istn,box=true,bnum=4,days=7)
+		binning!(fbin,fnum,fprc,rpnt,ppnt,ID=istn,box=false,bnum=4,days=7)
 	end
 	for istn = [8,12]
-		binning!(gbin,gnum,gprc,rpnt,ppnt,ID=istn,box=true,bnum=4,days=7)
+		binning!(gbin,gnum,gprc,rpnt,ppnt,ID=istn,box=false,bnum=4,days=7)
 	end
 
 	hbin .= bbin.+cbin.+dbin; ibin .= ebin.+fbin.+gbin
@@ -352,22 +369,22 @@ begin
 	ibin .= 0; iprc .= 0; inum .= 0
 	
 	for istn = 1
-		binning!(bbin,bnum,bprc,rpnt,ppnt,ID=istn,iso="O18",box=true,bnum=4,days=7)
+		binning!(bbin,bnum,bprc,rpnt,ppnt,ID=istn,iso="O18",box=false,bnum=4,days=7)
 	end
 	for istn = [3,4]
-		binning!(cbin,cnum,cprc,rpnt,ppnt,ID=istn,iso="O18",box=true,bnum=4,days=7)
+		binning!(cbin,cnum,cprc,rpnt,ppnt,ID=istn,iso="O18",box=false,bnum=4,days=7)
 	end
 	for istn = 2
-		binning!(dbin,dnum,dprc,rpnt,ppnt,ID=istn,iso="O18",box=true,bnum=4,days=7)
+		binning!(dbin,dnum,dprc,rpnt,ppnt,ID=istn,iso="O18",box=false,bnum=4,days=7)
 	end
 	for istn = 5 : 7
-		binning!(ebin,enum,eprc,rpnt,ppnt,ID=istn,iso="O18",box=true,bnum=4,days=7)
+		binning!(ebin,enum,eprc,rpnt,ppnt,ID=istn,iso="O18",box=false,bnum=4,days=7)
 	end
 	for istn = 9 : 11
-		binning!(fbin,fnum,fprc,rpnt,ppnt,ID=istn,iso="O18",box=true,bnum=4,days=7)
+		binning!(fbin,fnum,fprc,rpnt,ppnt,ID=istn,iso="O18",box=false,bnum=4,days=7)
 	end
 	for istn = [8,12]
-		binning!(gbin,gnum,gprc,rpnt,ppnt,ID=istn,iso="O18",box=true,bnum=4,days=7)
+		binning!(gbin,gnum,gprc,rpnt,ppnt,ID=istn,iso="O18",box=false,bnum=4,days=7)
 	end
 
 	hbin .= bbin.+cbin.+dbin; ibin .= ebin.+fbin.+gbin
@@ -423,22 +440,22 @@ begin
 	ibin .= 0; iprc .= 0; inum .= 0
 	
 	for istn = 1
-		binning!(bbin,bnum,bprc,rpnt,ppnt,ID=istn,box=true,bnum=4,days=30)
+		binning!(bbin,bnum,bprc,rpnt,ppnt,ID=istn,box=false,bnum=4,days=30)
 	end
 	for istn = [3,4]
-		binning!(cbin,cnum,cprc,rpnt,ppnt,ID=istn,box=true,bnum=4,days=30)
+		binning!(cbin,cnum,cprc,rpnt,ppnt,ID=istn,box=false,bnum=4,days=30)
 	end
 	for istn = 2
-		binning!(dbin,dnum,dprc,rpnt,ppnt,ID=istn,box=true,bnum=4,days=30)
+		binning!(dbin,dnum,dprc,rpnt,ppnt,ID=istn,box=false,bnum=4,days=30)
 	end
 	for istn = 5 : 7
-		binning!(ebin,enum,eprc,rpnt,ppnt,ID=istn,box=true,bnum=4,days=30)
+		binning!(ebin,enum,eprc,rpnt,ppnt,ID=istn,box=false,bnum=4,days=30)
 	end
 	for istn = 9 : 11
-		binning!(fbin,fnum,fprc,rpnt,ppnt,ID=istn,box=true,bnum=4,days=30)
+		binning!(fbin,fnum,fprc,rpnt,ppnt,ID=istn,box=false,bnum=4,days=30)
 	end
 	for istn = [8,12]
-		binning!(gbin,gnum,gprc,rpnt,ppnt,ID=istn,box=true,bnum=4,days=30)
+		binning!(gbin,gnum,gprc,rpnt,ppnt,ID=istn,box=false,bnum=4,days=30)
 	end
 
 	hbin .= bbin.+cbin.+dbin; ibin .= ebin.+fbin.+gbin
@@ -494,22 +511,22 @@ begin
 	ibin .= 0; iprc .= 0; inum .= 0
 	
 	for istn = 1
-		binning!(bbin,bnum,bprc,rpnt,ppnt,ID=istn,iso="O18",box=true,bnum=4,days=30)
+		binning!(bbin,bnum,bprc,rpnt,ppnt,ID=istn,iso="O18",box=false,bnum=4,days=30)
 	end
 	for istn = [3,4]
-		binning!(cbin,cnum,cprc,rpnt,ppnt,ID=istn,iso="O18",box=true,bnum=4,days=30)
+		binning!(cbin,cnum,cprc,rpnt,ppnt,ID=istn,iso="O18",box=false,bnum=4,days=30)
 	end
 	for istn = 2
-		binning!(dbin,dnum,dprc,rpnt,ppnt,ID=istn,iso="O18",box=true,bnum=4,days=30)
+		binning!(dbin,dnum,dprc,rpnt,ppnt,ID=istn,iso="O18",box=false,bnum=4,days=30)
 	end
 	for istn = 5 : 7
-		binning!(ebin,enum,eprc,rpnt,ppnt,ID=istn,iso="O18",box=true,bnum=4,days=30)
+		binning!(ebin,enum,eprc,rpnt,ppnt,ID=istn,iso="O18",box=false,bnum=4,days=30)
 	end
 	for istn = 9 : 11
-		binning!(fbin,fnum,fprc,rpnt,ppnt,ID=istn,iso="O18",box=true,bnum=4,days=30)
+		binning!(fbin,fnum,fprc,rpnt,ppnt,ID=istn,iso="O18",box=false,bnum=4,days=30)
 	end
 	for istn = [8,12]
-		binning!(gbin,gnum,gprc,rpnt,ppnt,ID=istn,iso="O18",box=true,bnum=4,days=30)
+		binning!(gbin,gnum,gprc,rpnt,ppnt,ID=istn,iso="O18",box=false,bnum=4,days=30)
 	end
 
 	hbin .= bbin.+cbin.+dbin; ibin .= ebin.+fbin.+gbin
@@ -532,14 +549,14 @@ begin
 	)
 
 	c4_1,c4_2 = 
-	plotbin!(a4,1,rbin,pbin,hbin,hprc,hnum,-13:0.5:-7,returncinfo=true)
-	plotbin!(a4,2,rbin,pbin,bbin,bprc,bnum,-13:0.5:-7)
-	plotbin!(a4,3,rbin,pbin,cbin,cprc,cnum,-13:0.5:-7)
-	plotbin!(a4,4,rbin,pbin,dbin,dprc,dnum,-13:0.5:-7)
-	plotbin!(a4,5,rbin,pbin,ibin,iprc,inum,-13:0.5:-7)
-	plotbin!(a4,6,rbin,pbin,ebin,eprc,enum,-13:0.5:-7)
-	plotbin!(a4,7,rbin,pbin,fbin,fprc,fnum,-13:0.5:-7)
-	plotbin!(a4,8,rbin,pbin,gbin,gprc,gnum,-13:0.5:-7)
+	plotbin!(a4,1,rbin,pbin,hbin,hprc,hnum,-12:0.5:-6,returncinfo=true)
+	plotbin!(a4,2,rbin,pbin,bbin,bprc,bnum,-12:0.5:-6)
+	plotbin!(a4,3,rbin,pbin,cbin,cprc,cnum,-12:0.5:-6)
+	plotbin!(a4,4,rbin,pbin,dbin,dprc,dnum,-12:0.5:-6)
+	plotbin!(a4,5,rbin,pbin,ibin,iprc,inum,-12:0.5:-6)
+	plotbin!(a4,6,rbin,pbin,ebin,eprc,enum,-12:0.5:-6)
+	plotbin!(a4,7,rbin,pbin,fbin,fprc,fnum,-12:0.5:-6)
+	plotbin!(a4,8,rbin,pbin,gbin,gprc,gnum,-12:0.5:-6)
 
 	axesformat!(a4)
 	a4[1].format(suptitle="30-Day WRF Moving Average")
@@ -563,7 +580,8 @@ end
 # ╟─42c325e3-d1df-4e09-8d59-8e1505210c43
 # ╟─7e66a747-056c-445e-a021-0d919ddc26bb
 # ╠═3bb9d01b-b214-44b1-975e-fcab56d8eb99
-# ╟─2fd946e2-bf3e-406f-9a19-5aa72b5d1640
+# ╠═2fd946e2-bf3e-406f-9a19-5aa72b5d1640
+# ╠═d139bbdb-2e72-4259-a85d-ecb7addcdd45
 # ╠═b6500812-fd5e-4842-8855-655822d170f4
 # ╠═c57ae725-3056-481c-a004-a916192744be
 # ╠═738c6dde-cc6b-489f-8251-849e4ca67d8c
